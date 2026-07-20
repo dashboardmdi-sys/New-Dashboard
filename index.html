@@ -1,0 +1,3209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Report</title>
+<link rel="icon" href="globe color-01.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous"></script>
+<style>
+  :root{
+    /* designtoken.md */
+    --primary-base:#ffd204; --primary-100:#F2F0E9; --primary-200:#EAE4C8; --primary-300:#E8D892;
+    --primary-500:#F2C80D; --primary-600:#DBB300; --primary-700:#B89600; --primary-900:#5E4E08;
+    --secondary-base:#ee3f34; --secondary-600:#CB1D10;
+    --navy:#002c63; --navy-800:#04418B; --navy-300:#92B8E8; --navy-100:#E9EDF2;
+    --n50:#F7F7F7; --n100:#EDEDED; --n200:#DAD9D8; --n300:#BFBCBB; --n400:#A09B98;
+    --n500:#857F7A; --n600:#736D68; --n700:#615B57; --n800:#4B4744; --n900:#353331;
+    --success:#16A34A; --warning:#D97706; --danger:#DC2626;
+    --card-bg:#FFFFFF; --card-border:#DAD9D8; --radius-md:8px; --radius-lg:12px; --radius-xl:16px;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+    --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.05);
+    --shadow-lg:0 10px 15px rgba(0,0,0,.1),0 4px 6px rgba(0,0,0,.05);
+    --font-head:"Plus Jakarta Sans",system-ui,sans-serif;
+    --font-body:"Inter",system-ui,sans-serif;
+    --font-mono:"JetBrains Mono","Fira Code",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--font-body);color:var(--n900);background:var(--n50);
+    background-image:radial-gradient(var(--n200) 1px, transparent 1px);
+    background-size:22px 22px; min-height:100vh;
+  }
+  /* ambient brand glow at the very top */
+  .glow{
+    position:fixed;top:-220px;left:50%;transform:translateX(-50%);
+    width:1200px;height:420px;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at center,rgba(255,210,4,.22),rgba(255,210,4,0) 65%);
+    filter:blur(10px);
+  }
+
+  /* ============ HEADER ============ */
+  header{
+    position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--card-border);
+  }
+  header::before{content:"";display:block;height:4px;
+    background:linear-gradient(90deg,var(--primary-base) 0%,var(--primary-base) 55%,var(--secondary-base) 55%,var(--secondary-base) 72%,var(--navy) 72%);}
+  .header-inner{
+    max-width:1280px;margin:0 auto;padding:14px 24px;
+    display:flex;align-items:center;gap:16px;
+  }
+  .logo{width:46px;height:46px;object-fit:contain;flex-shrink:0}
+  .logo-mdi{height:36px;object-fit:contain;flex-shrink:0}
+  .logo-sep{width:1px;height:32px;background:var(--n200);flex-shrink:0}
+  .title-block h1{font-family:var(--font-head);font-size:1.15rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;color:var(--navy)}
+  .title-block p{font-size:.75rem;color:var(--n600);letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-top:2px}
+  .header-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
+
+  .live-badge{
+    display:inline-flex;align-items:center;gap:7px;
+    font-family:var(--font-mono);font-size:.7rem;font-weight:700;letter-spacing:.12em;
+    color:#fff;background:var(--secondary-base);
+    padding:6px 12px;border-radius:9999px;box-shadow:var(--shadow-sm);
+  }
+  .live-badge.offline{background:var(--danger);color:#fff}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:var(--navy);position:relative}
+  .live-badge.offline .live-dot{background:#fff}
+  .live-dot::after{
+    content:"";position:absolute;inset:-4px;border-radius:50%;
+    border:2px solid currentColor;opacity:0;animation:ping 2s cubic-bezier(0,0,.2,1) infinite;color:var(--navy);
+  }
+  @keyframes ping{0%{transform:scale(.6);opacity:.8}80%,100%{transform:scale(1.6);opacity:0}}
+
+  .updated{font-size:.72rem;color:var(--n600);text-align:right;line-height:1.4}
+  .updated b{font-family:var(--font-mono);color:var(--n800);font-weight:700}
+
+  .refresh-wrap{position:relative;width:38px;height:38px;flex-shrink:0}
+  .refresh-btn{
+    position:absolute;inset:4px;border:none;border-radius:50%;cursor:pointer;
+    background:#fff;border:1px solid var(--card-border);display:grid;place-items:center;
+    color:var(--navy);transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .2s;
+  }
+  .refresh-btn:hover{background:var(--primary-100);transform:rotate(90deg)}
+  .refresh-btn svg{width:15px;height:15px}
+  .refresh-btn.spinning svg{animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .ring{position:absolute;inset:0;transform:rotate(-90deg)}
+  .ring circle{fill:none;stroke-width:2.5}
+  .ring .track{stroke:var(--n200)}
+  .ring .prog{stroke:var(--primary-600);stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+
+  /* ============ LAYOUT ============ */
+  main{max-width:1280px;margin:0 auto;padding:28px 24px 72px;position:relative;z-index:1}
+  .overline{
+    font-family:var(--font-head);font-size:.6875rem;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--n500);display:flex;align-items:center;gap:10px;margin:34px 0 14px;
+  }
+  .overline::after{content:"";flex:1;height:1px;background:var(--n200)}
+  .overline .num{font-family:var(--font-mono);color:var(--primary-700)}
+
+  /* ============ KPI CARDS ============ */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  @media(max-width:980px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.kpi-grid{grid-template-columns:1fr}}
+  .card{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+    padding:22px;position:relative;overflow:visible;
+  }
+  .kpi{min-height:132px;display:flex;flex-direction:column;justify-content:space-between}
+  .kpi .accent{position:absolute;top:0;left:0;right:0;height:3px}
+  .kpi .icon{
+    width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
+    position:absolute;top:18px;right:18px;
+  }
+  .kpi .icon svg{width:19px;height:19px}
+  .kpi .label{font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--n600)}
+  .kpi .value{
+    font-family:var(--font-mono);font-size:2.35rem;font-weight:700;letter-spacing:-.03em;
+    color:var(--navy);line-height:1.05;margin-top:10px;font-variant-numeric:tabular-nums;
+  }
+  .kpi .value .unit{font-size:1rem;font-weight:500;color:var(--n400);margin-left:2px}
+  .kpi .sub{font-size:.72rem;color:var(--n500);margin-top:8px;display:flex;align-items:center;gap:6px}
+  .kpi .sub .chip{
+    font-family:var(--font-mono);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:9999px;
+  }
+  .chip.up{background:#E7F6EC;color:var(--success)}
+  .chip.down{background:#FDECEC;color:var(--danger)}
+  .chip.flat{background:var(--n100);color:var(--n600)}
+  .kpi.pending .value{color:var(--n300)}
+
+  /* ============ MID ROW: podium + chart ============ */
+  .mid-grid{display:grid;grid-template-columns:380px minmax(0,1fr);gap:16px;align-items:stretch}
+  .mid-grid > .card{min-width:0}
+  @media(max-width:980px){.mid-grid{grid-template-columns:1fr}}
+
+  .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:16px}
+  .card-head h2{font-family:var(--font-head);font-size:1.05rem;font-weight:700;letter-spacing:-.01em;color:var(--n900)}
+  .card-head .hint{font-size:.7rem;color:var(--n500)}
+
+  /* podium */
+  .podium-list{display:flex;flex-direction:column;gap:10px}
+  .podium-item{
+    display:flex;align-items:center;gap:14px;padding:13px 14px;
+    border:1px solid var(--n100);border-radius:var(--radius-md);
+    background:linear-gradient(120deg,#fff 60%,var(--n50));position:relative;overflow:hidden;
+  }
+  .podium-item.first{
+    border-color:var(--primary-300);
+    background:linear-gradient(120deg,#FFFDF2 30%,#FCF3C4);
+  }
+  .podium-item.first::after{
+    content:"";position:absolute;top:0;left:-80%;width:60%;height:100%;
+    background:linear-gradient(105deg,transparent,rgba(255,255,255,.85),transparent);
+    animation:shine 3.5s ease-in-out infinite;
+  }
+  @keyframes shine{0%,60%{left:-80%}100%{left:130%}}
+
+  /* podium tabs */
+  .podium-tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:2px solid var(--n100)}
+  .podium-tab{
+    flex:1;padding:9px 0;text-align:center;cursor:pointer;border:none;background:none;
+    font-family:var(--font-head);font-size:.78rem;font-weight:700;letter-spacing:.04em;
+    color:var(--n400);position:relative;transition:color .2s;
+  }
+  .podium-tab:hover{color:var(--n700)}
+  .podium-tab.active{color:var(--navy)}
+  .podium-tab::after{
+    content:"";position:absolute;bottom:-2px;left:0;right:0;height:2px;
+    background:transparent;transition:background .25s;
+  }
+  .podium-tab.active::after{background:var(--primary-base)}
+
+  .podium-item.last{border-color:#FDECEC;background:linear-gradient(120deg,#FFF6F6 30%,#FDECEC)}
+  .medal.low{background:#FDECEC;color:var(--danger);box-shadow:0 0 0 3px #FEE2E2}
+  .medal{
+    width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;
+    font-family:var(--font-mono);font-weight:700;font-size:.85rem;
+  }
+  .medal.m1{background:var(--primary-base);color:var(--navy);box-shadow:0 0 0 3px var(--primary-200)}
+  .medal.m2{background:var(--n200);color:var(--n700);box-shadow:0 0 0 3px var(--n100)}
+  .medal.m3{background:#E8C39E;color:#7C4A1E;box-shadow:0 0 0 3px #F5E3D0}
+  .podium-item .p-name{font-weight:600;font-size:.9rem;color:var(--n900);line-height:1.3}
+  .podium-item .p-sub{font-size:.7rem;color:var(--n500);margin-top:1px}
+  .podium-item .p-score{
+    margin-left:auto;font-family:var(--font-mono);font-weight:700;font-size:1.35rem;color:var(--navy);
+  }
+  .podium-empty{font-size:.8rem;color:var(--n500);padding:20px 0;text-align:center}
+
+  /* charts */
+  .chart-scroll{overflow-x:auto;min-width:0;padding-bottom:6px}
+  .chart-scroll::-webkit-scrollbar{height:8px}
+  .chart-scroll::-webkit-scrollbar-thumb{background:var(--n200);border-radius:9999px}
+  .chart-inner{min-width:900px;height:300px;position:relative}
+  .chart-fixed{height:260px;position:relative}
+  .legend{display:flex;gap:16px;font-size:.72rem;color:var(--n600);align-items:center}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+  .bottom-grid{display:grid;grid-template-columns:380px minmax(0,1fr);gap:16px;align-items:start}
+  .bottom-grid > .card{min-width:0}
+  @media(max-width:980px){.bottom-grid{grid-template-columns:1fr}}
+
+  /* ============ TABLE ============ */
+  .table-tools{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  .search{
+    flex:1;min-width:200px;display:flex;align-items:center;gap:8px;
+    background:#fff;border:1px solid var(--card-border);border-radius:var(--radius-md);
+    padding:8px 14px;transition:border-color .2s, box-shadow .2s;
+  }
+  .search:focus-within{border-color:var(--primary-500);box-shadow:0 0 0 3px rgba(242,200,13,.18)}
+  .search svg{width:14px;height:14px;color:var(--n400);flex-shrink:0}
+  .search input{border:none;outline:none;font-family:var(--font-body);font-size:.85rem;width:100%;background:transparent;color:var(--n900)}
+  .count-pill{
+    font-family:var(--font-mono);font-size:.7rem;font-weight:700;color:var(--navy);
+    background:var(--navy-100);padding:6px 12px;border-radius:9999px;
+  }
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  thead th{
+    font-family:var(--font-head);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--n600);text-align:left;padding:10px 12px;border-bottom:2px solid var(--n900);
+    cursor:pointer;user-select:none;white-space:nowrap;
+  }
+  thead th:hover{color:var(--navy)}
+  thead th .arrow{font-size:.6rem;margin-left:4px;color:var(--primary-700)}
+  thead tr, tbody tr, tfoot tr{display:grid;grid-template-columns:46px 1.4fr 140px 140px 160px;align-items:center}
+  tbody td{padding:9px 12px;border-bottom:1px solid var(--n100);vertical-align:middle}
+  tbody tr{
+    transition:transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s cubic-bezier(.22,1,.36,1), background .2s;
+    border-radius:12px;position:relative;z-index:0;
+  }
+  tbody tr:hover{
+    transform:scale(1.04);z-index:2;
+    background:var(--primary-100);
+    box-shadow:0 12px 36px rgba(0,44,99,.18), 0 2px 8px rgba(0,44,99,.10);
+    outline:2.5px solid var(--primary-base);outline-offset:-1px;border-radius:12px;
+  }
+  td.num{font-family:var(--font-mono);font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+  td.muted{color:var(--n300);font-family:var(--font-mono)}
+  .rank-badge{
+    display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;
+    font-family:var(--font-mono);font-size:.72rem;font-weight:700;background:var(--n100);color:var(--n600);
+  }
+  .rank-badge.top{background:var(--primary-base);color:var(--navy)}
+  .delta{font-family:var(--font-mono);font-weight:700;font-size:.78rem;padding:3px 9px;border-radius:9999px}
+  .delta.up{background:#E7F6EC;color:var(--success)}
+  .delta.down{background:#FDECEC;color:var(--danger)}
+  .delta.zero{background:var(--n100);color:var(--n600)}
+  .delta.none{color:var(--n300);background:transparent;padding-left:0}
+  .scorebar{display:flex;align-items:center;gap:10px}
+  .scorebar .track{width:72px;height:5px;border-radius:9999px;background:var(--n100);overflow:hidden;flex-shrink:0}
+  .scorebar .fill{display:block;height:100%;border-radius:9999px;background:var(--navy);transition:width .8s cubic-bezier(.22,1,.36,1)}
+  .scorebar .fill.post{background:var(--primary-600)}
+  tfoot td{
+    padding:12px;border-top:2px solid var(--n900);font-family:var(--font-mono);
+    font-weight:700;color:var(--navy);background:var(--primary-100);
+  }
+  tfoot td:first-child{grid-column:span 2;font-family:var(--font-head);letter-spacing:.08em;text-transform:uppercase;font-size:.72rem}
+  .cell-flash{animation:flash 1.6s ease-out}
+  @keyframes flash{0%{background:var(--primary-300)}100%{background:transparent}}
+
+  /* skeleton */
+  .skeleton{position:relative;overflow:hidden;background:var(--n100);border-radius:6px;color:transparent!important}
+  .skeleton::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);
+    animation:shimmer 1.4s infinite;
+  }
+  @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+  footer{
+    max-width:1280px;margin:0 auto;padding:0 24px 40px;
+    font-size:.72rem;color:var(--n500);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  }
+  footer a{color:var(--navy);font-weight:600;text-decoration:none}
+  footer a:hover{text-decoration:underline}
+
+  /* entrance pre-state (Motion animates these in) */
+  [data-animate]{opacity:0;transform:translateY(22px)}
+  .no-motion [data-animate]{opacity:1;transform:none}
+
+  .toast{
+    position:fixed;bottom:24px;right:24px;z-index:100;
+    background:var(--n900);color:#fff;font-size:.78rem;padding:10px 18px;
+    border-radius:var(--radius-md);box-shadow:var(--shadow-lg);
+    opacity:0;transform:translateY(12px);transition:all .35s cubic-bezier(.22,1,.36,1);pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateY(0)}
+
+
+  /* ============ THEME TOGGLE ============ */
+  .theme-toggle{
+    width:38px;height:38px;border:1px solid var(--card-border);border-radius:50%;cursor:pointer;
+    background:var(--card-bg);display:grid;place-items:center;color:var(--navy);
+    transition:background .25s,color .25s,border-color .25s,transform .35s cubic-bezier(.34,1.56,.64,1);
+    flex-shrink:0;
+  }
+  .theme-toggle:hover{background:var(--primary-100);transform:rotate(30deg)}
+  .theme-toggle svg{width:18px;height:18px;transition:transform .4s cubic-bezier(.22,1,.36,1)}
+  .theme-toggle .icon-sun{display:none}
+  .theme-toggle .icon-moon{display:block}
+  [data-theme="dark"] .theme-toggle .icon-sun{display:block}
+  [data-theme="dark"] .theme-toggle .icon-moon{display:none}
+
+  /* ============ DARK MODE ============ */
+  [data-theme="dark"]{
+    --n50:#111113; --n100:#1e1e22; --n200:#2a2a30; --n300:#3e3e46;
+    --n400:#6e6e78; --n500:#8e8e98; --n600:#a8a8b2; --n700:#c2c2ca; --n800:#d8d8de; --n900:#ececf0;
+    --card-bg:#1a1a1e; --card-border:#2a2a30;
+    --navy:#7eb3f0; --navy-800:#5a9de6; --navy-300:#2c5a8f; --navy-100:#1c2a3a;
+    --primary-100:#2a2616; --primary-200:#3a3520; --primary-300:#5a5020;
+    --primary-700:#e0b800; --primary-900:#f0d850;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.25);
+    --shadow-md:0 4px 6px rgba(0,0,0,.35),0 2px 4px rgba(0,0,0,.25);
+    --shadow-lg:0 10px 15px rgba(0,0,0,.4),0 4px 6px rgba(0,0,0,.3);
+  }
+  [data-theme="dark"] body{
+    background-image:radial-gradient(var(--n200) 1px, transparent 1px);
+  }
+  [data-theme="dark"] .glow{
+    background:radial-gradient(ellipse at center,rgba(255,210,4,.08),rgba(255,210,4,0) 65%);
+  }
+  [data-theme="dark"] header{
+    background:rgba(17,17,19,.92);
+  }
+  [data-theme="dark"] header::before{
+    background:linear-gradient(90deg,var(--primary-base) 0%,var(--primary-base) 55%,var(--secondary-base) 55%,var(--secondary-base) 72%,#7eb3f0 72%);
+  }
+  [data-theme="dark"] .refresh-btn{
+    background:var(--card-bg);
+  }
+  [data-theme="dark"] .search{
+    background:var(--card-bg);
+  }
+  [data-theme="dark"] .search input{
+    color:var(--n900);
+  }
+  [data-theme="dark"] .podium-item{
+    background:linear-gradient(120deg,var(--card-bg) 60%,var(--n100));
+  }
+  [data-theme="dark"] .podium-item.first{
+    border-color:var(--primary-300);
+    background:linear-gradient(120deg,#2a2510 30%,#3a3518);
+  }
+  [data-theme="dark"] .podium-item.first::after{
+    background:linear-gradient(105deg,transparent,rgba(255,255,255,.06),transparent);
+  }
+  [data-theme="dark"] .podium-item.last{
+    border-color:#3a1818;background:linear-gradient(120deg,#2a1818 30%,#321818);
+  }
+  [data-theme="dark"] .medal.low{background:#3a1818;box-shadow:0 0 0 3px #2c1212}
+  [data-theme="dark"] .chip.up{background:#122a1a;color:#4ade80}
+  [data-theme="dark"] .chip.down{background:#2a1212;color:#f87171}
+  [data-theme="dark"] .delta.up{background:#122a1a;color:#4ade80}
+  [data-theme="dark"] .delta.down{background:#2a1212;color:#f87171}
+  [data-theme="dark"] .toast{background:var(--n800);color:var(--n50)}
+  [data-theme="dark"] .skeleton{background:var(--n200)}
+  [data-theme="dark"] .skeleton::after{
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);
+  }
+  [data-theme="dark"] tbody tr:hover{
+    box-shadow:0 12px 36px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+  }
+  [data-theme="dark"] tfoot td{
+    background:var(--n100);border-top-color:var(--n300);
+  }
+
+  /* ============ LOGIN GATE ============ */
+  #pinGate{
+    position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;
+    background: linear-gradient(135deg, #001a3d 0%, #002c63 50%, #003a80 100%);
+    transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1);
+  }
+  #pinGate::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 50%, rgba(255,210,4,0.08) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(238,63,52,0.06) 0%, transparent 40%);
+    pointer-events: none;
+  }
+  #pinGate.unlocked{opacity:0;transform:scale(1.04);pointer-events:none}
+  .pin-box{
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 24px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+    padding: 44px 40px 40px;
+    width: 420px;
+    max-width: calc(100vw - 32px);
+    text-align: center;
+    animation: pinBoxIn .55s cubic-bezier(.22,1,.36,1);
+    position: relative;
+  }
+  @keyframes pinBoxIn{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
+  .pin-logo{
+    width: 72px; height: 72px; border-radius: 20px; margin: 0 auto 22px;
+    background: linear-gradient(135deg, #ffd204, #f5a623);
+    display: grid; place-items: center;
+    box-shadow: 0 12px 32px rgba(255,210,4,0.35);
+  }
+  .pin-logo img { width: 44px; height: 44px; object-fit: contain; }
+  .pin-logo svg { width: 32px; height: 32px; color: #002c63; }
+  .pin-title{
+    font-family: var(--font-head); font-size: 1.5rem; font-weight: 800;
+    color: #fff; letter-spacing: -.03em; margin-bottom: 6px;
+  }
+  .pin-sub{ font-size: .82rem; color: rgba(255,255,255,0.55); margin-bottom: 28px; line-height: 1.5; }
+  /* Company name step */
+  .login-step { transition: opacity 0.3s ease, transform 0.3s ease; }
+  .login-step.hidden { opacity: 0; pointer-events: none; height: 0; overflow: hidden; }
+  .company-input-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .company-input-wrap svg {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 18px; color: rgba(255,255,255,0.4);
+    pointer-events: none;
+  }
+  #companyNameInput {
+    width: 100%; padding: 14px 16px 14px 44px;
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    font-family: var(--font-body); font-size: 0.95rem;
+    color: #fff; outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    box-sizing: border-box;
+  }
+  #companyNameInput::placeholder { color: rgba(255,255,255,0.35); }
+  #companyNameInput:focus {
+    border-color: #ffd204;
+    background: rgba(255,255,255,0.12);
+  }
+  .btn-next {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #ffd204, #f5a623);
+    border: none; border-radius: 12px;
+    font-family: var(--font-head); font-size: 0.9rem; font-weight: 800;
+    color: #002c63; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 6px 20px rgba(255,210,4,0.35);
+  }
+  .btn-next:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(255,210,4,0.45); }
+  .btn-next:active { transform: scale(0.97); }
+  /* PIN step */
+  .pin-step-header {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 10px 14px;
+    margin-bottom: 20px; text-align: left;
+  }
+  .pin-company-badge {
+    font-family: var(--font-head); font-size: 0.9rem; font-weight: 700;
+    color: #ffd204; flex: 1;
+  }
+  .btn-change-company {
+    background: none; border: none; color: rgba(255,255,255,0.45);
+    font-size: 0.75rem; cursor: pointer; padding: 4px 8px;
+    border-radius: 6px; transition: color 0.15s, background 0.15s;
+  }
+  .btn-change-company:hover { color: #fff; background: rgba(255,255,255,0.1); }
+  .pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:22px}
+  .pin-dot{
+    width:14px; height:14px; border-radius:50%;
+    border: 2px solid rgba(255,255,255,0.25);
+    background: transparent; transition: background .2s, border-color .2s, transform .15s;
+  }
+  .pin-dot.filled{ background: #ffd204; border-color: #ffd204; transform: scale(1.2); }
+  .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+  .pin-key{
+    aspect-ratio:1; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px;
+    font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700; color: #fff;
+    background: rgba(255,255,255,0.07); cursor: pointer;
+    transition: background .15s, transform .1s;
+    display: grid; place-items: center;
+  }
+  .pin-key:hover{ background: rgba(255,255,255,0.15); }
+  .pin-key:active{ transform: scale(.92); }
+  .pin-key.del{ font-size: .85rem; color: rgba(255,255,255,0.55); }
+  .pin-err{
+    font-size: .78rem; color: #ff6b6b; min-height: 18px; margin-top: 4px;
+    font-weight: 600; transition: opacity .2s; opacity: 0;
+  }
+  .pin-err.show{ opacity: 1; }
+  @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .pin-box.shake{ animation: shake .35s ease; }
+  /* ============ NEW CLIENT SECTIONS ============ */
+  /* ============ NEW CLIENT SECTIONS ============ */
+  .nav-pills-container {
+    max-width: 1280px;
+    margin: 0 auto 28px;
+    padding: 0 0px;
+  }
+  .nav-pills {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--n100);
+    padding: 6px;
+    border-radius: 9999px;
+    border: 1px solid var(--card-border);
+    width: 100%;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-pills::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-pill {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 9999px;
+    text-decoration: none;
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--n600);
+    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.15s ease,
+                box-shadow 0.3s ease;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .nav-pill:hover {
+    color: var(--navy);
+    background: rgba(255, 255, 255, 0.45);
+    transform: translateY(-1px);
+  }
+  .nav-pill.active {
+    background: var(--card-bg);
+    color: var(--navy-800);
+    box-shadow: var(--shadow-md);
+    transform: scale(1.02);
+  }
+  .nav-pill svg {
+    width: 15px;
+    height: 15px;
+    stroke-width: 2.2;
+    color: currentColor;
+  }
+  [data-theme="dark"] .nav-pills {
+    background: var(--n100);
+  }
+  [data-theme="dark"] .nav-pill:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Pane View Switcher Styles */
+  .dash-pane {
+    display: none;
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dash-pane.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .two-col-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: stretch;
+  }
+  @media(max-width: 768px) {
+    .two-col-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .client-note-box {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--n700);
+    white-space: pre-wrap;
+  }
+  [data-theme="dark"] .client-note-box {
+    color: var(--n600);
+  }
+  
+  /* Dokumentasi Dropdown */
+  .day-acc {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .day-acc-item {
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    background: var(--card-bg);
+    overflow: hidden;
+  }
+  .day-acc-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 700;
+    font-family: var(--font-head);
+    color: var(--navy);
+  }
+  .day-acc-head:hover {
+    background: var(--primary-100);
+  }
+  .day-acc-head svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.25s;
+    color: var(--n500);
+  }
+  .day-acc-item.open .day-acc-head svg {
+    transform: rotate(180deg);
+  }
+  .day-acc-body {
+    display: none;
+    padding: 20px;
+    border-top: 1px solid var(--card-border);
+    background: var(--n50);
+  }
+  .day-acc-item.open .day-acc-body {
+    display: block;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+  .gallery-img-wrap {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    border: 1px solid var(--card-border);
+    background: var(--n100);
+    cursor: zoom-in;
+    transition: transform 0.2s;
+  }
+  .gallery-img-wrap:hover {
+    transform: scale(1.02);
+  }
+  .gallery-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  [data-theme="dark"] .day-acc-body {
+    background: var(--n100);
+  }
+
+  /* Action Plan Table style */
+  .plan-table-wrap {
+    overflow-x: auto;
+  }
+  .plan-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .plan-table th {
+    font-family: var(--font-head);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--n600);
+    padding: 12px 14px;
+    border-bottom: 2px solid var(--n900);
+    text-align: left;
+  }
+  .plan-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--n100);
+    color: var(--n800);
+  }
+  .plan-table tr:last-child td {
+    border-bottom: none;
+  }
+  [data-theme="dark"] .plan-table th {
+    color: var(--n500);
+    border-bottom-color: var(--n300);
+  }
+  [data-theme="dark"] .plan-table td {
+    color: var(--n700);
+    border-bottom-color: var(--n200);
+  }
+
+  /* ===== KOMENTAR TRAINER CARD (USER DESIGN) ===== */
+  .kt-user-marquee-box {
+    overflow: hidden;
+    background-color: var(--primary-base);
+    color: var(--navy);
+    font-weight: 800;
+    padding: 0.75rem 0;
+    border-radius: 9999px;
+    margin-bottom: 5rem;
+    box-shadow: var(--shadow-lg);
+    border: 2px solid rgba(255,210,4,0.5);
+    position: relative;
+  }
+  .kt-user-marquee-content {
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0 1rem;
+    white-space: nowrap;
+    animation: ktMarquee 20s linear infinite;
+    display: inline-block;
+  }
+  @keyframes ktMarquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+  .kt-user-wrap {
+    max-width: 56rem;
+    margin: 0 auto 4rem auto;
+    position: relative;
+  }
+  .kt-user-glow {
+    position: absolute;
+    top: -4px; right: -4px; bottom: -4px; left: -4px;
+    background: linear-gradient(to right, var(--primary-base), var(--secondary-base), var(--navy));
+    border-radius: 2rem;
+    filter: blur(8px);
+    opacity: 0.4;
+    transition: opacity 0.5s;
+    animation: ktPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .kt-user-wrap:hover .kt-user-glow { opacity: 0.6; }
+  @keyframes ktPulse {
+    50% { opacity: 0.2; }
+  }
+  .kt-user-card {
+    position: relative;
+    background: #fff;
+    border: 4px solid var(--primary-base);
+    border-radius: 2rem;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transition: all 0.5s;
+  }
+  [data-theme="dark"] .kt-user-card {
+    background: var(--card-bg);
+    border-color: var(--primary-700);
+  }
+  @media (min-width: 768px) {
+    .kt-user-card { padding: 3.5rem; }
+  }
+  .kt-user-card:hover { transform: scale(1.01); }
+  .kt-user-avatar-wrap {
+    position: absolute;
+    top: -5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 8rem;
+  }
+  .kt-user-avatar {
+    width: 8rem; height: 8rem;
+    border-radius: 9999px;
+    border: 4px solid #fff;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    background-color: var(--navy);
+    box-shadow: 0 0 0 4px rgba(255,210,4,0.3);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:2.5rem; font-weight:800;
+  }
+  [data-theme="dark"] .kt-user-avatar { border-color: var(--card-bg); }
+  .kt-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .kt-user-badge {
+    position: absolute;
+    bottom: -0.75rem;
+    right: -1.5rem;
+    background-color: var(--secondary-base);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.375rem 1rem;
+    border-radius: 9999px;
+    box-shadow: var(--shadow-lg);
+    border: 2px solid #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    animation: ktBounce 1s infinite;
+  }
+  [data-theme="dark"] .kt-user-badge { border-color: var(--card-bg); }
+  @keyframes ktBounce {
+    0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+    50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1); }
+  }
+  .kt-user-head { text-align: center; margin-top: 3rem; margin-bottom: 2.5rem; }
+  .kt-user-name { font-size: 1.875rem; font-weight: 800; color: var(--navy); margin-bottom: 0.25rem; }
+  [data-theme="dark"] .kt-user-name { color: var(--navy); }
+  .kt-user-role { color: var(--n500); font-weight: 500; }
+  .kt-user-body { color: var(--n900); font-size: 15px; line-height: 1.625; display:flex; flex-direction:column; gap:2rem; }
+  [data-theme="dark"] .kt-user-body { color: var(--n700); }
+  .kt-user-day {
+    background-color: #eff6ff;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 1px solid #dbeafe;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.3s;
+    text-align: left;
+  }
+  [data-theme="dark"] .kt-user-day { background-color: var(--n100); border-color: var(--card-border); }
+  .kt-user-day:hover { box-shadow: var(--shadow-md); }
+  .kt-user-day-title {
+    font-size: 1.125rem; font-weight: 700; color: var(--navy);
+    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;
+  }
+  .kt-user-day-num {
+    width: 2rem; height: 2rem; border-radius: 9999px;
+    background-color: var(--primary-base);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--navy); font-weight: 700; font-size: 0.875rem;
+    flex-shrink: 0;
+  }
+  .kt-user-quote {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px dashed var(--n200);
+    text-align: center;
+  }
+  .kt-user-quote-text {
+    font-weight: 700; color: var(--navy); font-style: italic;
+  }
+
+  /* ===== DYNAMIC EVALUATION REPORT ===== */
+  .tag {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    color: #fff;
+  }
+  /* Eval section titles with gold left bar */
+  h2.section-title {
+    font-size: 17px;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: var(--navy);
+    margin: 36px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-head);
+    font-weight: 700;
+  }
+  h2.section-title::before {
+    content: "";
+    width: 5px; height: 18px;
+    background: #d4a017;
+    border-radius: 2px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  @property --pct {
+    syntax: '<number>';
+    initial-value: 0;
+    inherits: false;
+  }
+  .eval-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+  }
+  .eval-kpi {
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 18px 16px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(15,35,65,0.06);
+    border: 1px solid var(--card-border);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: pointer;
+  }
+  .eval-kpi:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(15,35,65,0.1);
+  }
+  .eval-kpi .kpi-ring {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: conic-gradient(#d4a017 calc(var(--pct) * 1%), #e9edf2 0);
+    transition: --pct 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s ease;
+  }
+  .eval-kpi:hover .kpi-ring {
+    transform: scale(1.08);
+  }
+  .eval-kpi .ring-inner {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--navy);
+  }
+  .eval-kpi .label {
+    font-size: 12px;
+    color: var(--n500);
+    line-height: 1.35;
+    min-height: 32px;
+  }
+  .eval-kpi .score {
+    font-size: 13px;
+    color: #1f8a5f;
+    font-weight: 800;
+    margin-top: 4px;
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 18px;
+  }
+  .bar-row { margin-bottom: 14px; }
+  .bar-row .bar-label {
+    display: flex; justify-content: space-between;
+    font-size: 13px; margin-bottom: 6px; color: var(--n900);
+  }
+  .bar-track {
+    background: #eef1f5;
+    border-radius: 10px;
+    height: 16px;
+    overflow: hidden;
+    display: flex;
+  }
+  .bar-fill-5 { background: #13315c; height: 100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .bar-fill-4 { background: #6d93c4; height: 100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .bar-fill-3 { background: #a2b1c6; height: 100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .bar-fill-2 { background: #e8a87c; height: 100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .bar-fill-1 { background: #e27d60; height: 100%; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .trainer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .trainer {
+    text-align: center;
+    padding: 16px 10px;
+    border-radius: 12px;
+    background: var(--n50);
+    border: 1px solid var(--card-border);
+  }
+  .trainer .name { font-weight: 700; color: var(--navy); font-size: 14px; margin-top: 6px; }
+  .trainer .score-big { font-size: 26px; font-weight: 800; color: #d4a017; }
+  .trainer .role { font-size: 11px; color: var(--n500); }
+  .avatar {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy-800), var(--navy-300));
+    margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 15px;
+  }
+  .chip-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    background: var(--navy-100);
+    color: var(--navy-800);
+    padding: 7px 13px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border: 1px solid var(--navy-300);
+  }
+  .chip.big { background: var(--navy-800); color: #fff; font-size: 13.5px; padding: 8px 16px; border: none; }
+  .quote-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .quote {
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .quote .mark {
+    font-size: 34px;
+    color: var(--primary-700);
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+  .quote p {
+    font-size: 13.3px;
+    color: var(--n800);
+    line-height: 1.55;
+    margin: 6px 0 12px;
+    font-style: italic;
+  }
+  .quote .who {
+    font-size: 11.5px;
+    color: var(--n500);
+    font-weight: 600;
+    border-top: 1px dashed var(--card-border);
+    padding-top: 8px;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-card {
+    opacity: 0;
+    animation: fadeUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  @media (max-width: 900px) {
+    .eval-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .cols { grid-template-columns: 1fr; }
+    .quote-grid { grid-template-columns: 1fr; }
+    .trainer-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+
+<!-- ============ LOGIN GATE ============ -->
+<div id="pinGate" style="display:none">
+  <div class="pin-box" id="pinBox">
+    <div class="pin-logo">
+      <img src="mdiweb.png" alt="MDI" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <svg style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <div class="pin-title">Selamat Datang</div>
+    <div class="pin-sub">Masukkan nama perusahaan &amp; PIN untuk mengakses dashboard</div>
+
+    <!-- STEP 1: Company Name -->
+    <div class="login-step" id="stepCompany">
+      <div class="company-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <input type="text" id="companyNameInput" placeholder="Nama Perusahaan" autocomplete="organization" autocorrect="off" autocapitalize="words" spellcheck="false">
+      </div>
+      <button class="btn-next" id="btnNextToPIN">Lanjutkan &rarr;</button>
+    </div>
+
+    <!-- STEP 2: PIN -->
+    <div class="login-step hidden" id="stepPin">
+      <div class="pin-step-header">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span class="pin-company-badge" id="pinCompanyBadge"></span>
+        <button class="btn-change-company" id="btnChangeCompany">Ubah</button>
+      </div>
+      <div class="pin-dots">
+        <span class="pin-dot" id="pd0"></span>
+        <span class="pin-dot" id="pd1"></span>
+        <span class="pin-dot" id="pd2"></span>
+        <span class="pin-dot" id="pd3"></span>
+      </div>
+      <div class="pin-pad">
+        <button class="pin-key" data-k="1">1</button>
+        <button class="pin-key" data-k="2">2</button>
+        <button class="pin-key" data-k="3">3</button>
+        <button class="pin-key" data-k="4">4</button>
+        <button class="pin-key" data-k="5">5</button>
+        <button class="pin-key" data-k="6">6</button>
+        <button class="pin-key" data-k="7">7</button>
+        <button class="pin-key" data-k="8">8</button>
+        <button class="pin-key" data-k="9">9</button>
+        <button class="pin-key del" data-k="clear">✕ Hapus</button>
+        <button class="pin-key" data-k="0">0</button>
+        <button class="pin-key del" data-k="del">⌫</button>
+      </div>
+    </div>
+
+    <div class="pin-err" id="pinErr"></div>
+  </div>
+</div>
+
+<header style="visibility:hidden">
+  <div class="header-inner">
+    <img src="mdiweb.png" alt="MDI" class="logo-mdi" data-animate>
+      <div class="title-block" data-animate>
+        <h1 id="headerTitle">Dashboard Report</h1>
+        <p id="headerSubtitle">Dashboard Report &middot; Evaluasi Pre &amp; Post Test</p>
+      </div>
+      <button id="btnBackToMenu" style="display:none; background:var(--navy); color:#fff; border:none; padding:8px 16px; border-radius:6px; font-family:var(--font-head); font-weight:700; font-size:0.8rem; cursor:pointer; margin-left:14px; box-shadow:var(--shadow-sm); transition:background 0.2s;" onmouseover="this.style.background='var(--navy-800)'" onmouseout="this.style.background='var(--navy)'" onclick="sessionStorage.removeItem('mdp-active-training'); activeTrainingId=null; showMainMenu();">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:4px; margin-top:-2px;"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+        Kembali ke Beranda
+      </button>
+      <div class="header-right">
+      <span class="live-badge" id="liveBadge" data-animate>
+        <span class="live-dot"></span><span id="liveText">LIVE</span>
+      </span>
+      <div class="updated" data-animate>
+        Diperbarui <b id="lastUpdated">—</b><br>
+        <span id="nextIn">sinkronisasi otomatis tiap 10 dtk</span>
+      </div>
+      <button class="theme-toggle" id="themeToggle" data-animate title="Ganti tema terang/gelap" aria-label="Toggle dark mode">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+      <div class="refresh-wrap" data-animate title="Muat ulang data sekarang">
+        <svg class="ring" viewBox="0 0 38 38">
+          <circle class="track" cx="19" cy="19" r="17.5"></circle>
+          <circle class="prog" id="ringProg" cx="19" cy="19" r="17.5"></circle>
+        </svg>
+        <button class="refresh-btn" id="refreshBtn" aria-label="Refresh">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        </button>
+      </div>
+      <button class="logout-btn" id="btnLogout" onclick="logout()" title="Keluar dari Akun" aria-label="Logout" style="background: none; border: 1.5px solid var(--card-border); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: var(--secondary-base); cursor: pointer; transition: all 0.2s; flex-shrink: 0;" onmouseover="this.style.background='rgba(238, 63, 52, 0.08)'; this.style.borderColor='var(--secondary-base)';" onmouseout="this.style.background='none'; this.style.borderColor='var(--card-border)';">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="mainMenu" style="display:none; max-width:1280px; margin: 0 auto; padding: 40px 24px 80px; min-height:80vh;">
+  <!-- Premium Hero Banner -->
+  <div style="background: linear-gradient(135deg, var(--navy) 0%, #001f4d 100%); border-radius: 20px; padding: 48px 40px; margin-bottom: 40px; position: relative; overflow: hidden; box-shadow: var(--shadow-lg); border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;">
+    <!-- Abstract graphic backgrounds -->
+    <div style="position: absolute; right: -50px; top: -50px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(255,210,4,0.08) 0%, transparent 70%); pointer-events: none;"></div>
+    <div style="position: absolute; left: 30%; bottom: -80px; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(238,63,52,0.04) 0%, transparent 60%); pointer-events: none;"></div>
+    
+    <div style="position: relative; z-index: 2; max-width: 680px;">
+      <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,210,4,0.12); border: 1px solid rgba(255,210,4,0.25); padding: 6px 14px; border-radius: 30px; font-family: var(--font-head); font-size: 0.75rem; font-weight: 800; color: var(--primary-base); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 18px;">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        MDI Portal Terverifikasi
+      </div>
+      <h2 style="font-family: var(--font-head); font-size: 2.35rem; font-weight: 800; color: #fff; letter-spacing: -0.03em; line-height: 1.2;">
+        Selamat Datang di <span id="mmClientName" style="color: var(--primary-base); text-shadow: 0 2px 10px rgba(255,210,4,0.15);"></span>
+      </h2>
+      <p style="color: rgba(255,255,255,0.7); margin-top: 12px; font-size: 0.95rem; line-height: 1.6; max-width: 580px;">
+        Akses laporan evaluasi pelatihan kepemimpinan dan data real-time pre & post test Anda melalui kartu sesi di bawah ini.
+      </p>
+    </div>
+
+    <!-- Client Quick Stats Card -->
+    <div style="position: relative; z-index: 2; background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px 28px; min-width: 260px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); margin-left: auto;">
+      <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.45); font-weight: 700; margin-bottom: 14px;">Ringkasan Client</div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 8px;">
+          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.65);">Total Sesi:</span>
+          <span style="font-family: var(--font-mono); font-size: 0.95rem; color: var(--primary-base); font-weight: 700;" id="mmTotalSessionsCount">0 Sesi</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.65);">Status Server:</span>
+          <span style="font-family: var(--font-head); font-size: 0.72rem; color: #4ade80; font-weight: 800; background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.25); padding: 2px 8px; border-radius: 20px;">ONLINE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Title Grid Section -->
+  <div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--n200); padding-bottom: 14px;">
+    <h3 style="font-family: var(--font-head); font-size: 1.15rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 8px;">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Daftar Sesi Pelatihan
+    </h3>
+    <span style="font-size: 0.78rem; color: var(--n500); font-weight: 500;">Pilih sesi untuk melihat detail</span>
+  </div>
+
+  <div id="mmTrainingsGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
+    <!-- Training Cards Go Here -->
+  </div>
+</main>
+
+<main id="mainMain" style="visibility:hidden">
+  <!-- ============ PIL NAVIGATION BAR ============ -->
+  <div class="nav-pills-container" data-animate>
+    <div class="nav-pills">
+      <a href="#pane-prepost" class="nav-pill active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        Evaluasi Pre &amp; Post
+      </a>
+      <a href="#pane-actionplan" class="nav-pill" id="navPillAp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+        Action Plan
+      </a>
+      <a href="#pane-evaluasi" class="nav-pill" id="navPillEval">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Evaluasi
+      </a>
+      <a href="#pane-komentar" class="nav-pill" id="navPillKomentar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Komentar Trainer
+      </a>
+      <a href="#pane-dokumentasi" class="nav-pill" id="navPillDoc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+        Dokumentasi Training
+      </a>
+    </div>
+  </div>
+
+  <!-- ============ KPI ============ -->
+  <div class="dash-pane active" id="pane-prepost">
+    <div class="overline" data-animate id="section-prepost"><span class="num">01</span> Ringkasan Program</div>
+    <section class="kpi-grid" id="kpiGrid">
+
+    <div class="card kpi" data-animate id="kpiPeserta">
+      <div class="accent" style="background:var(--navy)"></div>
+      <div class="icon" style="background:var(--navy-100);color:var(--navy)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <span class="label">Total Peserta</span>
+      <div class="value"><span id="vPeserta" class="skeleton">00</span><span class="unit">orang</span></div>
+      <div class="sub" id="sPeserta">Program Country MDP</div>
+    </div>
+
+    <div class="card kpi" data-animate id="kpiPre">
+      <div class="accent" style="background:var(--primary-base)"></div>
+      <div class="icon" style="background:var(--primary-100);color:var(--primary-700)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </div>
+      <span class="label">Rata-rata Nilai Pre Test</span>
+      <div class="value"><span id="vPre" class="skeleton">00,0</span></div>
+      <div class="sub" id="sPre">min — · maks —</div>
+    </div>
+
+    <div class="card kpi" data-animate id="kpiPost">
+      <div class="accent" style="background:var(--secondary-base)"></div>
+      <div class="icon" style="background:#FDECEC;color:var(--secondary-600)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <span class="label">Rata-rata Nilai Post Test</span>
+      <div class="value"><span id="vPost" class="skeleton">—</span></div>
+      <div class="sub" id="sPost">menunggu data post test</div>
+    </div>
+
+    <div class="card kpi" data-animate id="kpiDelta">
+      <div class="accent" style="background:var(--success)"></div>
+      <div class="icon" style="background:#E7F6EC;color:var(--success)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+      <span class="label">Peningkatan Pemahaman</span>
+      <div class="value"><span id="vDelta" class="skeleton">—</span></div>
+      <div class="sub" id="sDelta">rata-rata seluruh peserta</div>
+    </div>
+  </section>
+
+  <!-- ============ PODIUM + MAIN CHART ============ -->
+  <div class="overline" data-animate><span class="num">02</span> Performa Peserta</div>
+  <section class="mid-grid">
+    <div class="card" data-animate>
+      <div class="card-head">
+        <h2>&#127942; Peringkat Peserta</h2>
+        <span class="hint" id="podiumHint">berdasarkan pre test</span>
+      </div>
+      <div class="podium-tabs">
+        <button class="podium-tab active" data-podtab="top" id="tabTop">&#9650; Top 3</button>
+        <button class="podium-tab" data-podtab="bottom" id="tabBottom">&#9660; Bottom 3</button>
+      </div>
+      <div class="podium-list" id="podiumList">
+        <div class="podium-empty">Memuat data…</div>
+      </div>
+    </div>
+
+    <div class="card" data-animate>
+      <div class="card-head">
+        <h2>Perbandingan Pre &amp; Post Test</h2>
+        <div class="legend">
+          <span><i style="background:var(--navy)"></i>Pre Test</span>
+          <span><i style="background:var(--primary-base)"></i>Post Test</span>
+        </div>
+      </div>
+      <div class="chart-scroll">
+        <div class="chart-inner"><canvas id="chartCompare"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DISTRIBUTION + TABLE ============ -->
+  <div class="overline" data-animate><span class="num">03</span> Detail &amp; Distribusi Nilai</div>
+  <section class="bottom-grid">
+    <div class="card" data-animate>
+      <div class="card-head">
+        <h2>Distribusi Nilai</h2>
+        <span class="hint">jumlah peserta per rentang</span>
+      </div>
+      <div class="chart-fixed"><canvas id="chartDist"></canvas></div>
+    </div>
+
+    <div class="card" data-animate>
+      <div class="card-head">
+        <h2>Rekap Nilai Peserta</h2>
+        <span class="hint">klik judul kolom untuk mengurutkan</span>
+      </div>
+      <div class="table-tools">
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="searchInput" placeholder="Cari nama peserta…" autocomplete="off">
+        </label>
+        <span class="count-pill" id="rowCount">0 peserta</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="min-width:640px">
+          <thead>
+            <tr>
+              <th data-sort="rank">#<span class="arrow"></span></th>
+              <th data-sort="name">Nama<span class="arrow"></span></th>
+              <th data-sort="pre">Nilai Pre<span class="arrow"></span></th>
+              <th data-sort="post">Nilai Post<span class="arrow"></span></th>
+              <th data-sort="delta">Peningkatan Pemahaman<span class="arrow"></span></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2">Average</td>
+              <td id="fPre">—</td>
+              <td id="fPost">—</td>
+              <td id="fDelta">—</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ EVALUATION ============ -->
+  <div class="dash-pane" id="pane-evaluasi">
+    <div class="overline" data-animate><span class="num">02</span> Evaluasi Pelatihan</div>
+    
+    <!-- Fallback Manual Notes (Hidden by default) -->
+    <div class="card" data-animate id="evalManualCard" style="display: none; padding: 24px;">
+      <div class="card-head" style="margin-bottom:14px">
+        <h2>Catatan Evaluasi</h2>
+      </div>
+      <div class="client-note-box" id="evalContent">Belum ada evaluasi.</div>
+    </div>
+
+    <!-- Dynamic Report (Shaped from the template) -->
+    <div id="evalDynamicReport" style="display: block; padding-top: 10px;">
+      <!-- Hidden elements to keep JS references intact -->
+      <span id="evalReportTitle" style="display:none"></span>
+      <span id="evalReportSubtitle" style="display:none"></span>
+      <span id="evalReportMetaCount" style="display:none"></span>
+      <span id="evalReportMetaDuration" style="display:none"></span>
+      <span id="evalReportMetaDate" style="display:none"></span>
+      <span id="evalReportMetaTrainers" style="display:none"></span>
+
+      <!-- Headline Results Title -->
+      <h2 class="section-title">Hasil Utama</h2>
+      
+      <!-- KPI Grid -->
+      <div class="eval-kpi-grid" id="evalKpis" style="margin-bottom: 24px;"></div>
+      
+      <!-- Satisfaction Breakdown Title -->
+      <h2 class="section-title">Rincian Kepuasan</h2>
+
+      <!-- Breakdown Grid (2 cols) -->
+      <div class="cols" style="margin-bottom: 24px;">
+        <!-- Left: Satisfaction Breakdown -->
+        <div class="card" id="evalSatisfactionCard">
+          <div style="font-size:13px;color:var(--n500);margin-bottom:14px;font-weight:600;"></div>
+          <div id="evalBars" style="margin-top: 14px;"></div>
+        </div>
+        
+        <!-- Right: Trainer Ratings -->
+        <div class="card" id="evalTrainersCard">
+          <div style="font-size:13px;color:var(--n500);margin-bottom:14px;font-weight:600;">Penilaian Trainer</div>
+          <div class="trainer-grid" id="evalTrainers" style="margin-top: 14px;"></div>
+          <div id="evalTrainerFeedback" style="margin-top:16px; font-size:12.5px; line-height:1.6; background:var(--n50); padding:12px 14px; border-radius:10px; border:1px solid var(--card-border); color:var(--n800);"></div>
+        </div>
+      </div>
+      
+      <!-- What Landed Best Title -->
+      <h2 class="section-title">Topik Paling Diminati</h2>
+
+      <!-- Topics Grid (2 cols) -->
+      <div class="cols" style="margin-bottom: 24px;">
+        <div class="card">
+          <div style="font-size:13px;color:var(--n500);margin-bottom:12px;font-weight:600;">Topik paling bermanfaat yang dibahas</div>
+          <div class="chip-wrap" id="evalValuableTopics" style="margin-top: 14px;"></div>
+        </div>
+        <div class="card">
+          <div style="font-size:13px;color:var(--n500);margin-bottom:12px;font-weight:600;">Paling banyak diminta untuk training selanjutnya</div>
+          <div class="chip-wrap" id="evalNextTopics" style="margin-top: 14px;"></div>
+        </div>
+      </div>
+      
+      <!-- In Their Own Words Title -->
+      <h2 class="section-title">Kutipan Peserta</h2>
+
+      <!-- Testimonials Quote Grid -->
+      <div class="quote-grid" id="evalQuotes" style="margin-bottom: 24px;"></div>
+
+      <!-- CTA Card -->
+      <div class="card" style="margin-bottom: 24px; background: linear-gradient(120deg, var(--navy) 0%, var(--navy-800) 100%); color: #fff; padding: 30px 34px; border: none; border-radius: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;">
+          <div style="max-width: 560px;">
+            <h3 style="margin:0 0 8px; font-size:19px; color:#fff; font-weight:700;">Antusiasme tinggi — peserta meminta sesi lanjutan</h3>
+            <p style="margin:0; font-size:13px; color:#dce8f7; line-height:1.5;">Setiap responden menilai program ini bermanfaat atau sangat bermanfaat, dan banyak peserta secara proaktif meminta jadwal rutin untuk pendalaman materi. Kami merekomendasikan penjadwalan modul berikutnya selagi tingkat antusiasme masih kuat.</p>
+          </div>
+          <div style="display: flex; gap: 26px;">
+            <div style="text-align:center;">
+              <div style="font-size:30px; font-weight:800; color:#d4a017;" id="ctaStatFeedback">0/0</div>
+              <div style="font-size:11px; color:#cfe0f5; text-transform:uppercase; letter-spacing:.4px;">Umpan Balik Positif</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:30px; font-weight:800; color:#d4a017;" id="ctaStatAvg">0.0</div>
+              <div style="font-size:11px; color:#cfe0f5; text-transform:uppercase; letter-spacing:.4px;">Rata-rata Nilai Trainer</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:30px; font-weight:800; color:#d4a017;" id="ctaStatFollowUp">0%</div>
+              <div style="font-size:11px; color:#cfe0f5; text-transform:uppercase; letter-spacing:.4px;">Ingin Training Selanjutnya</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ KOMENTAR ============ -->
+  <div class="dash-pane" id="pane-komentar" style="padding: 20px;">
+    <div id="komentarContainer"></div>
+  </div>
+
+  <!-- ============ DOCUMENTATION ============ -->
+  <div class="dash-pane" id="pane-dokumentasi">
+    <div class="overline" data-animate id="titleDoc"><span class="num">04</span> Dokumentasi Pelatihan</div>
+    <section id="sectDoc" class="card" data-animate style="padding: 24px;">
+      <div class="day-acc" id="docAccordion">
+        <div style="text-align:center;padding:20px;color:var(--n500);font-size:.85rem">Belum ada dokumentasi pelatihan.</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ ACTION PLAN ============ -->
+  <div class="dash-pane" id="pane-actionplan">
+    <div class="overline" data-animate id="titleAp"><span class="num">05</span> Action Plan</div>
+    <section id="sectAp" class="card" data-animate style="padding: 24px;">
+      <div class="plan-table-wrap">
+        <table class="plan-table">
+          <thead>
+            <tr>
+              <th>Item / Kegiatan</th>
+              <th>Target</th>
+              <th>PIC</th>
+              <th>Deadline</th>
+            </tr>
+          </thead>
+          <tbody id="apTableBody">
+            <tr>
+              <td colspan="4" style="text-align:center;color:var(--n400);padding:20px;">Belum ada action plan.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer style="visibility:hidden">
+  <span>Sinkronisasi otomatis setiap 10 detik</span>
+  <span></span>
+</footer>
+
+<div class="toast" id="toast">Data diperbarui</div>
+
+<script type="module">
+import { animate, stagger, inView } from "https://cdn.jsdelivr.net/npm/motion@12.0.0/+esm";
+
+/* ================= GLOBAL STATE & ROUTING ================= */
+// Always read fresh from localStorage (backend may have saved after page load)
+function loadClientsDb() {
+  try { return JSON.parse(localStorage.getItem("mdp-clients-db") || "[]"); } catch(e) { return []; }
+}
+let clientsDb = loadClientsDb();
+
+let loggedClient = null;
+let activeTrainingId = sessionStorage.getItem("mdp-active-training");
+
+const DEFAULT_CONFIG = {
+  sheetId: "",
+  csvUrl: "",
+  pollMs: 10000,
+  title: "Dashboard Report",
+  subtitle: "Evaluasi Pre & Post Test",
+  logoUrl: "",
+  colorPrimary: "#ffd204",
+  colorSecondary: "#ee3f34",
+  colorNavy: "#002c63",
+  fontHead: "Plus Jakarta Sans",
+  fontBody: "Inter",
+  footerLeft: "Sinkronisasi otomatis setiap 10 detik",
+  footerRight: ""
+};
+
+let CONFIG = {
+  sheetId: "",
+  csvUrl: "",
+  pollMs: 10000,
+  title: "Dashboard Report",
+  subtitle: "Evaluasi Pre & Post Test",
+  logoUrl: "",
+  colorPrimary: "#ffd204",
+  colorSecondary: "#ee3f34",
+  colorNavy: "#002c63",
+  fontHead: "Plus Jakarta Sans",
+  fontBody: "Inter",
+  footerLeft: "Sinkronisasi otomatis setiap 10 detik",
+  footerRight: ""
+};
+
+let SHEET_ID = "";
+let CSV_URL = "";
+const POLL_MS = 10000;
+
+function initRouting(){
+  const saved = localStorage.getItem("dashboard-theme");
+  if(saved) document.documentElement.setAttribute("data-theme", saved);
+
+  // Check login
+  const loggedId = sessionStorage.getItem("mdp-logged-client");
+  if(loggedId) {
+    loggedClient = clientsDb.find(c => String(c.id).trim() === String(loggedId).trim());
+  }
+
+  // If not logged in, show PIN Gate — stop here
+  if(!loggedClient) {
+    showPinGate();
+    return;
+  }
+
+  // User is logged in — apply client settings and decide screen
+  applyClientConfig(loggedClient);
+
+  const trainingId = sessionStorage.getItem("mdp-active-training");
+  if(trainingId) {
+    const t = (loggedClient.trainings || []).find(x => String(x.id).trim() === String(trainingId).trim());
+    if(t) {
+      showDashboard(t);
+    } else {
+      sessionStorage.removeItem("mdp-active-training");
+      showMainMenu();
+    }
+  } else {
+    showMainMenu();
+  }
+}
+
+/* =============== SCREEN FUNCTIONS =============== */
+function showPinGate() {
+  const gate        = document.getElementById("pinGate");
+  const box         = document.getElementById("pinBox");
+  const err         = document.getElementById("pinErr");
+  const stepCompany = document.getElementById("stepCompany");
+  const stepPin     = document.getElementById("stepPin");
+  const nameInput   = document.getElementById("companyNameInput");
+  const btnNext     = document.getElementById("btnNextToPIN");
+  const btnChange   = document.getElementById("btnChangeCompany");
+  const badge       = document.getElementById("pinCompanyBadge");
+
+  gate.style.display = "flex";
+
+  let companyName = "";
+  let pinInput    = "";
+
+  /* ---- Step helpers ---- */
+  function goToStep1() {
+    stepCompany.classList.remove("hidden");
+    stepPin.classList.add("hidden");
+    err.classList.remove("show");
+    nameInput.value = "";
+    setTimeout(() => nameInput.focus(), 50);
+  }
+
+  function goToStep2(name) {
+    companyName = name;
+    badge.textContent = name;
+    pinInput = "";
+    updateDots();
+    stepCompany.classList.add("hidden");
+    stepPin.classList.remove("hidden");
+    err.classList.remove("show");
+  }
+
+  function proceedWithName() {
+    const val = (nameInput.value || "").trim();
+    if(!val) {
+      nameInput.style.borderColor = "#ff6b6b";
+      nameInput.focus();
+      setTimeout(() => { nameInput.style.borderColor = ""; }, 1500);
+      return;
+    }
+    const match = clientsDb.find(c => c.name.trim().toLowerCase() === val.toLowerCase());
+    if(!match) {
+      err.textContent = "Nama perusahaan tidak ditemukan.";
+      err.classList.add("show");
+      box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
+      setTimeout(() => { err.classList.remove("show"); }, 2500);
+      return;
+    }
+    goToStep2(match.name);
+  }
+
+  btnNext.addEventListener("click", proceedWithName);
+  nameInput.addEventListener("keydown", e => { if(e.key === "Enter") proceedWithName(); });
+  btnChange.addEventListener("click", goToStep1);
+
+  /* ---- PIN logic ---- */
+  function updateDots() {
+    for(let i = 0; i < 4; i++) {
+      document.getElementById("pd"+i).classList.toggle("filled", i < pinInput.length);
+    }
+  }
+
+  function checkPin() {
+    const found = clientsDb.find(c =>
+      c.name.trim().toLowerCase() === companyName.toLowerCase() &&
+      String(c.pin).trim() === pinInput
+    );
+    if(found) {
+      sessionStorage.setItem("mdp-logged-client", String(found.id));
+      gate.classList.add("unlocked");
+      loggedClient = found;
+      setTimeout(() => {
+        gate.style.display = "none";
+        gate.classList.remove("unlocked");
+        applyClientConfig(loggedClient);
+        showMainMenu();
+      }, 400);
+    } else {
+      pinInput = "";
+      updateDots();
+      err.textContent = "PIN salah. Coba lagi.";
+      err.classList.add("show");
+      box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
+      setTimeout(() => { err.classList.remove("show"); }, 2000);
+    }
+  }
+
+  document.querySelectorAll(".pin-key").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if(stepPin.classList.contains("hidden")) return;
+      const k = btn.dataset.k;
+      if(k === "clear") { pinInput = ""; updateDots(); return; }
+      if(k === "del")   { pinInput = pinInput.slice(0,-1); updateDots(); return; }
+      if(pinInput.length >= 4) return;
+      pinInput += k;
+      updateDots();
+      if(pinInput.length === 4) setTimeout(checkPin, 120);
+    });
+  });
+
+  document.addEventListener("keydown", e => {
+    if(gate.style.display === "none") return;
+    if(!stepPin.classList.contains("hidden")) {
+      if(/^[0-9]$/.test(e.key) && pinInput.length < 4) {
+        pinInput += e.key; updateDots();
+        if(pinInput.length === 4) setTimeout(checkPin, 120);
+      } else if(e.key === "Backspace") { pinInput = pinInput.slice(0,-1); updateDots(); }
+    }
+  });
+
+  goToStep1();
+}
+
+function applyClientConfig(client) {
+  // Backend stores appearance config in client.config — merge it to top level
+  const cfg = client.config || {};
+  CONFIG.title    = client.title    || cfg.title    || client.name;
+  CONFIG.subtitle = client.subtitle || cfg.subtitle || "Portal Pelatihan Leadership";
+  const logoUrl = client.logoUrl || cfg.logoUrl || "";
+  if(logoUrl) CONFIG.logoUrl = logoUrl;
+  const cp = client.colorPrimary || cfg.colorPrimary || "";
+  const cs = client.colorSecondary || cfg.colorSecondary || "";
+  const cn = client.colorNavy || cfg.colorNavy || "";
+  const fh = client.fontHead || cfg.fontHead || "";
+  const fb = client.fontBody || cfg.fontBody || "";
+  const fl = client.footerLeft || cfg.footerLeft || "";
+  const fr = client.footerRight || cfg.footerRight || "";
+  if(cp) CONFIG.colorPrimary = cp;
+  if(cs) CONFIG.colorSecondary = cs;
+  if(cn) CONFIG.colorNavy = cn;
+  if(fh) CONFIG.fontHead = fh;
+  if(fb) CONFIG.fontBody = fb;
+  if(fl) CONFIG.footerLeft = fl;
+  if(fr) CONFIG.footerRight = fr;
+}
+
+window.showMainMenu = function() {
+  // Re-read fresh data in case backend updated after page load
+  clientsDb = loadClientsDb();
+  if(loggedClient) {
+    const fresh = clientsDb.find(c => String(c.id) === String(loggedClient.id));
+    if(fresh) loggedClient = fresh;
+  }
+  // Hide dashboard
+  const mainMain = document.getElementById("mainMain");
+  mainMain.style.display = "none";
+  mainMain.style.visibility = "hidden";
+  // Hide dashboard-only header elements
+  const liveBadge = document.querySelector(".live-badge");
+  const updated = document.querySelector(".updated");
+  const refreshWrap = document.querySelector(".refresh-wrap");
+  const btnBack = document.getElementById("btnBackToMenu");
+  if(liveBadge) liveBadge.style.display = "none";
+  if(updated) updated.style.display = "none";
+  if(refreshWrap) refreshWrap.style.display = "none";
+  if(btnBack) btnBack.style.display = "none";
+  // Show header & footer
+  document.querySelector("header").style.visibility = "visible";
+  document.querySelector("footer").style.visibility = "visible";
+  // Show main menu
+  const mm = document.getElementById("mainMenu");
+  if(mm) {
+    mm.style.display = "block";
+    mm.style.visibility = "visible";
+    document.getElementById("mmClientName").textContent = loggedClient.name;
+    const trainingsList = loggedClient.trainings || [];
+    const countEl = document.getElementById("mmTotalSessionsCount");
+    if(countEl) countEl.textContent = trainingsList.length + " Sesi";
+    renderMainMenu(trainingsList);
+  }
+  window.__WAIT_MAIN_MENU = true;
+}
+
+window.logout = function() {
+  sessionStorage.removeItem("mdp-logged-client");
+  sessionStorage.removeItem("mdp-active-training");
+  window.location.reload();
+}
+
+function showDashboard(training) {
+  // 1. Start from client appearance config (stored in client.config)
+  const clientCfg = loggedClient.config || {};
+  Object.assign(CONFIG, {
+    title:          loggedClient.title    || clientCfg.title    || loggedClient.name,
+    subtitle:       loggedClient.subtitle || clientCfg.subtitle || "Portal Pelatihan Leadership",
+    logoUrl:        loggedClient.logoUrl  || clientCfg.logoUrl  || "",
+    colorPrimary:   loggedClient.colorPrimary   || clientCfg.colorPrimary   || CONFIG.colorPrimary,
+    colorSecondary: loggedClient.colorSecondary || clientCfg.colorSecondary || CONFIG.colorSecondary,
+    colorNavy:      loggedClient.colorNavy || clientCfg.colorNavy || CONFIG.colorNavy,
+    fontHead:       loggedClient.fontHead  || clientCfg.fontHead  || CONFIG.fontHead,
+    fontBody:       loggedClient.fontBody  || clientCfg.fontBody  || CONFIG.fontBody,
+    footerLeft:     loggedClient.footerLeft || clientCfg.footerLeft || CONFIG.footerLeft,
+    footerRight:    loggedClient.footerRight || clientCfg.footerRight || CONFIG.footerRight,
+  });
+
+  // 2. Apply training-specific data fields
+  SHEET_ID = training.sheetId || "";
+  CSV_URL  = training.csvUrl  || "";
+  Object.assign(CONFIG, {
+    sheetId:       training.sheetId       || "",
+    csvUrl:        training.csvUrl        || "",
+    evalSheetId:   training.evalSheetId   || "",
+    evalCsvUrl:    training.evalCsvUrl    || "",
+    evalSheetName: training.evalSheetName || "Sheet2",
+    evalDataRange: training.evalDataRange || "",
+    sheet1:        training.sheet1        || { name: "", range: "" },
+    sheet2:        training.sheet2        || { name: "Sheet2", range: "" },
+    pollMs:        training.pollMs        || 10000,
+    evaluasi:      training.evaluasi      || "",
+    komentarTrainer: training.komentarTrainer || "",
+    dokumentasi:   training.dokumentasi   || [],
+    actionPlan:    training.actionPlan    || [],
+    trainerNames:  training.trainerNames  || "",
+    dateStart:     training.dateStart     || "",
+    dateEnd:       training.dateEnd       || "",
+  });
+
+  activeTrainingId = String(training.id);
+  sessionStorage.setItem("mdp-active-training", activeTrainingId);
+
+  // Hide main menu
+  const mm = document.getElementById("mainMenu");
+  if(mm) { mm.style.display = "none"; mm.style.visibility = "hidden"; }
+
+  // Show dashboard
+  const mainMain = document.getElementById("mainMain");
+  mainMain.style.display = "";
+  mainMain.style.visibility = "visible";
+
+  // Show dashboard header elements
+  const liveBadge  = document.querySelector(".live-badge");
+  const updated    = document.querySelector(".updated");
+  const refreshWrap= document.querySelector(".refresh-wrap");
+  const btnBack    = document.getElementById("btnBackToMenu");
+  if(liveBadge)  liveBadge.style.display  = "";
+  if(updated)    updated.style.display    = "";
+  if(refreshWrap)refreshWrap.style.display= "";
+  if(btnBack)    btnBack.style.display    = "inline-flex";
+
+  // Show header & footer
+  document.querySelector("header").style.visibility = "visible";
+  document.querySelector("footer").style.visibility = "visible";
+
+  // Apply appearance
+  applyAppearance();
+  window.__WAIT_MAIN_MENU = false;
+
+
+  if(!window.__dashboardBooted) {
+    window.__dashboardBooted = true;
+    initNavScroll();
+    if(window.__ringStarted !== true) {
+      window.__ringStarted = true;
+      requestAnimationFrame(tickRing);
+    }
+    bootDashboard();
+  } else {
+    // Already booted — just re-fetch with new config
+    firstLoad = true;
+    participants = [];
+    stats = null;
+    currentEvalData = null;
+    prevSignature = "";
+    bootDashboard();
+  }
+}
+
+
+function renderMainMenu(trainings) {
+  const grid = document.getElementById("mmTrainingsGrid");
+  if(trainings.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--n500); background:var(--card-bg); border-radius:var(--radius-lg); border:1px solid var(--card-border);">Belum ada sesi pelatihan untuk perusahaan ini.</div>`;
+    return;
+  }
+
+  const formatRange = (start, end) => {
+    if (!start) return "—";
+    const opt = { day: "numeric", month: "short", year: "numeric" };
+    const dStart = new Date(start).toLocaleDateString("id-ID", opt);
+    if (!end || start === end) return dStart;
+    const dEnd = new Date(end).toLocaleDateString("id-ID", opt);
+    return `${dStart} – ${dEnd}`;
+  };
+
+  grid.innerHTML = trainings.map((t, idx) => {
+    const hasSheet = !!(t.sheetId || t.csvUrl);
+    return `
+    <div class="card mm-card" style="cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; padding:0; display:flex; flex-direction:column; opacity:0; animation:fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards ${idx * 0.07}s; overflow:hidden;" onclick="openTraining('${t.id}')" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='none';this.style.boxShadow='var(--shadow-md)'">
+      <div style="background:linear-gradient(135deg, var(--navy) 0%, #003a80 100%); padding:20px 22px 16px; position:relative; overflow:hidden;">
+        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,210,4,0.12);"></div>
+        <div style="position:absolute;bottom:-30px;right:10px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.05);"></div>
+        <div style="font-family:var(--font-head); font-weight:800; font-size:1.05rem; color:#fff; line-height:1.35; position:relative; z-index:1;">${t.title}</div>
+        ${hasSheet ? `<div style="position:absolute;top:14px;right:14px;background:rgba(74,222,128,0.2);border:1px solid rgba(74,222,128,0.4);border-radius:20px;padding:2px 9px;font-size:0.65rem;font-weight:700;color:#4ade80;letter-spacing:0.05em;">LIVE</div>` : ''}
+      </div>
+      <div style="padding:16px 22px 20px; display:flex; flex-direction:column; gap:10px; flex:1;">
+        <div style="display:flex; align-items:center; gap:8px; font-size:0.82rem; color:var(--n600);">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>${formatRange(t.dateStart, t.dateEnd)}</span>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:8px; font-size:0.82rem; color:var(--n600); padding-top:10px; border-top:1px solid var(--n100); margin-top:auto;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>${t.trainerNames || '<i style="color:var(--n400)">Trainer belum diatur</i>'}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+window.openTraining = function(id) {
+  if(!loggedClient) return;
+  // Re-read fresh in case data changed
+  clientsDb = loadClientsDb();
+  const fresh = clientsDb.find(c => String(c.id) === String(loggedClient.id));
+  if(fresh) loggedClient = fresh;
+  const t = (loggedClient.trainings || []).find(x => String(x.id).trim() === String(id).trim());
+  if(t) showDashboard(t);
+  else console.warn("Training not found:", id, loggedClient.trainings);
+}
+
+function applyAppearance(){
+  const r = document.documentElement.style;
+  // Colors
+  if(CONFIG.colorPrimary !== DEFAULT_CONFIG.colorPrimary){
+    r.setProperty("--primary-base", CONFIG.colorPrimary);
+  }
+  if(CONFIG.colorSecondary !== DEFAULT_CONFIG.colorSecondary){
+    r.setProperty("--secondary-base", CONFIG.colorSecondary);
+  }
+  if(CONFIG.colorNavy !== DEFAULT_CONFIG.colorNavy){
+    r.setProperty("--navy", CONFIG.colorNavy);
+  }
+  // Fonts
+  if(CONFIG.fontHead !== DEFAULT_CONFIG.fontHead){
+    r.setProperty("--font-head", `"${CONFIG.fontHead}",system-ui,sans-serif`);
+  }
+  if(CONFIG.fontBody !== DEFAULT_CONFIG.fontBody){
+    r.setProperty("--font-body", `"${CONFIG.fontBody}",system-ui,sans-serif`);
+  }
+  // Title & subtitle
+  const h1 = document.querySelector(".title-block h1");
+  const sub = document.querySelector(".title-block p");
+  if(h1) {
+    h1.textContent = CONFIG.title;
+    h1.style.fontWeight = CONFIG.titleWeight || "bold";
+    h1.style.fontStyle  = CONFIG.titleStyle  || "normal";
+    h1.style.textDecoration = CONFIG.titleDeco || "none";
+  }
+  if(sub) sub.textContent = CONFIG.subtitle;
+  document.title = `${CONFIG.title} — Dashboard`;
+  // Logo
+  if(CONFIG.logoUrl){
+    document.querySelectorAll(".logo-mdi").forEach(img=>{
+      img.src = CONFIG.logoUrl;
+      img.style.display = "block";
+      img.classList.remove("logo-light","logo-dark");
+    });
+  }
+  // Footer
+  const footerSpans = document.querySelectorAll("footer span");
+  if(footerSpans[0]) footerSpans[0].textContent = CONFIG.footerLeft;
+  if(footerSpans[1]) footerSpans[1].textContent = CONFIG.footerRight;
+  footerSpans.forEach(span => {
+    span.style.fontWeight = CONFIG.footerWeight || "normal";
+    span.style.fontStyle  = CONFIG.footerStyle  || "normal";
+    span.style.textDecoration = CONFIG.footerDeco || "none";
+  });
+}
+applyAppearance();
+
+const EASE_OUT = [0.22, 1, 0.36, 1];
+const fmtID  = (n, d=1) => n.toLocaleString("id-ID",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtInt = n => Math.round(n).toLocaleString("id-ID");
+
+/* ================= STATE ================= */
+let activeTab = "top";
+let participants = [];      // {name, pre, post, delta, rank}
+let stats = null;
+let currentEvalData = null; // parsed Sheet2 evaluation survey report data
+let prevSignature = "";
+let firstLoad = true;
+let sortKey = "rank", sortDir = 1;
+let chartCompare, chartDist;
+let countdownStart = performance.now();
+
+/* ================= CSV PARSING ================= */
+function parseCSV(text){
+  const rows=[]; let row=[], cell="", inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else inQ=false; }
+      else cell+=c;
+    }else{
+      if(c==='"') inQ=true;
+      else if(c===','){ row.push(cell); cell=""; }
+      else if(c==='\n'){ row.push(cell); rows.push(row); row=[]; cell=""; }
+      else if(c!=='\r') cell+=c;
+    }
+  }
+  if(cell!==""||row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+
+function toNum(v){
+  if(v==null) return null;
+  const s=String(v).trim().replace(",",".");
+  if(s==="") return null;
+  const n=parseFloat(s);
+  return Number.isFinite(n)?n:null;
+}
+
+function extractParticipants(rows){
+  // gviz menggabungkan judul sheet dengan header kolom pertama,
+  // mis. "Program Country MDP ASP RGE 2026 Nama"
+  let hIdx = rows.findIndex(r =>
+    /nama\s*$/i.test((r[0]||"").trim()) && /pre/i.test(r[1]||""));
+  // fallback: cari kolom mana saja yang mengandung "nama" dan "pre"
+  if(hIdx===-1) hIdx = rows.findIndex(r =>
+    /nama/i.test(r[0]||"") && /pre/i.test(r[1]||""));
+  // fallback terakhir: baris pertama yang kolomnya ≥3 dan kolom 1 berisi angka
+  if(hIdx===-1) hIdx = rows.findIndex((r,i) =>
+    i<5 && r.length>=3 && /^\d+$/.test((r[1]||"").trim()));
+  if(hIdx!==-1 && /^\d+$/.test((rows[hIdx][1]||"").trim())) hIdx--;
+  if(hIdx===-1) throw new Error("Header 'Nama' tidak ditemukan di sheet");
+  const out=[];
+  for(let i=hIdx+1;i<rows.length;i++){
+    const name=(rows[i][0]||"").trim();
+    if(name==="") break; // blank row ends the data block
+    if(/^(rata-rata|nilai tertinggi|nilai terendah)/i.test(name)) break;
+    const pre=toNum(rows[i][1]), post=toNum(rows[i][2]);
+    // Peningkatan dari Google Sheet (kolom ke-4)
+    // CSV: "55.56%" → sudah persen; JSONP: 0.5556 → desimal, perlu ×100
+    const rawCell=(rows[i][3]||"").trim();
+    const hasPct=rawCell.includes("%");
+    const rawNum=parseFloat(rawCell.replace("%","").replace(",","."));
+    const delta=Number.isFinite(rawNum)?(hasPct?rawNum:rawNum*100):null;
+    // Peringkat dari Google Sheet (E=index 4 = ranking, G=index 6 = skor peringkat)
+    const sheetRank=toNum(rows[i][4]);
+    const rankScore=toNum(rows[i][6]);
+    out.push({name, pre, post, delta, sheetRank, rankScore});
+  }
+  return out;
+}
+
+function computeStats(list){
+  const pres  = list.map(p=>p.pre ).filter(v=>v!=null);
+  const posts = list.map(p=>p.post).filter(v=>v!=null);
+  const deltas= list.map(p=>p.delta).filter(v=>v!=null);
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  // Ranking dihitung dashboard sendiri dari skor Peringkat Peserta (kolom G).
+  // Fallback ke post/pre jika skor G belum ada.
+  const useG=list.some(p=>p.rankScore!=null);
+  const scoreOf=p=>useG?(p.rankScore??-Infinity):((p.post??p.pre)??-Infinity);
+  const byScore=[...list].sort((a,b)=>scoreOf(b)-scoreOf(a));
+  byScore.forEach((p,i)=>{
+    // shared rank untuk skor sama
+    p.rank = (i>0 && scoreOf(p)===scoreOf(byScore[i-1])) ? byScore[i-1].rank : i+1;
+    p.sheetRank = p.rank; // sinkronkan agar podium ikut
+  });
+  return {
+    total:list.length,
+    avgPre:avg(pres),   minPre:pres.length?Math.min(...pres):null,   maxPre:pres.length?Math.max(...pres):null,
+    avgPost:avg(posts), minPost:posts.length?Math.min(...posts):null, maxPost:posts.length?Math.max(...posts):null,
+    avgDelta:avg(deltas), postCount:posts.length,
+    top3:list.filter(p=>p.sheetRank!=null).sort((a,b)=>a.sheetRank-b.sheetRank).slice(0,3),
+    bottom3:list.filter(p=>p.sheetRank!=null).sort((a,b)=>b.sheetRank-a.sheetRank).slice(0,3),
+    usingPost:posts.length>0,
+  };
+}
+
+/* ================= EVALUATION SHEET PARSING & RENDERING ================= */
+function parseEvaluationSheet(rows) {
+  if (!rows || rows.length < 2) return null;
+  const headers = rows[0].map(h => (h || "").trim().toLowerCase());
+
+  const toNum = (val) => {
+    if (!val) return 0;
+    const str = String(val).trim();
+    const direct = parseFloat(str.replace(",", "."));
+    if (!isNaN(direct) && direct >= 1 && direct <= 5) return direct;
+    const match = str.match(/^(\d+)/);
+    if (match) { const num = parseFloat(match[1]); if (num >= 1 && num <= 5) return num; }
+    const v = str.toLowerCase();
+    if (v.includes('sangat baik') || v.includes('sangat bermanfaat') || v.includes('sangat setuju') || v.includes('sangat relevan') || v.includes('sangat senang') || v.includes('excellent')) return 5;
+    if (v.includes('sangat kurang') || v.includes('sangat buruk') || v.includes('tidak sama sekali')) return 1;
+    if (v.includes('kurang') || v.includes('buruk') || v.includes('tidak')) return 2;
+    if (v.includes('baik') || v.includes('bermanfaat') || v.includes('setuju') || v.includes('relevan') || v.includes('senang') || v.includes('good')) return 4;
+    if (v.includes('cukup') || v.includes('sedang') || v.includes('biasa') || v.includes('mungkin')) return 3;
+    return 0;
+  };
+
+  const findCol = (keywords, excludes = []) => {
+    for (let i = 0; i < headers.length; i++) {
+      if (keywords.every(k => headers[i].includes(k)) && excludes.every(x => !headers[i].includes(x))) return i;
+    }
+    return -1;
+  };
+
+  // Position-based fallback: if keyword matching fails, use column offset
+  const hasTimestamp = headers[0].includes('timestamp') || headers[0].includes('waktu') || headers[0] === '';
+  const off = hasTimestamp ? 0 : -1;
+  const fb = (v, def) => v !== -1 ? v : (def >= 0 && def < headers.length ? def : -1);
+
+  // Map columns: keyword match first, then position fallback
+  const colMap = {
+    benefit: fb(
+      findCol(['manfaat'], ['topik', 'penilaian', 'trainer', 'kesan']) !== -1
+        ? findCol(['manfaat'], ['topik', 'penilaian', 'trainer', 'kesan'])
+        : headers.findIndex(h => h.includes("benefit") || h.includes("bermanfaat")),
+      1 + off),
+    enjoyment: fb(
+      findCol(['senang']) !== -1
+        ? findCol(['senang'])
+        : headers.findIndex(h => h.includes("enjoy") || h.includes("menikmati") || h.includes("pengalaman") || h.includes("experience")),
+      2 + off),
+    relevance: fb(
+      findCol(['materi yang diberikan']) !== -1
+        ? findCol(['materi yang diberikan'])
+        : headers.findIndex(h => h.includes("relevan") || h.includes("relevance") || h.includes("sesuai") || h.includes("daily work")),
+      3 + off),
+    practical: fb(
+      headers.findIndex(h => h.includes("praktikal") || h.includes("aplikatif")),
+      4 + off),
+    topics: fb(
+      findCol(['topik bahasan']) !== -1
+        ? findCol(['topik bahasan'])
+        : headers.findIndex(h => h.includes("topik") && (h.includes("manfaat") || h.includes("bermanfaat") || h.includes("valuable") || h.includes("disukai") || h.includes("landed"))),
+      10 + off),
+    nextTopics: fb(
+      findCol(['harapkan']) !== -1
+        ? findCol(['harapkan'])
+        : (findCol(['selanjutnya']) !== -1
+          ? findCol(['selanjutnya'])
+          : headers.findIndex(h => (h.includes("selanjutnya") || h.includes("next") || h.includes("lanjutan") || h.includes("usulan") || h.includes("request")) && (h.includes("topik") || h.includes("materi") || h.includes("pelatihan")))),
+      11 + off),
+    comments: fb(
+      findCol(['kesan dan pesan']) !== -1
+        ? findCol(['kesan dan pesan'])
+        : headers.findIndex(h => h.includes("komentar") || h.includes("saran") || h.includes("masukan") || h.includes("testimoni") || h.includes("words") || h.includes("pendapat")),
+      12 + off),
+    followUp: headers.findIndex(h => h.includes("ingin") || h.includes("lanjut") || h.includes("follow"))
+  };
+
+  const results = {
+    total: 0,
+    benefit: { avg: 0, pct5: 0, pct4: 0, pct54: 0, pct3: 0, pct2: 0, pct1: 0 },
+    enjoyment: { avg: 0, pct5: 0, pct4: 0, pct54: 0, pct3: 0, pct2: 0, pct1: 0 },
+    relevance: { avg: 0, pct5: 0, pct4: 0, pct54: 0, pct3: 0, pct2: 0, pct1: 0 },
+    practical: { avg: 0, pct5: 0, pct4: 0, pct54: 0, pct3: 0, pct2: 0, pct1: 0 },
+    trainers: [], // {name, avg, count5, pct5}
+    trainerFeedback: [], // filtered strings
+    valuableTopics: [], // {text, count}
+    nextTopics: [], // {text, count}
+    comments: [], // {text, who}
+    followUpPct: 0
+  };
+
+  // Dynamically find all trainers — first try column headers, then fall back to config trainer names
+  const trainerCols = [];
+  headers.forEach((h, i) => {
+    if (h.includes("penilaian") && h.includes("trainer") && !h.includes("keseluruhan")) {
+      let name = "Trainer";
+      const match = h.match(/trainer\s*[:\-]?\s*(.+)$/i);
+      if (match) name = match[1].trim().split(/\s+/).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
+
+      let fbIdx = -1;
+      const firstName = name.split(" ")[0].toLowerCase();
+      fbIdx = headers.findIndex(h2 => h2.includes("kesan") && (h2.includes(name.toLowerCase()) || h2.includes(firstName)));
+
+      trainerCols.push({ name, scoreIdx: i, fbIdx });
+    }
+  });
+
+  // Fallback: if no trainer columns found by header pattern, try using trainer names from config
+  if (trainerCols.length === 0 && CONFIG.trainerNames) {
+    const namesList = CONFIG.trainerNames.split(/[,&]|dan/i).map(s=>s.trim()).filter(Boolean);
+    namesList.forEach(tName => {
+      const key = tName.toLowerCase().split(' ')[0];
+      const scoreIdx = findCol(['penilaian', key]);
+      const fbIdx = findCol(['kesan', key], ['pesan']);
+      if (scoreIdx !== -1) {
+        trainerCols.push({ name: tName, scoreIdx, fbIdx });
+      }
+    });
+  }
+
+  const extractRatings = (colIdx) => {
+    if (colIdx === -1) return null;
+    const vals = [];
+    for (let i = 1; i < rows.length; i++) {
+      const val = toNum(rows[i][colIdx]);
+      if (val > 0) vals.push(val);
+    }
+    if (!vals.length) return null;
+    const avg = vals.reduce((a,b)=>a+b, 0) / vals.length;
+    const count5 = vals.filter(v => Math.round(v) === 5).length;
+    const count4 = vals.filter(v => Math.round(v) === 4).length;
+    const count3 = vals.filter(v => Math.round(v) === 3).length;
+    const count2 = vals.filter(v => Math.round(v) === 2).length;
+    const count1 = vals.filter(v => Math.round(v) === 1).length;
+    const count54 = vals.filter(v => v >= 4).length;
+    return {
+      avg,
+      pct5: (count5 / vals.length) * 100,
+      pct4: (count4 / vals.length) * 100,
+      pct3: (count3 / vals.length) * 100,
+      pct2: (count2 / vals.length) * 100,
+      pct1: (count1 / vals.length) * 100,
+      pct54: Math.round((count54 / vals.length) * 100),
+      count5,
+      total: vals.length
+    };
+  };
+
+  // Parse Ratings
+  const bStats = extractRatings(colMap.benefit);
+  if (bStats) results.benefit = bStats;
+  const eStats = extractRatings(colMap.enjoyment);
+  if (eStats) results.enjoyment = eStats;
+  const rStats = extractRatings(colMap.relevance);
+  if (rStats) results.relevance = rStats;
+  const pStats = extractRatings(colMap.practical);
+  if (pStats) results.practical = pStats;
+
+  // Parse Trainers & Feedback
+  const allFb = [];
+  trainerCols.forEach(tc => {
+    const tStats = extractRatings(tc.scoreIdx);
+    if (tStats) {
+      results.trainers.push({ name: tc.name, avg: tStats.avg, pct5: Math.round(tStats.pct5), count5: tStats.count5 });
+    }
+    if (tc.fbIdx !== -1) {
+      for (let i = 1; i < rows.length; i++) {
+        const text = String(rows[i][tc.fbIdx] || "").trim();
+        if (text && text !== "-" && text.length > 2 && isNaN(parseFloat(text))) {
+          allFb.push(text);
+        }
+      }
+    }
+  });
+
+  if (allFb.length > 0) {
+    const stopWords = new Set(['baik','seru','kocak','komunikatif','bagus','oke','ok','good','nice','mantap','keren','hebat','informatif','menarik','edukatif','atraktif','santai','lucu']);
+    results.trainerFeedback = allFb.filter(t => {
+      const clean = t.trim().toLowerCase();
+      if (clean.length < 12) return false;
+      if (stopWords.has(clean)) return false;
+      if (/^[1-5]$/.test(clean)) return false;
+      return true;
+    }).slice(0, 5);
+  }
+
+  results.total = bStats ? bStats.total : (rows.length - 1);
+
+  // Parse Follow-Up Yes/No
+  if (colMap.followUp !== -1) {
+    let yesCount = 0;
+    let totalCount = 0;
+    for (let i = 1; i < rows.length; i++) {
+      const val = (rows[i][colMap.followUp] || "").trim().toLowerCase();
+      if (val) {
+        totalCount++;
+        if (val.includes("ya") || val.includes("yes") || val.includes("setuju") || val.includes("ingin") || val.includes("1") || val.includes("true")) {
+          yesCount++;
+        }
+      }
+    }
+    if (totalCount > 0) {
+      results.followUpPct = Math.round((yesCount / totalCount) * 100);
+    } else {
+      results.followUpPct = 100;
+    }
+  } else {
+    results.followUpPct = 100;
+  }
+
+  // Helper to extract chips
+  const extractChips = (colIdx) => {
+    if (colIdx === -1) return [];
+    const counts = {};
+    for (let i = 1; i < rows.length; i++) {
+      const val = (rows[i][colIdx] || "").trim();
+      if (!val) continue;
+      // Split by comma or semicolon
+      const parts = val.split(/[;,]/);
+      for (const p of parts) {
+        const chip = p.trim().replace(/^["']|["']$/g, '');
+        if (!chip || chip.length < 2) continue;
+        const clean = chip.charAt(0).toUpperCase() + chip.slice(1);
+        counts[clean] = (counts[clean] || 0) + 1;
+      }
+    }
+    return Object.entries(counts)
+      .map(([text, count]) => ({ text, count }))
+      .sort((a,b) => b.count - a.count);
+  };
+
+  results.valuableTopics = extractChips(colMap.topics);
+  results.nextTopics = extractChips(colMap.nextTopics);
+
+  // Extract comments
+  if (colMap.comments !== -1) {
+    for (let i = 1; i < rows.length; i++) {
+      const text = (rows[i][colMap.comments] || "").trim();
+      if (text && text.length > 5) {
+        results.comments.push({ text, who: "Participant Feedback" });
+      }
+    }
+  }
+
+  return results;
+}
+
+function renderDynamicEvaluation(evalData) {
+  const manualCard   = document.getElementById("evalManualCard");
+  const dynamicReport = document.getElementById("evalDynamicReport");
+
+  // SELALU tampilkan layout report (dengan data asli atau fallback)
+  if (manualCard) manualCard.style.display = "none";
+  if (dynamicReport) dynamicReport.style.display = "block";
+
+  try {
+    // Use real data or fallback defaults
+    const d = evalData || {};
+    const hasData = !!evalData;
+
+    // Helpers
+    const formatRange = (start, end) => {
+      if (!start) return "—";
+      const opt = { day: "numeric", month: "short", year: "numeric" };
+      const dStart = new Date(start).toLocaleDateString("id-ID", opt);
+      if (!end || start === end) return dStart;
+      const dEnd = new Date(end).toLocaleDateString("id-ID", opt);
+      return `${dStart} – ${dEnd}`;
+    };
+    const calcDur = (start, end) => {
+      if (!start) return "—";
+      if (!end || start === end) return "1 hari";
+      const diff = Math.abs(new Date(end) - new Date(start));
+      return `${Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1} hari`;
+    };
+
+    // Header metadata
+    document.getElementById("evalReportTitle").textContent = CONFIG.title || "Leadership Training Session";
+    document.getElementById("evalReportSubtitle").textContent = CONFIG.subtitle || "Laporan Evaluasi Pelatihan Leadership";
+    document.getElementById("evalReportMetaCount").textContent = d.total || (hasData ? 0 : "—");
+    document.getElementById("evalReportMetaDuration").textContent = calcDur(CONFIG.dateStart || CONFIG.date, CONFIG.dateEnd || CONFIG.date);
+    document.getElementById("evalReportMetaDate").textContent = formatRange(CONFIG.dateStart || CONFIG.date, CONFIG.dateEnd || CONFIG.date);
+    // Use real data only — no fake fallback numbers
+    const empty = { pct54: 0, pct5: 0, pct4: 0, pct3: 0, pct2: 0, pct1: 0, avg: 0 };
+    const ben   = (d.benefit   && d.benefit.pct54   != null) ? d.benefit   : empty;
+    const enj   = (d.enjoyment && d.enjoyment.pct54 != null) ? d.enjoyment : empty;
+    const rel   = (d.relevance && d.relevance.pct54 != null) ? d.relevance : empty;
+    const prac  = (d.practical && d.practical.pct54 != null) ? d.practical : empty;
+
+    let trainers = d.trainers || [];
+    // Fallback: use trainer names from config if no data-driven trainers
+    if (trainers.length === 0 && CONFIG.trainerNames) {
+      const names = CONFIG.trainerNames.split(/[,&]|dan/i).map(s=>s.trim()).filter(Boolean);
+      trainers = names.map(n => ({ name: n, avg: 0, pct5: 0, count5: 0 }));
+    }
+    const trainerAvg = trainers.length ? trainers.reduce((a,b)=>a+b.avg,0)/trainers.length : 0;
+
+    // Header names update
+    document.getElementById("evalReportMetaTrainers").textContent = trainers.map(t=>t.name).join(" & ");
+
+    const fupPct = (d.followUpPct != null) ? d.followUpPct : (hasData ? 100 : 0);
+    const total  = d.total || (hasData ? 0 : "—");
+
+    // Avatar initials helper
+    const initials = (name) => name.split(" ").map(w => w[0] || "").join("").toUpperCase().slice(0, 2);
+
+    // 1. KPI Grid
+    const evalKpisEl = document.getElementById("evalKpis");
+    if(evalKpisEl) {
+      evalKpisEl.innerHTML = `
+        <div class="eval-kpi">
+          <div class="kpi-ring" style="--pct:${ben.pct54}"><div class="ring-inner">${ben.pct54}%</div></div>
+          <div class="label">Merasakan Manfaat<br>Program Pelatihan</div>
+          <div class="score">${fmtID(ben.avg, 2)} / 5 avg</div>
+        </div>
+        <div class="eval-kpi">
+          <div class="kpi-ring" style="--pct:${enj.pct54}"><div class="ring-inner">${enj.pct54}%</div></div>
+          <div class="label">Sangat Menikmati<br>Sesi Pelatihan</div>
+          <div class="score">${fmtID(enj.avg, 2)} / 5 avg</div>
+        </div>
+        <div class="eval-kpi">
+          <div class="kpi-ring" style="--pct:${rel.pct54}"><div class="ring-inner">${rel.pct54}%</div></div>
+          <div class="label">Materi Relevan<br>dengan Pekerjaan</div>
+          <div class="score">${fmtID(rel.avg, 2)} / 5 avg</div>
+        </div>
+        <div class="eval-kpi">
+          <div class="kpi-ring" style="--pct:${Math.round((trainerAvg / 5) * 100)}"><div class="ring-inner">${fmtID(trainerAvg, 2)}</div></div>
+          <div class="label">Penilaian Trainer<br>(Rata-rata)</div>
+          <div class="score">dari 5</div>
+        </div>
+        <div class="eval-kpi">
+          <div class="kpi-ring" style="--pct:${prac.pct54}"><div class="ring-inner">${prac.pct54}%</div></div>
+          <div class="label">Materi Praktikal<br>& Aplikatif</div>
+          <div class="score">${fmtID(prac.avg, 2)} / 5 avg</div>
+        </div>
+      `;
+    }
+
+    // 2. Satisfaction Bars (with interactive hover effects)
+    const evalBarsEl = document.getElementById("evalBars");
+    if(evalBarsEl) {
+      const barData = [
+        { label: "Manfaat keseluruhan bagi peserta", scores: ben },
+        { label: "Tingkat kesenangan sesi", scores: enj },
+        { label: "Relevansi materi dengan pekerjaan", scores: rel },
+        { label: "Materi Praktikal dan Aplikatif", scores: prac }
+      ];
+      const barColors = [
+        { cls: "bar-fill-5", lbl: "Nilai 5 — Sangat Baik", color: "#13315c" },
+        { cls: "bar-fill-4", lbl: "Nilai 4 — Baik", color: "#6d93c4" },
+        { cls: "bar-fill-3", lbl: "Nilai 3 — Cukup", color: "#a2b1c6" },
+        { cls: "bar-fill-2", lbl: "Nilai 2 — Kurang", color: "#e8a87c" },
+        { cls: "bar-fill-1", lbl: "Nilai 1 — Sangat Kurang", color: "#e27d60" }
+      ];
+      const pctKeys = ["pct5","pct4","pct3","pct2","pct1"];
+
+      evalBarsEl.innerHTML = barData.map((b, idx) => `
+        <div class="bar-row"${idx === barData.length - 1 ? ' style="margin-bottom:0;"' : ''}>
+          <div class="bar-label"><span>${b.label}</span><span class="bar-hover-info"></span></div>
+          <div class="bar-track">
+            ${pctKeys.map((pk, pi) => `<div class="${barColors[pi].cls}" style="width:${b.scores[pk]||0}%;cursor:pointer;" data-pct="${Math.round(b.scores[pk]||0)}" data-lbl="${barColors[pi].lbl}" data-color="${barColors[pi].color}"></div>`).join('')}
+          </div>
+        </div>
+      `).join('') + `
+        <div class="legend" style="display:flex;gap:16px;font-size:11.5px;color:var(--n500,var(--muted));margin-top:10px;flex-wrap:wrap;">
+          ${barColors.map(c => `<span><span class="dot" style="background:${c.color};width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;"></span>${c.lbl}</span>`).join('')}
+        </div>`;
+
+      evalBarsEl.querySelectorAll('.bar-track > div').forEach(fill => {
+        const pct = fill.dataset.pct;
+        const lbl = fill.dataset.lbl;
+        const color = fill.dataset.color;
+        if (parseInt(pct) <= 0) return;
+        const infoSpan = fill.closest('.bar-row').querySelector('.bar-hover-info');
+        fill.addEventListener('mouseenter', () => {
+          if (infoSpan) infoSpan.innerHTML = `<strong style="color:${color};font-size:14px;">${pct}%</strong> <span style="color:var(--n500,var(--muted));font-size:12px;">(${lbl})</span>`;
+          fill.style.filter = 'brightness(1.2)';
+        });
+        fill.addEventListener('mouseleave', () => {
+          if (infoSpan) infoSpan.innerHTML = '';
+          fill.style.filter = 'none';
+        });
+      });
+    }
+
+    // 3. Trainers
+    const evalTrainersEl = document.getElementById("evalTrainers");
+    if(evalTrainersEl) {
+      evalTrainersEl.innerHTML = trainers.map(t => `
+        <div class="trainer">
+          <div class="avatar">${initials(t.name)}</div>
+          <div class="name">${esc(t.name)}</div>
+          <div class="score-big">${fmtID(t.avg, 2)}</div>
+        </div>
+      `).join("");
+    }
+    
+    const evalTrainerFeedbackEl = document.getElementById("evalTrainerFeedback");
+    if(evalTrainerFeedbackEl) {
+      let fbHtml = "";
+      if (d.trainerFeedback && d.trainerFeedback.length > 0) {
+        fbHtml = `<div style="margin-bottom:6px;"><b>Beberapa umpan balik untuk Trainer:</b></div>` +
+          d.trainerFeedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(w)}"</div>`).join('');
+      } else {
+        fbHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">Umpan balik trainer akan muncul setelah data evaluasi terhubung.</span>`;
+      }
+      evalTrainerFeedbackEl.outerHTML = `<div id="evalTrainerFeedback" style="margin-top:16px;font-size:12.5px;color:var(--text);line-height:1.6;background:#f7f9fc;padding:12px 14px;border-radius:10px;border:1px solid #e7ecf2;">${fbHtml}</div>`;
+    }
+
+    // 4. Topics
+    const valTopics = (d.valuableTopics && d.valuableTopics.length > 0) ? d.valuableTopics : [];
+    const evalValuableTopicsEl = document.getElementById("evalValuableTopics");
+    if(evalValuableTopicsEl) {
+      evalValuableTopicsEl.innerHTML = valTopics.length
+        ? valTopics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(t.text)} (${t.count})</span>`).join("")
+        : `<span style="color:var(--n500,var(--muted));font-size:13px;">Data topik akan muncul setelah evaluasi terhubung.</span>`;
+    }
+
+    const nxtTopics = (d.nextTopics && d.nextTopics.length > 0) ? d.nextTopics : [];
+    const evalNextTopicsEl = document.getElementById("evalNextTopics");
+    if(evalNextTopicsEl) {
+      evalNextTopicsEl.innerHTML = nxtTopics.length
+        ? nxtTopics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}" style="${idx < 3 ? 'background:#c8102e;' : ''}">${esc(t.text)} (${t.count})</span>`).join("")
+        : `<span style="color:var(--n500,var(--muted));font-size:13px;">Data topik akan muncul setelah evaluasi terhubung.</span>`;
+    }
+
+    // 5. Quotes
+    const quotes = (d.comments && d.comments.length > 0) ? d.comments : [];
+    const evalQuotesEl = document.getElementById("evalQuotes");
+    if(evalQuotesEl) {
+      evalQuotesEl.innerHTML = quotes.length
+        ? quotes.slice(0, 6).map(q => `
+          <div class="quote">
+            <div class="mark">&ldquo;</div>
+            <p>${esc(q.text)}</p>
+            <div class="who">${esc(q.who)}</div>
+          </div>
+        `).join("")
+        : `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--n500,var(--muted));font-size:13px;">Kutipan peserta akan muncul setelah data evaluasi terhubung.</div>`;
+    }
+
+    // 6. CTA Stats
+    const ctaFb = document.getElementById("ctaStatFeedback");
+    if(ctaFb) ctaFb.textContent = `${total}/${total}`;
+    
+    const ctaAvg = document.getElementById("ctaStatAvg");
+    if(ctaAvg) ctaAvg.textContent = fmtID(trainerAvg, 1);
+    
+    const ctaFup = document.getElementById("ctaStatFollowUp");
+    if(ctaFup) ctaFup.textContent = `${fupPct}%`;
+
+  } catch(err) {
+    const evalReportTitle = document.getElementById("evalReportTitle");
+    if(evalReportTitle) {
+      evalReportTitle.textContent = "Error Render Evaluasi!";
+      evalReportTitle.style.color = "red";
+    }
+    const evalReportSubtitle = document.getElementById("evalReportSubtitle");
+    if(evalReportSubtitle) {
+      evalReportSubtitle.innerHTML = err.stack.replace(/\n/g, '<br>');
+      evalReportSubtitle.style.color = "yellow";
+    }
+  }
+}
+
+function buildGvizUrl(id, {out="csv", name="", range="", cb=""}={}){
+  const tqx = out==="json"
+    ? (cb ? `out:json;responseHandler:${cb}` : "out:json")
+    : "out:csv";
+  let url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=${tqx}`;
+  if(name)  url += `&sheet=${encodeURIComponent(name)}`;
+  if(range) url += `&range=${encodeURIComponent(range)}`;
+  return url;
+}
+
+/* ================= DATA FETCHING ================= */
+// JSONP: bypass CORS sehingga bisa buka file:// langsung di Chrome
+function fetchViaJSONP(){
+  return new Promise((resolve,reject)=>{
+    const cb="_gsheetCb_"+Date.now();
+    const script=document.createElement("script");
+    const timer=setTimeout(()=>{ cleanup(); reject(new Error("JSONP timeout")); },12000);
+    function cleanup(){ clearTimeout(timer); delete window[cb]; script.remove(); }
+    window[cb]=function(resp){
+      cleanup();
+      try{
+        if(!resp||!resp.table) return reject(new Error("Response tidak valid"));
+        const cols=resp.table.cols, dataRows=resp.table.rows;
+        const rows=[cols.map(c=>c.label||"")];
+        for(const dr of dataRows){
+          rows.push(dr.c.map(cell=>cell?String(cell.v??""):""));
+        }
+        resolve(rows);
+      }catch(e){ reject(e); }
+    };
+    script.src=buildGvizUrl(SHEET_ID,{out:"json",name:CONFIG.sheet1.name,range:CONFIG.sheet1.range,cb})+`&_cb=${Date.now()}`;
+    script.onerror=()=>{ cleanup(); reject(new Error("JSONP gagal memuat script")); };
+    document.head.appendChild(script);
+  });
+}
+
+// fetch CSV (hanya jalan di http:/https:)
+async function fetchViaCSV(){
+  // Jika range Sheet1 diatur, pakai gviz agar range dihormati; jika tidak dan
+  // CSV publish tersedia, pakai itu (paling real-time). Fallback ke gviz.
+  const base = (CONFIG.sheet1.range || !CSV_URL)
+    ? buildGvizUrl(SHEET_ID,{out:"csv",name:CONFIG.sheet1.name,range:CONFIG.sheet1.range})
+    : CSV_URL;
+  const sep = base.includes("?") ? "&" : "?";
+  const res=await fetch(`${base}${sep}_cb=${Date.now()}`,{cache:"no-store"});
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text=await res.text();
+  if(text.trimStart().startsWith("<!") || text.trimStart().startsWith("<html"))
+    throw new Error("Response bukan CSV");
+  return parseCSV(text);
+}
+
+async function fetchSheet2(){
+  const targetSheetId = CONFIG.evalSheetId || SHEET_ID;
+  const targetSheetName = CONFIG.evalSheetName || (CONFIG.sheet2 && CONFIG.sheet2.name) || "Sheet2";
+  if(!targetSheetId) return null;
+  return new Promise((resolve,reject)=>{
+    const cb="_gsheetCb2_"+Date.now();
+    const script=document.createElement("script");
+    const timer=setTimeout(()=>{ cleanup(); reject(new Error("Sheet2 timeout")); },12000);
+    function cleanup(){ clearTimeout(timer); delete window[cb]; script.remove(); }
+    window[cb]=function(resp){
+      cleanup();
+      try{
+        if(!resp||!resp.table) return reject(new Error("Response tidak valid"));
+        const cols=resp.table.cols, dataRows=resp.table.rows;
+        const rows=[cols.map(c=>c.label||"")];
+        for(const dr of dataRows){
+          rows.push((dr.c||[]).map(cell=>{
+            if(!cell) return "";
+            if(cell.f !== undefined && cell.f !== null) return String(cell.f);
+            if(cell.v !== undefined && cell.v !== null) return String(cell.v);
+            return "";
+          }));
+        }
+        resolve(rows.filter(r => r.some(c => (c||"").trim() !== "")));
+      }catch(e){ reject(e); }
+    };
+    const targetRange = CONFIG.evalDataRange || "";
+    script.src=buildGvizUrl(targetSheetId,{out:"json",name:targetSheetName,range:targetRange,cb})+`&_cb=${Date.now()}`;
+    script.onerror=()=>{ cleanup(); reject(new Error("JSONP gagal memuat Sheet2")); };
+    document.head.appendChild(script);
+  });
+}
+
+async function fetchData(manual=false){
+  const btn=document.getElementById("refreshBtn");
+  const targetMainId = SHEET_ID;
+  // Hanya fetch evaluasi jika sheet evaluasi KHUSUS dikonfigurasi (tidak fallback ke sheet utama)
+  const hasEvalSheet = !!(CONFIG.evalCsvUrl || CONFIG.evalSheetId);
+
+  if(!targetMainId && !hasEvalSheet) {
+    if (firstLoad) render(false);
+    setOnline(false);
+    document.getElementById("liveText").textContent = "BELUM DI-SET";
+    const nextIn = document.getElementById("nextIn");
+    if(nextIn) nextIn.textContent = "Hubungkan Google Sheet di backend";
+    firstLoad = false;
+    return;
+  }
+
+  if(manual) btn.classList.add("spinning");
+  
+  let list = [];
+  let evalData = null;
+  let mainSuccess = false;
+  let evalSuccess = false;
+
+  // 1. Fetch Main Sheet1 (Pre & Post Test)
+  if (targetMainId) {
+    try {
+      let rows;
+      try {
+        rows = await fetchViaCSV();
+      } catch(err) {
+        rows = await fetchViaJSONP();
+      }
+      list = extractParticipants(rows);
+      mainSuccess = true;
+    } catch(err) {
+      console.warn("Gagal memuat Sheet1 (Pre & Post):", err);
+    }
+  }
+
+  // 2. Fetch Sheet Evaluasi (hanya jika dikonfigurasi khusus di backend)
+  if (hasEvalSheet) {
+    try {
+      let sheet2Rows = null;
+      let csvFailed = false;
+
+      if (CONFIG.evalCsvUrl) {
+        try {
+          // Auto-fix link pubhtml menjadi pub?output=csv agar tidak gagal (CORS/HTML)
+          let finalCsvUrl = CONFIG.evalCsvUrl;
+          if (finalCsvUrl.endsWith("/pubhtml")) {
+            finalCsvUrl = finalCsvUrl.replace("/pubhtml", "/pub?output=csv");
+          }
+
+          const sep = finalCsvUrl.includes("?") ? "&" : "?";
+          const res = await fetch(`${finalCsvUrl}${sep}_cb=${Date.now()}`, {cache:"no-store"});
+          if(!res.ok) throw new Error(`HTTP ${res.status}`);
+          const text = await res.text();
+          if(text.trimStart().startsWith("<")) throw new Error("CORS/HTML returned");
+          sheet2Rows = parseCSV(text);
+        } catch(err) {
+          console.warn("CSV Evaluasi fetch gagal, mencoba JSONP...", err);
+          csvFailed = true;
+        }
+      }
+
+      if (!sheet2Rows && (csvFailed || !CONFIG.evalCsvUrl)) {
+        sheet2Rows = await fetchSheet2();
+      }
+
+      evalData = parseEvaluationSheet(sheet2Rows);
+      evalSuccess = true;
+    } catch (err) {
+      console.warn("Gagal memuat Sheet Evaluasi:", err);
+    }
+  }
+
+  // 3. Process and Render
+  const sig = JSON.stringify({list, evalData});
+  const changed = sig !== prevSignature;
+  
+  try {
+    if(changed || firstLoad){
+      prevSignature = sig;
+      participants = list;
+      if (mainSuccess) {
+        stats = computeStats(list);
+      }
+      currentEvalData = evalData;
+      render(changed && !firstLoad);
+      if(changed && !firstLoad && (mainSuccess || evalSuccess)) {
+        showToast("Data diperbarui dari Google Sheets");
+      }
+    }
+    setOnline(mainSuccess || evalSuccess);
+  } catch(err) {
+    setOnline(false);
+    console.error("fetchData total crash:", err);
+    // Render fallbacks if we completely crashed before rendering
+    if(firstLoad) {
+      render(false);
+      firstLoad = false;
+    }
+  } finally {
+    if(manual) setTimeout(()=>btn.classList.remove("spinning"),600);
+    document.getElementById("lastUpdated").textContent=
+      new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    countdownStart=performance.now();
+  }
+}
+
+function setOnline(ok){
+  const badge=document.getElementById("liveBadge");
+  badge.classList.toggle("offline",!ok);
+  document.getElementById("liveText").textContent= ok ? "LIVE" : "OFFLINE";
+  const pollSec = Math.round(POLL_MS/1000);
+  document.getElementById("nextIn").textContent= ok
+    ? `sinkronisasi otomatis tiap ${pollSec} dtk`
+    : "koneksi gagal — mencoba ulang…";
+}
+
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2600);
+}
+
+/* countdown ring — only runs when dashboard is active */
+const ringEl = document.getElementById("ringProg");
+const CIRC   = 2 * Math.PI * 17.5;
+ringEl.style.strokeDasharray = CIRC;
+function tickRing() {
+  if(window.__WAIT_MAIN_MENU) { requestAnimationFrame(tickRing); return; }
+  const p = Math.min((performance.now() - countdownStart) / POLL_MS, 1);
+  ringEl.style.strokeDashoffset = CIRC * p;
+  requestAnimationFrame(tickRing);
+}
+// tickRing started lazily from showDashboard()
+
+/* ================= RENDER ================= */
+const counters={}; // remember last values so numbers only re-animate on change
+function countUp(id,val,fmt){
+  const el=document.getElementById(id);
+  el.classList.remove("skeleton");
+  if(val==null){ el.textContent="—"; counters[id]=null; return; }
+  const from = counters[id] ?? 0;
+  if(from===val){ el.textContent=fmt(val); return; }
+  counters[id]=val;
+  let done=false;
+  const dur=1100, start=performance.now();
+  const ease=t=>1-Math.pow(1-t,3);
+  (function tick(){
+    const t=Math.min((performance.now()-start)/dur,1);
+    el.textContent=fmt(from+(val-from)*ease(t));
+    if(t>=1) done=true; else requestAnimationFrame(tick);
+  })();
+  setTimeout(()=>{ if(!done) el.textContent=fmt(val); }, dur+100);
+}
+
+function render(flash){
+  const s = stats || {
+    total: 0,
+    avgPre: null,
+    minPre: null,
+    maxPre: null,
+    avgPost: null,
+    minPost: null,
+    maxPost: null,
+    avgDelta: null,
+    postCount: 0,
+    top3: [],
+    bottom3: [],
+    usingPost: false
+  };
+
+  /* --- KPI --- */
+  countUp("vPeserta",s.total,fmtInt);
+  document.getElementById("sPeserta").textContent=`terdaftar di batch ini`;
+
+  countUp("vPre",s.avgPre,v=>fmtID(v,1));
+  document.getElementById("sPre").textContent=
+    s.avgPre!=null?`min ${fmtInt(s.minPre)} · maks ${fmtInt(s.maxPre)}`:"belum ada data";
+
+  const kPost=document.getElementById("kpiPost");
+  if(s.avgPost!=null){
+    kPost.classList.remove("pending");
+    countUp("vPost",s.avgPost,v=>fmtID(v,1));
+    document.getElementById("sPost").textContent=
+      `${s.postCount}/${s.total} peserta · min ${fmtInt(s.minPost)} · maks ${fmtInt(s.maxPost)}`;
+  }else{
+    kPost.classList.add("pending");
+    const el=document.getElementById("vPost"); el.classList.remove("skeleton"); el.textContent="—";
+    document.getElementById("sPost").textContent="post test belum dilaksanakan";
+  }
+
+  const kDelta=document.getElementById("kpiDelta");
+  const dEl=document.getElementById("vDelta"); dEl.classList.remove("skeleton");
+  if(s.avgDelta!=null){
+    kDelta.classList.remove("pending");
+    countUp("vDelta",s.avgDelta,v=>`${v>0?"+":""}${fmtID(v,1)}%`);
+    document.getElementById("sDelta").innerHTML=
+      `<span class="chip ${s.avgDelta>=0?"up":"down"}">${s.avgDelta>0?"+":""}${fmtID(s.avgDelta,1)}%</span> vs pre test`;
+  }else{
+    kDelta.classList.add("pending");
+    dEl.textContent="—"; counters["vDelta"]=null;
+    document.getElementById("sDelta").textContent="dihitung setelah post test terisi";
+  }
+
+  /* --- Podium --- */
+  document.getElementById("podiumHint").textContent="berdasarkan Nilai Pre Test dan Post Test serta Peningkatan Pemahaman";
+  renderPodium(activeTab);
+
+  renderCharts();
+  renderTable(flash);
+
+  /* --- Evaluation --- */
+  renderDynamicEvaluation(currentEvalData);
+}
+
+function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+/* --- Podium --- */
+function renderPodium(tab){
+  const list = tab==="top" ? (stats?.top3 || []) : (stats?.bottom3 || []);
+  const el = document.getElementById("podiumList");
+  if(!list||!list.length){el.innerHTML='<div class="podium-empty">Data belum tersedia</div>';return;}
+  const isBottom = tab==="bottom";
+  el.innerHTML = list.map((p,i)=>{
+    const cls = isBottom ? "last" : (i===0?"first":"");
+    const medalCls = i===0?"m1":i===1?"m2":"m3";
+    const rank = p.sheetRank ?? (i+1);
+    const score = p.rankScore!=null ? fmtID(p.rankScore,1) : (p.post!=null ? fmtID(p.post,1) : (p.pre!=null ? fmtID(p.pre,1) : "—"));
+    const sub = p.delta!=null ? `Peningkatan: ${p.delta>0?"+":""}${fmtID(p.delta,1)}%` : (p.post!=null ? `Post: ${fmtID(p.post,1)}` : `Pre: ${fmtID(p.pre,1)}`);
+    return `<div class="podium-item ${cls}"><span class="medal ${medalCls}">${rank}</span><div><div class="p-name">${esc(p.name)}</div><div class="p-sub">${sub}</div></div><span class="p-score">${score}</span></div>`;
+  }).join("");
+}
+
+document.querySelectorAll("[data-podtab]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll("[data-podtab]").forEach(b=>{b.classList.remove("active")});
+    btn.classList.add("active");
+    activeTab=btn.dataset.podtab;
+    renderPodium(activeTab);
+  });
+});
+
+/* --- Charts --- */
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function renderCharts(){
+  const labels=participants.map(p=>p.name.split(" ").slice(0,2).join(" "));
+  const pre=participants.map(p=>p.pre);
+  const post=participants.map(p=>p.post);
+  document.querySelector(".chart-inner").style.minWidth=Math.max(participants.length*26,860)+"px";
+
+  Chart.defaults.font.family=css("--font-body")||"Inter";
+  Chart.defaults.color=css("--n600");
+
+  if(!chartCompare){
+    chartCompare=new Chart(document.getElementById("chartCompare"),{
+      type:"bar",
+      data:{labels,datasets:[
+        {label:"Pre Test",data:pre,backgroundColor:css("--navy"),borderRadius:4,maxBarThickness:14},
+        {label:"Post Test",data:post,backgroundColor:css("--primary-base"),borderRadius:4,maxBarThickness:14},
+      ]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        animation:{duration:900,easing:"easeOutQuart"},
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            backgroundColor:css("--n900"),padding:12,cornerRadius:8,
+            bodyFont:{family:css("--font-body")},titleFont:{family:css("--font-head"),weight:700},
+            callbacks:{
+              title:items=>{const i=items[0].dataIndex; return participants[i].name;},
+              label:()=>null,
+              afterBody:items=>{
+                const i=items[0].dataIndex, p=participants[i];
+                const lines=[`Nilai Pre Test:  ${p.pre!=null?fmtInt(p.pre):"—"}`];
+                if(p.post!=null){
+                  lines.push(`Nilai Post Test: ${fmtInt(p.post)}`);
+                  const d=p.post-p.pre;
+                  lines.push(`Peningkatan Pemahaman:   ${d>=0?"+":""}${fmtInt(d)} (${p.delta!=null?(p.delta>=0?"+":"")+fmtID(p.delta,1)+"%":"—"})`);
+                } else lines.push("Post Test: belum ada");
+                return lines;
+              }
+            }
+          }
+        },
+        scales:{
+          x:{grid:{display:false},ticks:{maxRotation:60,minRotation:60,font:{size:9.5}}},
+          y:{beginAtZero:true,max:100,grid:{color:css("--n100")},ticks:{stepSize:20}}
+        }
+      }
+    });
+  }else{
+    chartCompare.data.labels=labels;
+    chartCompare.data.datasets[0].data=pre;
+    chartCompare.data.datasets[1].data=post;
+    chartCompare.update();
+  }
+  requestAnimationFrame(()=>chartCompare&&chartCompare.resize());
+
+  const bins=["0–20","21–40","41–60","61–80","81–100"];
+  const binOf=v=>v<=20?0:v<=40?1:v<=60?2:v<=80?3:4;
+  const preBins=[0,0,0,0,0], postBins=[0,0,0,0,0];
+  participants.forEach(p=>{
+    if(p.pre!=null) preBins[binOf(p.pre)]++;
+    if(p.post!=null) postBins[binOf(p.post)]++;
+  });
+  const hasPost=postBins.some(v=>v>0);
+  if(!chartDist){
+    chartDist=new Chart(document.getElementById("chartDist"),{
+      type:"bar",
+      data:{labels:bins,datasets:[
+        {label:"Pre Test",data:preBins,backgroundColor:css("--navy"),borderRadius:6,maxBarThickness:26},
+        {label:"Post Test",data:postBins,backgroundColor:css("--primary-base"),borderRadius:6,maxBarThickness:26,hidden:!hasPost},
+      ]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        animation:{duration:900,easing:"easeOutQuart"},
+        plugins:{legend:{position:"bottom",labels:{boxWidth:10,boxHeight:10,borderRadius:3,useBorderRadius:true,font:{size:10.5}}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:10.5}}},
+          y:{beginAtZero:true,grid:{color:css("--n100")},ticks:{precision:0}}
+        }
+      }
+    });
+  }else{
+    chartDist.data.datasets[0].data=preBins;
+    chartDist.data.datasets[1].data=postBins;
+    chartDist.data.datasets[1].hidden=!hasPost;
+    chartDist.update();
+  }
+}
+
+/* --- Table --- */
+function renderTable(flash){
+  const q=document.getElementById("searchInput").value.trim().toLowerCase();
+  let rows=participants.filter(p=>p.name.toLowerCase().includes(q));
+  rows.sort((a,b)=>{
+    let va,vb;
+    switch(sortKey){
+      case "name": va=a.name.toLowerCase(); vb=b.name.toLowerCase(); break;
+      case "pre":  va=a.pre??-1;  vb=b.pre??-1;  break;
+      case "post": va=a.post??-1; vb=b.post??-1; break;
+      case "delta":va=a.delta??-Infinity; vb=b.delta??-Infinity; break;
+      default:     va=a.rank??Infinity; vb=b.rank??Infinity;
+    }
+    return (va<vb?-1:va>vb?1:0)*sortDir;
+  });
+
+  document.getElementById("rowCount").textContent=`${rows.length} peserta`;
+  const tb=document.getElementById("tableBody");
+  tb.innerHTML=rows.map(p=>`
+    <tr data-row>
+      <td><span class="rank-badge ${p.rank<=3?"top":""}">${p.rank}</span></td>
+      <td style="font-weight:600">${esc(p.name)}</td>
+      <td>${p.pre!=null?`<div class="scorebar"><span class="num" style="font-family:var(--font-mono);font-weight:700;color:var(--navy)">${fmtInt(p.pre)}</span><span class="track"><span class="fill" style="width:${p.pre}%"></span></span></div>`:`<span class="muted">—</span>`}</td>
+      <td>${p.post!=null?`<div class="scorebar"><span class="num" style="font-family:var(--font-mono);font-weight:700;color:var(--primary-700)">${fmtInt(p.post)}</span><span class="track"><span class="fill post" style="width:${p.post}%"></span></span></div>`:`<span class="muted">—</span>`}</td>
+      <td>${p.delta!=null
+        ?`<span class="delta ${p.delta>0?"up":p.delta<0?"down":"zero"}">${p.delta>0?"▲ +":p.delta<0?"▼ ":""}${fmtID(p.delta,1)}%</span>`
+        :`<span class="delta none">—</span>`}</td>
+    </tr>`).join("");
+
+  if(firstLoad){
+    animate("[data-row]",{opacity:[0,1],y:[10,0]},{delay:stagger(0.025,{startDelay:.15}),duration:.4,ease:EASE_OUT});
+  }else if(flash){
+    tb.querySelectorAll("td").forEach(td=>{td.classList.add("cell-flash");
+      td.addEventListener("animationend",()=>td.classList.remove("cell-flash"),{once:true});});
+  }
+
+  /* footer averages */
+  document.getElementById("fPre").textContent  = stats.avgPre !=null?fmtID(stats.avgPre ,1):"—";
+  document.getElementById("fPost").textContent = stats.avgPost!=null?fmtID(stats.avgPost,1):"—";
+  document.getElementById("fDelta").textContent= stats.avgDelta!=null?`${stats.avgDelta>0?"+":""}${fmtID(stats.avgDelta,1)}%`:"—";
+
+  /* sort arrows */
+  document.querySelectorAll("#pane-prepost thead th[data-sort]").forEach(th=>{
+    const arrow = th.querySelector(".arrow");
+    if(arrow) arrow.textContent = th.dataset.sort===sortKey ? (sortDir===1?"▲":"▼") : "";
+  });
+}
+
+document.querySelectorAll("#pane-prepost thead th[data-sort]").forEach(th=>{
+  th.addEventListener("click",()=>{
+    const k=th.dataset.sort;
+    if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir = k==="name"||k==="rank" ? 1 : -1; }
+    renderTable(false);
+  });
+});
+document.getElementById("searchInput").addEventListener("input",()=>renderTable(false));
+document.getElementById("refreshBtn").addEventListener("click",()=>fetchData(true));
+
+/* ============ THEME TOGGLE ============ */
+(function(){
+  const root=document.documentElement;
+  const saved=localStorage.getItem("dashboard-theme");
+  if(saved) root.setAttribute("data-theme",saved);
+  document.getElementById("themeToggle").addEventListener("click",()=>{
+    const next=root.getAttribute("data-theme")==="dark"?"light":"dark";
+    root.setAttribute("data-theme",next);
+    localStorage.setItem("dashboard-theme",next);
+    if(typeof chartCompare!=="undefined"&&chartCompare) updateChartColors();
+    if(typeof chartDist!=="undefined"&&chartDist) updateChartColors();
+  });
+})();
+function updateChartColors(){
+  const cs=getComputedStyle(document.documentElement);
+  const navy=cs.getPropertyValue("--navy").trim();
+  const gridC=cs.getPropertyValue("--n200").trim();
+  const tickC=cs.getPropertyValue("--n500").trim();
+  [chartCompare,chartDist].forEach(c=>{
+    if(!c)return;
+    c.options.scales.x.ticks.color=tickC;
+    c.options.scales.y.ticks.color=tickC;
+    c.options.scales.x.grid.color=gridC;
+    c.options.scales.y.grid.color=gridC;
+    if(c===chartCompare){
+      c.data.datasets[0].backgroundColor=navy;
+    }
+    c.update("none");
+  });
+}
+
+/* Pastikan chart selalu mengisi lebar container saat ukuran window berubah */
+let _resizeT;
+window.addEventListener("resize",()=>{
+  clearTimeout(_resizeT);
+  _resizeT=setTimeout(()=>{ chartCompare&&chartCompare.resize(); chartDist&&chartDist.resize(); },150);
+});
+
+
+/* ================= CLIENT SECTIONS RENDERING ================= */
+function renderActiveClientSections(){
+  // Evaluasi
+  const ev = typeof CONFIG.evaluasi === "string" ? CONFIG.evaluasi : "";
+  const kom = CONFIG.komentarTrainer;
+  if(ev && typeof ev === "string" && ev.trim()){
+    const evalContent = document.getElementById("evalContent");
+    if (evalContent) evalContent.textContent = ev.trim();
+  }
+  
+  // Render Komentar Trainer (Rich Object - User Tailwind Layout)
+  if(kom){
+    let ktArr = kom;
+    if(typeof ktArr === "string"){
+      ktArr = [{ intro: ktArr, name: "", role: "", apresiasi: "", days: [], quote: "" }];
+    } else if (ktArr && !Array.isArray(ktArr)) {
+      ktArr = [ktArr]; // Fallback for previous single object
+    }
+    
+    if (ktArr && ktArr.length > 0) {
+      let allHtml = "";
+      
+      // Jika ada lebih dari 1 trainer, tambahkan label info di atas
+      if(ktArr.length > 1) {
+        allHtml += `
+          <div style="text-align:center; margin-bottom:3.5rem;">
+            <div style="display:inline-flex; align-items:center; gap:8px; background:var(--primary-100); color:var(--primary-900); font-family:var(--font-head); font-weight:700; font-size:0.85rem; padding:8px 18px; border-radius:999px; border:1px solid rgba(219, 179, 0, 0.4);">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Sesi difasilitasi oleh ${ktArr.length} Trainer
+            </div>
+          </div>
+        `;
+      }
+
+      allHtml += ktArr.map((kt, index) => {
+        const initials = (kt.name || "T").charAt(0).toUpperCase();
+        const apText = kt.apresiasi ? kt.apresiasi : "🎉 KOMENTAR TRAINER 🎉";
+        const daysHtml = (kt.days && kt.days.length > 0) ? kt.days.map((d, i) => `
+          <div class="kt-user-day">
+            <h4 class="kt-user-day-title"><span class="kt-user-day-num">${i+1}</span> ${esc(d.title || `Hari ${i+1}`)}</h4>
+            <p style="white-space:pre-wrap;">${esc(d.text || '')}</p>
+          </div>
+        `).join("") : "";
+
+        return `
+          <div class="kt-user-marquee-box">
+             <div class="kt-user-marquee-content">
+                ${esc(apText)}
+             </div>
+          </div>
+          <div class="kt-user-wrap">
+            <div class="kt-user-glow"></div>
+            <div class="kt-user-card">
+              <div class="kt-user-avatar-wrap">
+                <div class="kt-user-avatar">
+                  <span id="ktAvatarInitials">${initials}</span>
+                </div>
+                <div class="kt-user-badge">Fasilitator</div>
+              </div>
+              <div class="kt-user-head">
+                 <h2 class="kt-user-name">${esc(kt.name || "Nama Trainer")}</h2>
+                 <p class="kt-user-role">${esc(kt.role || "MDI Trainer")}</p>
+              </div>
+              <div class="kt-user-body">
+                ${kt.intro ? `<p style="white-space:pre-wrap;">${esc(kt.intro)}</p>` : ""}
+                ${daysHtml}
+                ${kt.quote ? `
+                <div class="kt-user-quote">
+                  <p class="kt-user-quote-text">"${esc(kt.quote)}"</p>
+                </div>` : ""}
+              </div>
+            </div>
+      </div>
+    `;
+      }).join("");
+      
+      const container = document.getElementById("komentarContainer");
+      if(container) container.innerHTML = allHtml;
+    }
+  }
+
+  // Dokumentasi (per day accordion)
+  const docs = Array.isArray(CONFIG.dokumentasi) ? CONFIG.dokumentasi : [];
+  if(docs && docs.length > 0){
+    const accordion = document.getElementById("docAccordion");
+    if (accordion) {
+      accordion.innerHTML = docs.map((day, di)=>{
+        const photosHtml = day.photos && day.photos.length > 0
+          ? `<div class="gallery-grid">${day.photos.map(ph=>`
+              <div class="gallery-img-wrap" onclick="window.open('${esc(ph.url)}')">
+                <img src="${esc(ph.url)}" alt="Foto Dokumentasi" onerror="this.parentElement.style.display='none'">
+              </div>`).join("")}</div>`
+          : `<div style="text-align:center;padding:12px;color:var(--n500);font-size:.8rem">Tidak ada foto untuk hari ini.</div>`;
+
+        return `<div class="day-acc-item" id="day-acc-${di}">
+          <div class="day-acc-head" onclick="toggleDayAcc(${di})">
+            <span>${esc(day.label || `Hari ${di+1}`)}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div class="day-acc-body">
+            ${photosHtml}
+          </div>
+        </div>`;
+      }).join("");
+    }
+  }
+
+  // Action Plan
+  const ap = Array.isArray(CONFIG.actionPlan) ? CONFIG.actionPlan : [];
+  if(ap && ap.length > 0){
+    const tbody = document.getElementById("apTableBody");
+    if (tbody) {
+      tbody.innerHTML = ap.map(r=>`
+        <tr>
+          <td style="font-weight:600">${esc(r.item || "—")}</td>
+          <td>${esc(r.target || "—")}</td>
+          <td>${esc(r.pic || "—")}</td>
+          <td style="font-family:var(--font-mono)">${esc(r.deadline || "—")}</td>
+        </tr>`).join("");
+    }
+  }
+
+  initNavScroll();
+}
+
+window.toggleDayAcc = function(di){
+  const el = document.getElementById(`day-acc-${di}`);
+  if(el){
+    el.classList.toggle("open");
+  }
+};
+
+function initNavScroll(){
+  // Pane tab switcher handler
+  document.querySelectorAll(".nav-pill").forEach(pill => {
+    pill.addEventListener("click", e => {
+      e.preventDefault();
+      const targetId = pill.getAttribute("href");
+      
+      // Update active nav-pill styling
+      document.querySelectorAll(".nav-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      
+      // Switch tab panes with fade animation
+      document.querySelectorAll(".dash-pane").forEach(pane => {
+        pane.classList.remove("active");
+        pane.style.display = "none";
+      });
+      
+      const activePane = document.querySelector(targetId);
+      if (activePane) {
+        activePane.style.display = "block";
+        // Force reflow to trigger CSS transitions
+        void activePane.offsetWidth;
+        activePane.classList.add("active");
+        
+        // Scroll smoothly to the top of the tab container to make all tabs behave consistently
+        const main = document.getElementById("mainMain");
+        if (main) {
+          const yOffset = -90; // sticky header compensation
+          const y = main.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      }
+    });
+  });
+}
+
+/* ================= ENTRANCE + BOOT ================= */
+// initNavScroll and animations are started lazily from showDashboard()
+// Do NOT call them here unconditionally.
+
+function bootDashboard() {
+  animate("header [data-animate]",{opacity:[0,1],y:[-14,0]},{delay:stagger(0.07),duration:.6,ease:EASE_OUT});
+  inView("main [data-animate]",(el)=>{
+    animate(el,{opacity:[0,1],y:[22,0]},{duration:.65,ease:EASE_OUT});
+  },{amount:.15});
+
+  (async function _boot() {
+    try { await fetchData(); } catch(e) { console.error("fetchData init error:", e); }
+    try { renderActiveClientSections(); } catch(e) { console.error("renderActiveClientSections error:", e); }
+    firstLoad = false;
+    if(!window.__pollInterval) {
+      window.__pollInterval = setInterval(async () => {
+        if(window.__WAIT_MAIN_MENU) return; // pause polling on main menu
+        try { await fetchData(); } catch(e) { console.error("fetchData poll error:", e); }
+      }, POLL_MS);
+    }
+  })();
+}
+
+initRouting();
+</script>
+</body>
+</html>

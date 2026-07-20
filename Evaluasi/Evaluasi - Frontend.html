@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Yusen Logistics — Leadership Training Evaluation Dashboard</title>
+<style>
+  :root{
+    --navy:#0b2545;
+    --navy2:#13315c;
+    --gold:#d4a017;
+    --red:#c8102e;
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --text:#1b2733;
+    --muted:#5c6b7a;
+    --green:#1f8a5f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  .page{
+    max-width:1140px;
+    margin:0 auto;
+    padding:0 0 40px 0;
+  }
+  header{
+    background:linear-gradient(120deg,var(--navy) 0%,var(--navy2) 55%,#1c4a8a 100%);
+    color:#fff;
+    padding:36px 44px 30px;
+    border-radius:0 0 18px 18px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute;
+    right:-60px; top:-60px;
+    width:260px; height:260px;
+    background:radial-gradient(circle, rgba(212,160,23,0.35) 0%, rgba(212,160,23,0) 70%);
+  }
+  .tag{
+    display:inline-block;
+    background:rgba(255,255,255,0.15);
+    border:1px solid rgba(255,255,255,0.35);
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:12px;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  h1{
+    margin:0 0 8px;
+    font-size:30px;
+    font-weight:700;
+    line-height:1.25;
+  }
+  .subtitle{
+    font-size:14.5px;
+    color:#cfe0f5;
+    max-width:700px;
+    line-height:1.5;
+  }
+  .meta-row{
+    display:flex;
+    gap:28px;
+    margin-top:20px;
+    flex-wrap:wrap;
+    font-size:13px;
+    color:#dce8f7;
+  }
+  .meta-row b{color:#fff;}
+
+  section{ padding:0 44px; }
+  h2.section-title{
+    font-size:17px;
+    text-transform:uppercase;
+    letter-spacing:.6px;
+    color:var(--navy);
+    margin:36px 0 16px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  h2.section-title::before{
+    content:"";
+    width:5px;height:18px;
+    background:var(--gold);
+    border-radius:2px;
+    display:inline-block;
+  }
+
+  /* KPI cards */
+  .kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:14px;
+  }
+  .kpi{
+    background:var(--card);
+    border-radius:14px;
+    padding:18px 16px;
+    text-align:center;
+    box-shadow:0 2px 10px rgba(15,35,65,0.06);
+    border:1px solid #e7ecf2;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: pointer;
+  }
+  .kpi:hover{
+    transform: translateY(-5px);
+    box-shadow:0 10px 25px rgba(15,35,65,0.1);
+  }
+  .kpi .ring{
+    width:72px;height:72px;
+    border-radius:50%;
+    margin:0 auto 10px;
+    display:flex;align-items:center;justify-content:center;
+    background:conic-gradient(var(--gold) calc(var(--pct)*1%), #e9edf2 0);
+    transition: transform 0.3s ease;
+  }
+  .kpi:hover .ring{
+    transform: scale(1.08);
+  }
+  .kpi .ring-inner{
+    width:56px;height:56px;
+    border-radius:50%;
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;
+    font-size:14px;
+    color:var(--navy);
+  }
+  .kpi .label{
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.35;
+    min-height:32px;
+  }
+  .kpi .score{
+    font-size:13px;
+    color:var(--green);
+    font-weight:800;
+    margin-top:4px;
+  }
+
+  /* two column layout */
+  .cols{
+    display:grid;
+    grid-template-columns:1.15fr 0.85fr;
+    gap:18px;
+  }
+  .card{
+    background:var(--card);
+    border-radius:14px;
+    padding:22px 24px;
+    box-shadow:0 2px 10px rgba(15,35,65,0.06);
+    border:1px solid #e7ecf2;
+  }
+  .bar-row{ margin-bottom:14px; }
+  .bar-row .bar-label{
+    display:flex; justify-content:space-between;
+    font-size:13px; margin-bottom:6px; color:var(--text);
+  }
+  .bar-track{
+    background:#eef1f5;
+    border-radius:10px;
+    height:16px;
+    overflow:hidden;
+    display:flex;
+  }
+  .bar-fill-5{ background:var(--navy2); height:100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .bar-fill-4{ background:#6d93c4; height:100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .bar-fill-3{ background:#a2b1c6; height:100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .bar-fill-2{ background:#e8a87c; height:100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .bar-fill-1{ background:#e27d60; height:100%; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .legend{
+    display:flex; gap:16px; font-size:11.5px; color:var(--muted); margin-top:10px;
+  }
+  .legend span{ display:flex; align-items:center; gap:6px; }
+  .legend .dot{ width:8px; height:8px; border-radius:50%; }
+  .legend span:nth-child(2) .dot{ background:#6d93c4 !important; }
+
+  .trainer-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .trainer{
+    text-align:center;
+    padding:16px 10px;
+    border-radius:12px;
+    background:#f7f9fc;
+    border:1px solid #e7ecf2;
+  }
+  .trainer .name{ font-weight:700; color:var(--navy); font-size:14px; margin-top:6px;}
+  .trainer .score-big{ font-size:26px; font-weight:800; color:var(--gold); }
+  .trainer .role{ font-size:11px; color:var(--muted); }
+  .avatar{
+    width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--navy),#3a6ea5);
+    margin:0 auto;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:15px;
+  }
+
+  /* topics */
+  .chip-wrap{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    background:#eaf1fb;
+    color:var(--navy);
+    padding:7px 13px;
+    border-radius:20px;
+    font-size:12.5px;
+    font-weight:600;
+    border:1px solid #d7e4f5;
+  }
+  .chip.big{ background:var(--navy); color:#fff; font-size:13.5px; padding:8px 16px;}
+
+  /* testimonials */
+  .quote-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+  }
+  .quote{
+    background:var(--card);
+    border-radius:14px;
+    padding:20px;
+    border:1px solid #e7ecf2;
+    box-shadow:0 2px 10px rgba(15,35,65,0.05);
+    position:relative;
+  }
+  .quote .mark{
+    font-size:34px;
+    color:var(--gold);
+    font-family:Georgia,serif;
+    line-height:1;
+  }
+  .quote p{
+    font-size:13.3px;
+    color:var(--text);
+    line-height:1.55;
+    margin:6px 0 12px;
+    font-style:italic;
+  }
+  .quote .who{
+    font-size:11.5px;
+    color:var(--muted);
+    font-weight:600;
+    border-top:1px dashed #e2e7ee;
+    padding-top:8px;
+  }
+
+  /* CTA */
+  .cta{
+    margin-top:30px;
+    background:linear-gradient(120deg,var(--navy) 0%,#1c4a8a 100%);
+    border-radius:16px;
+    padding:30px 34px;
+    color:#fff;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:24px;
+    flex-wrap:wrap;
+  }
+  .cta h3{ margin:0 0 8px; font-size:19px; }
+  .cta p{ margin:0; font-size:13px; color:#dce8f7; max-width:560px; line-height:1.5;}
+  .cta .stat{
+    text-align:center;
+  }
+  .cta .stat .num{ font-size:30px; font-weight:800; color:var(--gold); }
+  .cta .stat .cap{ font-size:11px; color:#cfe0f5; letter-spacing:.4px; text-transform:uppercase;}
+  .cta-stats{ display:flex; gap:26px; }
+
+  footer{
+    padding:24px 44px 0;
+    font-size:11.5px;
+    color:var(--muted);
+    text-align:center;
+    margin-top:10px;
+  }
+
+  @media (max-width:900px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    .cols{grid-template-columns:1fr;}
+    .quote-grid{grid-template-columns:1fr;}
+    .trainer-grid{grid-template-columns:1fr;}
+  }
+  @property --pct {
+    syntax: '<number>';
+    initial-value: 0;
+    inherits: false;
+  }
+  .kpi .ring {
+    transition: --pct 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-card {
+    opacity: 0;
+    animation: fadeUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <span class="tag">Post-Training Evaluation Report</span>
+    <h1>Adapting My Leadership: Communication &amp; Adaptability<br>Leadership Development Program</h1>
+    <div class="subtitle">Prepared for Yusen Logistics — a 2-day leadership training covering coaching, Horenso communication, change management, decision making, and managing team performance.</div>
+    <div class="meta-row">
+      <div><b>28</b> participants surveyed</div>
+      <div><b>2 days</b> program duration</div>
+      <div><b>23–24 May 2026</b> training dates</div>
+      <div><b>Trainers:</b> Arif Hidayat &amp; Atik Fauzia</div>
+    </div>
+  </header>
+
+  <section>
+    <h2 class="section-title">Hasil Utama</h2>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="ring" style="--pct:96"><div class="ring-inner">96%</div></div>
+        <div class="label">Menilai program<br>bermanfaat / sangat bermanfaat</div>
+        <div class="score">4.82 / 5 avg</div>
+      </div>
+      <div class="kpi">
+        <div class="ring" style="--pct:100"><div class="ring-inner">100%</div></div>
+        <div class="label">Menikmati<br>pengalaman training</div>
+        <div class="score">4.75 / 5 avg</div>
+      </div>
+      <div class="kpi">
+        <div class="ring" style="--pct:100"><div class="ring-inner">100%</div></div>
+        <div class="label">Materi relevan<br>dengan pekerjaan</div>
+        <div class="score">4.64 / 5 avg</div>
+      </div>
+      <div class="kpi">
+        <div class="ring" style="--pct:96"><div class="ring-inner">4.79</div></div>
+        <div class="label">Penilaian Trainer<br>(Keseluruhan)</div>
+        <div class="score">dari 5</div>
+      </div>
+      <div class="kpi">
+        <div class="ring" style="--pct:100"><div class="ring-inner">100%</div></div>
+        <div class="label">Materi Praktikal<br>& Aplikatif</div>
+        <div class="score">4.75 / 5 avg</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">Rincian Kepuasan</h2>
+    <div class="cols">
+      <div class="card">
+        <div class="bar-row">
+          <div class="bar-label"><span>Manfaat keseluruhan bagi peserta</span><span></span></div>
+          <div class="bar-track">
+            <div class="bar-fill-5" style="width:0%"></div>
+            <div class="bar-fill-4" style="width:0%"></div>
+            <div class="bar-fill-3" style="width:0%"></div>
+            <div class="bar-fill-2" style="width:0%"></div>
+            <div class="bar-fill-1" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label"><span>Tingkat kesenangan sesi</span><span></span></div>
+          <div class="bar-track">
+            <div class="bar-fill-5" style="width:0%"></div>
+            <div class="bar-fill-4" style="width:0%"></div>
+            <div class="bar-fill-3" style="width:0%"></div>
+            <div class="bar-fill-2" style="width:0%"></div>
+            <div class="bar-fill-1" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label"><span>Relevansi materi dengan pekerjaan</span><span></span></div>
+          <div class="bar-track">
+            <div class="bar-fill-5" style="width:0%"></div>
+            <div class="bar-fill-4" style="width:0%"></div>
+            <div class="bar-fill-3" style="width:0%"></div>
+            <div class="bar-fill-2" style="width:0%"></div>
+            <div class="bar-fill-1" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="bar-row" style="margin-bottom:0;">
+          <div class="bar-label"><span>Materi Praktikal dan Aplikatif</span><span></span></div>
+          <div class="bar-track">
+            <div class="bar-fill-5" style="width:0%"></div>
+            <div class="bar-fill-4" style="width:0%"></div>
+            <div class="bar-fill-3" style="width:0%"></div>
+            <div class="bar-fill-2" style="width:0%"></div>
+            <div class="bar-fill-1" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--navy2)"></span>Nilai 5 — Sangat Baik</span>
+          <span><span class="dot" style="background:#6d93c4"></span>Nilai 4 — Baik</span>
+          <span><span class="dot" style="background:#a2b1c6"></span>Nilai 3 — Cukup</span>
+          <span><span class="dot" style="background:#e8a87c"></span>Nilai 2 — Kurang</span>
+          <span><span class="dot" style="background:#e27d60"></span>Nilai 1 — Sangat Kurang</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px;font-weight:600;">Penilaian Trainer</div>
+        <div class="trainer-grid">
+          <!-- Dynamically inserted trainers will go here -->
+        </div>
+        <div id="trainer-feedback-words" style="margin-top:16px;font-size:12.5px;color:var(--text);line-height:1.6;background:#f7f9fc;padding:12px 14px;border-radius:10px;border:1px solid #e7ecf2;">
+          Kata-kata yang sering muncul dalam umpan balik peserta: <b>"mudah dipahami"</b>, <b>"komunikatif"</b>, <b>"engaging"</b>, <b>"tidak membosankan"</b>, <b>"smart"</b>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">Topik Paling Diminati</h2>
+    <div class="cols">
+      <div class="card">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:600;">Topik paling bermanfaat yang dibahas</div>
+        <div class="chip-wrap">
+          <span class="chip big">Coaching</span>
+          <span class="chip big">Problem Solving</span>
+          <span class="chip big">Change Management</span>
+          <span class="chip">Managing Team Performance</span>
+          <span class="chip">Adapting Leadership with Respect</span>
+          <span class="chip">Effective Decision Making</span>
+          <span class="chip">Horenso Communication</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:600;">Paling banyak diminta untuk training selanjutnya</div>
+        <div class="chip-wrap">
+          <span class="chip big" style="background:var(--red);">Problem Solving (deep dive)</span>
+          <span class="chip big" style="background:var(--red);">Delegation</span>
+          <span class="chip">Conflict Management</span>
+          <span class="chip">Decision Making</span>
+          <span class="chip">Public Speaking</span>
+          <span class="chip">Time Management</span>
+          <span class="chip">Risk Management</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">Kutipan Peserta</h2>
+    <div class="quote-grid">
+      <div class="quote">
+        <div class="mark">&ldquo;</div>
+        <p>Tidak berasa seperti training tapi seperti workshop karena ada penyampaian teori dan juga role model. Diberi kesempatan seluas-luasnya untuk menyampaikan ide.</p>
+        <div class="who">Team Leader, Yusen Logistics</div>
+      </div>
+      <div class="quote">
+        <div class="mark">&ldquo;</div>
+        <p>Merasa beruntung ikut dalam training ini, banyak yang saya dapat dan bisa diterapkan di pekerjaan saya sebagai leader.</p>
+        <div class="who">Team Leader, Yusen Logistics</div>
+      </div>
+      <div class="quote">
+        <div class="mark">&ldquo;</div>
+        <p>Akan baik jika semua leader dan calon leader di Yusen diwajibkan mengikuti training ini minimal 1 kali.</p>
+        <div class="who">Team Leader, Yusen Logistics</div>
+      </div>
+      <div class="quote">
+        <div class="mark">&ldquo;</div>
+        <p>Materi Training dan Coach sangat baik dalam penyampaian dan menarik, tidak membuat bosan.</p>
+        <div class="who">Team Leader, Yusen Logistics</div>
+      </div>
+      <div class="quote">
+        <div class="mark">&ldquo;</div>
+        <p>Sangat puas dan ingin ditambah lagi waktunya. Mungkin training yang menghadirkan antara leader dengan para pasukan.</p>
+        <div class="who">Team Leader, Yusen Logistics</div>
+      </div>
+      <div class="quote">
+        <div class="mark">&ldquo;</div>
+        <p>Adakan training setiap 4 bulan.</p>
+        <div class="who">Team Leader, Yusen Logistics</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="cta">
+      <div style="max-width:560px;">
+        <h3>Antusiasme tinggi — peserta meminta sesi lanjutan</h3>
+        <p>Setiap responden menilai program ini bermanfaat atau sangat bermanfaat, dan banyak peserta secara proaktif meminta jadwal rutin (misal setiap 4 bulan) untuk pendalaman materi. Kami merekomendasikan penjadwalan modul berikutnya selagi tingkat antusiasme masih kuat.</p>
+      </div>
+      <div class="cta-stats">
+        <div class="stat"><div class="num">28/28</div><div class="cap">Umpan Balik Positif</div></div>
+        <div class="stat"><div class="num">4.8</div><div class="cap">Rata-rata Nilai Trainer</div></div>
+        <div class="stat"><div class="num">100%</div><div class="cap">Ingin Training Selanjutnya</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Source: Post-training evaluation survey, 28 respondents, 23 May 2026 · Yusen Logistics Leadership Development Program
+  </footer>
+
+</div>
+
+<script>
+  function fetchPreviewJSONP(id, name, range) {
+    return new Promise((resolve, reject) => {
+      const cb = "_gsTest_" + Date.now() + "_" + Math.floor(Math.random() * 1e4);
+      const script = document.createElement("script");
+      const timer = setTimeout(() => { cleanup(); reject(new Error("Timeout (cek akses sheet)")); }, 15000);
+      function cleanup() { clearTimeout(timer); delete window[cb]; script.remove(); }
+      window[cb] = function(resp) {
+        cleanup();
+        try {
+          if (!resp || !resp.table) return reject(new Error("Respons tidak valid (cek izin akses)"));
+          const cols = resp.table.cols || [];
+          let dataRows = resp.table.rows || [];
+          let rows = [cols.map(c => c.label || "")]; // Kembalikan Header sebagai baris pertama
+          for (const dr of dataRows) {
+            rows.push((dr.c || []).map(cell => {
+                if (!cell) return "";
+                if (cell.f !== undefined && cell.f !== null) return String(cell.f);
+                if (cell.v !== undefined && cell.v !== null) return String(cell.v);
+                return "";
+            }));
+          }
+          resolve(rows.filter(r => r.some(c => (c || "").trim() !== "")));
+        } catch (e) { reject(e); }
+      };
+      let src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;responseHandler:${cb}`;
+      if (name) src += `&sheet=${encodeURIComponent(name)}`;
+      if (range) src += `&range=${encodeURIComponent(range)}`;
+      script.src = src + `&_cb=${Date.now()}`;
+      script.onerror = () => { cleanup(); reject(new Error("Gagal memuat script JSONP")); };
+      document.head.appendChild(script);
+    });
+  }
+
+  function renderDataToDashboard(rows) {
+    if (rows.length <= 1) return;
+    const data = rows.slice(1);
+    const total = data.length;
+
+    const toNum = (val) => {
+        if (!val) return 0;
+        const str = String(val).trim();
+        const direct = parseFloat(str);
+        if (!isNaN(direct) && direct >= 1 && direct <= 5) return direct;
+        const match = str.match(/^(\d+)/);
+        if (match) {
+            const num = parseFloat(match[1]);
+            if (num >= 1 && num <= 5) return num;
+        }
+        const v = str.toLowerCase();
+        if (v.includes('sangat baik') || v.includes('sangat bermanfaat') || v.includes('sangat setuju') || v.includes('sangat relevan') || v.includes('sangat senang') || v.includes('excellent')) return 5;
+        if (v.includes('sangat kurang') || v.includes('sangat buruk') || v.includes('tidak sama sekali')) return 1;
+        if (v.includes('kurang') || v.includes('buruk') || v.includes('tidak')) return 2;
+        if (v.includes('baik') || v.includes('bermanfaat') || v.includes('setuju') || v.includes('relevan') || v.includes('senang') || v.includes('good')) return 4;
+        if (v.includes('cukup') || v.includes('sedang') || v.includes('biasa') || v.includes('mungkin')) return 3;
+        return 0;
+    };
+
+    let bScores = [], cScores = [], dScores = [], eScores = [];
+    let t1Scores = [], t2Scores = [];
+    let topicsCount = {}, requestedCount = {};
+    let quotes = [];
+    let feedbackTexts = [];
+
+    const header = (rows[0] || []).map(h => String(h || "").toLowerCase().trim());
+    const trainerNamesStr = localStorage.getItem('yusen-trainers') || "Atik fauziah, Romy";
+    const trainerNamesList = trainerNamesStr.split(/,|dan|&/).map(s=>s.trim()).filter(Boolean);
+    const t1Key = (trainerNamesList[0] || "atik").toLowerCase().split(' ')[0];
+    const t2Key = (trainerNamesList[1] || "romy").toLowerCase().split(' ')[0];
+
+    const findCol = (keywords, excludes = []) => {
+        for (let i = 0; i < header.length; i++) {
+            const lbl = header[i];
+            if (keywords.every(k => lbl.includes(k)) && excludes.every(x => !lbl.includes(x))) return i;
+        }
+        return -1;
+    };
+
+    const col = {
+        b:      findCol(['bermanfaat'], ['topik', 'penilaian', 'trainer', 'kesan']),
+        c:      findCol(['senang']),
+        d:      findCol(['materi yang diberikan']),
+        e:      findCol(['praktikal']),
+        t1s:    findCol(['penilaian', t1Key]),
+        t1f:    findCol(['kesan', t1Key], ['pesan']),
+        t2s:    findCol(['penilaian', t2Key]),
+        t2f:    findCol(['kesan', t2Key], ['pesan']),
+        topics: findCol(['topik bahasan']),
+        req:    findCol(['harapkan']) !== -1 ? findCol(['harapkan']) : findCol(['selanjutnya']),
+        quotes: findCol(['kesan dan pesan']),
+    };
+
+    const fb = (v, def) => v !== -1 ? v : def;
+    const hasTimestamp = header[0].includes('timestamp') || header[0].includes('waktu') || header[0] === '';
+    const off = hasTimestamp ? 0 : -1;
+    col.b      = fb(col.b,      1 + off);
+    col.c      = fb(col.c,      2 + off);
+    col.d      = fb(col.d,      3 + off);
+    col.e      = fb(col.e,      4 + off);
+    col.t1s    = fb(col.t1s,    5 + off);
+    col.t1f    = fb(col.t1f,    6 + off);
+    col.t2s    = fb(col.t2s,    7 + off);
+    col.t2f    = fb(col.t2f,    8 + off);
+    col.topics = fb(col.topics, 10 + off);
+    col.req    = fb(col.req,    11 + off);
+    col.quotes = fb(col.quotes, 12 + off);
+
+    data.forEach(row => {
+      if(col.b >= 0 && row[col.b])      { const v = toNum(row[col.b]);  if(v>0) bScores.push(v); }
+      if(col.c >= 0 && row[col.c])      { const v = toNum(row[col.c]);  if(v>0) cScores.push(v); }
+      if(col.d >= 0 && row[col.d])      { const v = toNum(row[col.d]);  if(v>0) dScores.push(v); }
+      if(col.e >= 0 && row[col.e])      { const v = toNum(row[col.e]);  if(v>0) eScores.push(v); }
+      if(col.t1s >= 0 && row[col.t1s]) { const v = toNum(row[col.t1s]); if(v>0) t1Scores.push(v); }
+      if(col.t2s >= 0 && row[col.t2s]) { const v = toNum(row[col.t2s]); if(v>0) t2Scores.push(v); }
+
+      if(col.t1f >= 0) {
+        const t1fb = String(row[col.t1f] || "").trim();
+        if(t1fb && t1fb !== '-' && t1fb.length > 1 && isNaN(parseFloat(t1fb))) feedbackTexts.push(t1fb);
+      }
+      if(col.t2f >= 0) {
+        const t2fb = String(row[col.t2f] || "").trim();
+        if(t2fb && t2fb !== '-' && t2fb.length > 1 && isNaN(parseFloat(t2fb))) feedbackTexts.push(t2fb);
+      }
+      if(col.topics >= 0) {
+        const kVals = (row[col.topics] || "").split(/[,;]/).map(s=>s.trim()).filter(v => Boolean(v) && v !== '-' && v.toLowerCase() !== 'n/a');
+        kVals.forEach(v => topicsCount[v] = (topicsCount[v] || 0) + 1);
+      }
+      if(col.req >= 0) {
+        const lVals = (row[col.req] || "").split(/[,;]/).map(s=>s.trim()).filter(v => Boolean(v) && v !== '-' && v.toLowerCase() !== 'n/a');
+        lVals.forEach(v => requestedCount[v] = (requestedCount[v] || 0) + 1);
+      }
+      if(col.quotes >= 0) {
+        const q = String(row[col.quotes] || "").trim();
+        if (q && q.length > 5 && q !== '-') quotes.push(q);
+      }
+    });
+
+    const getAvg = (arr) => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+    const getPct5 =  (arr) => arr.length ? (arr.filter(v=>Math.round(v)===5).length / arr.length * 100) : 0;
+    const getPct4 =  (arr) => arr.length ? (arr.filter(v=>Math.round(v)===4).length / arr.length * 100) : 0;
+    const getPct3 =  (arr) => arr.length ? (arr.filter(v=>Math.round(v)===3).length / arr.length * 100) : 0;
+    const getPct2 =  (arr) => arr.length ? (arr.filter(v=>Math.round(v)===2).length / arr.length * 100) : 0;
+    const getPct1 =  (arr) => arr.length ? (arr.filter(v=>Math.round(v)===1).length / arr.length * 100) : 0;
+    const getPct45 = (arr) => getPct5(arr) + getPct4(arr);
+
+    const bAvg = getAvg(bScores), bPct = getPct45(bScores);
+    const cAvg = getAvg(cScores), cPct = getPct45(cScores);
+    const dAvg = getAvg(dScores), dPct = getPct45(dScores);
+    
+    let allTrainerScores = [];
+    if(t1Scores.length > 0) allTrainerScores.push(...t1Scores);
+    if(t2Scores.length > 0) allTrainerScores.push(...t2Scores);
+    const tAvg = getAvg(allTrainerScores);
+    const ePct = getPct45(eScores) || 100; 
+
+    const kpis = document.querySelectorAll('.kpi');
+    if(kpis.length >= 5) {
+        kpis[0].querySelector('.ring-inner').innerText = Math.round(bPct) + '%';
+        kpis[0].querySelector('.score').innerText = bAvg.toFixed(2) + ' / 5 avg';
+        
+        kpis[1].querySelector('.ring-inner').innerText = Math.round(cPct) + '%';
+        kpis[1].querySelector('.score').innerText = cAvg.toFixed(2) + ' / 5 avg';
+        
+        kpis[2].querySelector('.ring-inner').innerText = Math.round(dPct) + '%';
+        kpis[2].querySelector('.score').innerText = dAvg.toFixed(2) + ' / 5 avg';
+        
+        const tPct = (tAvg/5)*100;
+        kpis[3].querySelector('.ring-inner').innerText = tAvg.toFixed(2);
+        
+        kpis[4].querySelector('.ring-inner').innerText = Math.round(ePct) + '%';
+        const eAvg = getAvg(eScores);
+        kpis[4].querySelector('.score').innerText = eAvg.toFixed(2) + ' / 5 avg';
+
+        // Animasi pop-up persentase cincin
+        setTimeout(() => {
+            kpis[0].querySelector('.ring').style.setProperty('--pct', bPct);
+            kpis[1].querySelector('.ring').style.setProperty('--pct', cPct);
+            kpis[2].querySelector('.ring').style.setProperty('--pct', dPct);
+            kpis[3].querySelector('.ring').style.setProperty('--pct', tPct);
+            kpis[4].querySelector('.ring').style.setProperty('--pct', ePct);
+        }, 100);
+
+        // Efek teks ganti dihapus atas permintaan, kembali statis.
+    }
+
+    const bars = document.querySelectorAll('.bar-row');
+    if(bars.length >= 4) {
+        const updateBar = (idx, scores) => {
+            const p5 = getPct5(scores), p4 = getPct4(scores), p3 = getPct3(scores), p2 = getPct2(scores), p1 = getPct1(scores);
+            
+            const infoSpan = bars[idx].querySelector('.bar-label span:last-child');
+            const defaultText = ``;
+            infoSpan.innerHTML = defaultText;
+            infoSpan.style.transition = "all 0.2s ease";
+
+            const setFill = (className, pct, label, color) => {
+                const el = bars[idx].querySelector(className);
+                el.style.width = pct + '%';
+                if(pct > 0) {
+                    el.style.cursor = 'pointer';
+                    el.title = `${Math.round(pct)}% (${label})`; // Native tooltip fallback
+                    el.addEventListener('mouseenter', () => {
+                        infoSpan.innerHTML = `<strong style="color:${color};font-size:14px;">${Math.round(pct)}%</strong> <span style="color:var(--muted);font-size:12px;">(${label})</span>`;
+                        el.style.filter = 'brightness(1.2)';
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        infoSpan.innerHTML = defaultText;
+                        el.style.filter = 'none';
+                    });
+                }
+            };
+
+            setFill('.bar-fill-5', p5, 'Nilai 5', 'var(--navy2)');
+            setFill('.bar-fill-4', p4, 'Nilai 4', '#6d93c4');
+            setFill('.bar-fill-3', p3, 'Nilai 3', '#a2b1c6');
+            setFill('.bar-fill-2', p2, 'Nilai 2', '#e8a87c');
+            setFill('.bar-fill-1', p1, 'Nilai 1', '#e27d60');
+        };
+
+        updateBar(0, bScores);
+        updateBar(1, cScores);
+        updateBar(2, dScores);
+        updateBar(3, eScores);
+    }
+
+    const tGrid = document.querySelector('.trainer-grid');
+    if(tGrid) {
+        let tHTML = '';
+        let tScoresArr = [t1Scores, t2Scores];
+        
+        trainerNamesList.forEach((name, idx) => {
+            const initials = name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+            const scores = tScoresArr[idx] || [];
+            
+            let avg = 0.0;
+            if(scores.length > 0) {
+                avg = getAvg(scores);
+            }
+
+            const displayAvg = avg > 0 ? avg.toFixed(2) : '-';
+
+            tHTML += `
+            <div class="trainer">
+              <div class="avatar">${initials}</div>
+              <div class="name">${name}</div>
+              <div class="score-big">${displayAvg}</div>
+            </div>`;
+        });
+        tGrid.innerHTML = tHTML;
+    }
+
+    // Process Feedback Text (Kolom G dan I) — hanya tampilkan kalimat bermakna
+    if (feedbackTexts.length > 0) {
+        // Kata pendek yang tidak bermakna sebagai umpan balik
+        const stopWords = new Set(['baik','seru','kocak','komunikatif','bagus','oke','ok','good','nice','mantap','keren','hebat','informatif','menarik','edukatif','atraktif','santai','lucu']);
+        const validFeedbacks = feedbackTexts.filter(t => {
+            const clean = t.trim();
+            if (clean.length < 12) return false; // Terlalu pendek
+            if (stopWords.has(clean.toLowerCase())) return false; // Kata sifat tunggal
+            if (/^[1-5]$/.test(clean)) return false; // Angka skala saja
+            return true;
+        });
+        
+        const displayFb = validFeedbacks.slice(0, 5);
+        
+        const fbContainer = document.getElementById('trainer-feedback-words');
+        if (fbContainer) {
+            if (displayFb.length > 0) {
+                fbContainer.innerHTML = `<div style="margin-bottom:6px;"><b>Beberapa umpan balik untuk Trainer:</b></div>` + 
+                    displayFb.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${w}"</div>`).join('');
+            } else {
+                fbContainer.innerHTML = `<div style="color:var(--muted);font-size:12px;">Umpan balik teks belum tersedia (pastikan kolom Kesan Trainer berisi kalimat, bukan hanya kata).</div>`;
+            }
+        }
+    }
+
+    // Update Topics
+    const getTopTags = (dict, limit) => Object.entries(dict).sort((a,b)=>b[1]-a[1]).slice(0,limit);
+    const tK = getTopTags(topicsCount, 7);
+    const tL = getTopTags(requestedCount, 7);
+    
+    const chipWraps = document.querySelectorAll('.chip-wrap');
+    if(chipWraps.length >= 2) {
+        if(tK.length) chipWraps[0].innerHTML = tK.map((t,i) => `<span class="chip ${i<3?'big':''}">${t[0]}</span>`).join('');
+        if(tL.length) chipWraps[1].innerHTML = tL.map((t,i) => `<span class="chip ${i<2?'big':''}" ${i<2?'style="background:var(--red);"':''}>${t[0]}</span>`).join('');
+    }
+
+    // Update Quotes
+    const qGrid = document.querySelector('.quote-grid');
+    if(qGrid && quotes.length) {
+        const showQuotes = quotes.slice(0, 6); // Ambil maks 6
+        qGrid.innerHTML = showQuotes.map(q => `
+          <div class="quote">
+            <div class="mark">&ldquo;</div>
+            <p>${q}</p>
+            <div class="who">Peserta, Yusen Logistics</div>
+          </div>
+        `).join('');
+    }
+
+    // Update Footer CTA
+    const stats = document.querySelectorAll('.cta-stats .num');
+    if(stats.length >= 3) {
+      stats[0].innerText = `${bScores.filter(v=>v>=4).length}/${total}`;
+      stats[1].innerText = tAvg.toFixed(2);
+      stats[2].innerText = Math.round(ePct) + '%';
+    }
+
+    // Update Header and Footer dynamically based on actual data length
+    const metaDivs = document.querySelectorAll('.meta-row div');
+    if (metaDivs.length >= 4) {
+      metaDivs[0].innerHTML = `<b>${total}</b> survei peserta`;
+    }
+    const footer = document.querySelector('footer');
+    if (footer) {
+      const dates = footer.innerHTML.match(/(23–24 May 2026|Mei 2026)/) ? footer.innerHTML.match(/(23–24 May 2026|Mei 2026)/)[0] : 'Mei 2026';
+      footer.innerHTML = `Sumber: Survei evaluasi pasca-training, ${total} responden, ${dates} · Yusen Logistics Leadership Development Program`;
+    }
+
+    // Trigger staggered animations for "Promax" UI/UX feel
+    setTimeout(() => {
+        const animatedElements = document.querySelectorAll('.section-title, .kpi, .card, .trainer, .quote, .cta');
+        animatedElements.forEach((el, index) => {
+            el.style.animationDelay = `${index * 0.05}s`;
+            el.classList.add('animate-card');
+        });
+    }, 50);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('yusen-dashboard-config');
+    if (saved) {
+      try {
+        const config = JSON.parse(saved);
+        
+        // Terapkan Config Textual ke Header
+        if (config.programTitle) {
+          const h1 = document.querySelector('header h1');
+          if(h1) h1.innerHTML = config.programTitle;
+        }
+        if (config.programSubtitle) {
+          const sub = document.querySelector('.subtitle');
+          if(sub) sub.innerText = config.programSubtitle;
+        }
+        const metaDivs = document.querySelectorAll('.meta-row div');
+        if (metaDivs.length >= 4) {
+          if (config.participantCount) metaDivs[0].innerHTML = `<b>${config.participantCount}</b> survei peserta`;
+          if (config.programDuration) metaDivs[1].innerHTML = `<b>${config.programDuration}</b> durasi program`;
+          if (config.trainingDates) metaDivs[2].innerHTML = `<b>${config.trainingDates}</b> tanggal training`;
+          if (config.trainerNames) metaDivs[3].innerHTML = `<b>Trainer:</b> ${config.trainerNames}`;
+        }
+        
+        // Update footer text dynamically
+        const footer = document.querySelector('footer');
+        if (footer) {
+          footer.innerHTML = `Sumber: Survei evaluasi pasca-training, ${config.participantCount || 28} responden, ${config.trainingDates || 'Mei 2026'} · Yusen Logistics Leadership Development Program`;
+        }
+
+        // Jalankan Fetch Data jika ada Sheet ID
+        if (config.sheetId) {
+            console.log("Memuat data dari Google Sheets...");
+            fetchPreviewJSONP(config.sheetId, config.sheetName, config.dataRange)
+              .then(rows => {
+                console.log("Data berhasil dimuat. Total Baris:", rows.length);
+                renderDataToDashboard(rows);
+              })
+              .catch(err => {
+                console.error("Gagal mengambil data dari Spreadsheet:", err);
+              });
+        }
+      } catch (e) {
+        console.error("Gagal memproses konfigurasi backend:", e);
+      }
+    }
+  });
+</script>
+</body>
+</html>

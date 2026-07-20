@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backend — Pengaturan Yusen Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-color: #f4f6f9;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --primary: #0b2545;
+    --accent: #d4a017;
+    --accent-hover: #b88a12;
+    --success: #10b981;
+    --radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.5;
+    padding-bottom: 40px;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, var(--primary) 0%, #1a365d 100%);
+    color: white;
+    padding: 30px 40px;
+    border-radius: 0 0 20px 20px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::after {
+    content: "";
+    position: absolute;
+    right: -50px; top: -50px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(212,160,23,0.3) 0%, rgba(212,160,23,0) 70%);
+  }
+
+  h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #cbd5e1;
+    font-weight: 500;
+  }
+
+  /* Container */
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::before {
+    content: "";
+    display: block;
+    width: 4px;
+    height: 16px;
+    background-color: var(--accent);
+    border-radius: 2px;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  /* Form Elements */
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text-main);
+  }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--text-main);
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+  }
+
+  input[type="text"]:focus, input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.15);
+  }
+  
+  .help-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  code {
+    background: #e2e8f0;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--primary);
+  }
+
+  /* Buttons */
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+  }
+
+  button {
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background-color: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background-color: var(--primary);
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background-color: #1a365d;
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--success);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: var(--shadow);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 1000;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="container" style="padding: 0;">
+      <h1>Yusen Dashboard Backend</h1>
+      <div class="subtitle">Konfigurasi Data Source & Tampilan Dashboard Evaluasi</div>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <div class="card">
+      <div class="card-title">1. Sumber Data (Data Source)</div>
+      <div class="card-desc">Tentukan Google Sheet yang akan digunakan sebagai sumber data untuk dashboard.</div>
+      
+      <div class="form-group">
+        <label for="sheetId">Google Sheet ID atau URL Lengkap</label>
+        <input type="text" id="sheetId" placeholder="Misal: 1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY">
+        <div class="help-text">Pastikan Google Sheet sudah di-set ke "Anyone with the link can view".</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. Rentang Data (Data Range)</div>
+      <div class="card-desc">Tentukan spesifik sheet dan cell range yang ingin diambil datanya.</div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="sheetName">Nama Sheet (Opsional)</label>
+          <input type="text" id="sheetName" placeholder="Misal: Responses 1">
+          <div class="help-text">Biarkan kosong jika mengambil dari sheet pertama.</div>
+        </div>
+        <div class="form-group">
+          <label for="dataRange">Data Range (Opsional)</label>
+          <input type="text" id="dataRange" placeholder="Misal: A1:Z100">
+          <div class="help-text">Format range standar A1. Kosongkan untuk ambil semua.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">3. Informasi Program (Header)</div>
+      <div class="card-desc">Sesuaikan teks yang muncul pada header dashboard laporan evaluasi.</div>
+      
+      <div class="form-group">
+        <label for="programTitle">Judul Program</label>
+        <input type="text" id="programTitle" placeholder="Adapting My Leadership: Communication & Adaptability">
+      </div>
+      
+      <div class="form-group">
+        <label for="programSubtitle">Deskripsi Subjudul</label>
+        <input type="text" id="programSubtitle" placeholder="Prepared for Yusen Logistics — a 2-day leadership training...">
+      </div>
+
+      <div class="form-group">
+        <label for="programDuration">Durasi Program</label>
+        <input type="text" id="programDuration" placeholder="2 days">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="trainingDates">Tanggal Training</label>
+          <input type="text" id="trainingDates" placeholder="23–24 May 2026">
+        </div>
+        <div class="form-group">
+          <label for="trainerNames">Nama Trainer</label>
+          <input type="text" id="trainerNames" placeholder="Arif Hidayat & Atik Fauzia">
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" onclick="saveConfig()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Simpan Pengaturan
+      </button>
+      <a href="YUSEN_~1.HTM (1).html" style="text-decoration: none;">
+        <button class="btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          Lihat Dashboard
+        </button>
+      </a>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">Pengaturan berhasil disimpan!</div>
+
+  <script>
+    const STORAGE_KEY = 'yusen-dashboard-config';
+
+    // Ekstrak ID jika user memasukkan URL lengkap
+    function extractSheetId(input) {
+      if (!input) return "";
+      const match = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      return match ? match[1] : input;
+    }
+
+    function saveConfig() {
+      const rawSheetId = document.getElementById('sheetId').value.trim();
+      const sheetId = extractSheetId(rawSheetId);
+      
+      // Update form dengan ID hasil ekstrak agar user tau
+      if(rawSheetId !== sheetId && sheetId !== "") {
+          document.getElementById('sheetId').value = sheetId;
+      }
+
+      const config = {
+        sheetId: sheetId,
+        sheetName: document.getElementById('sheetName').value.trim(),
+        dataRange: document.getElementById('dataRange').value.trim(),
+        programTitle: document.getElementById('programTitle').value.trim(),
+        programSubtitle: document.getElementById('programSubtitle').value.trim(),
+        programDuration: document.getElementById('programDuration').value.trim(),
+        trainingDates: document.getElementById('trainingDates').value.trim(),
+        trainerNames: document.getElementById('trainerNames').value.trim()
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+      showToast();
+    }
+
+    function loadConfig() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const config = JSON.parse(saved);
+          document.getElementById('sheetId').value = config.sheetId || '';
+          document.getElementById('sheetName').value = config.sheetName || '';
+          document.getElementById('dataRange').value = config.dataRange || '';
+          document.getElementById('programTitle').value = config.programTitle || '';
+          document.getElementById('programSubtitle').value = config.programSubtitle || '';
+          document.getElementById('programDuration').value = config.programDuration || '';
+          document.getElementById('trainingDates').value = config.trainingDates || '';
+          document.getElementById('trainerNames').value = config.trainerNames || '';
+        } catch (e) {
+          console.error('Error loading config', e);
+        }
+      }
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Load configurasi saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', loadConfig);
+  </script>
+</body>
+</html>

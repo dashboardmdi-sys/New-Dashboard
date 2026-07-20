@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backend — Manajemen Klien</title>
+<link rel="icon" href="globe color-01.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary-base:#ffd204; --primary-100:#F2F0E9; --primary-200:#EAE4C8; --primary-300:#E8D892;
+    --primary-500:#F2C80D; --primary-600:#DBB300; --primary-700:#B89600; --primary-900:#5E4E08;
+    --secondary-base:#ee3f34; --secondary-600:#CB1D10;
+    --navy:#002c63; --navy-800:#04418B; --navy-300:#92B8E8; --navy-100:#E9EDF2;
+    --n50:#F7F7F7; --n100:#EDEDED; --n200:#DAD9D8; --n300:#BFBCBB; --n400:#A09B98;
+    --n500:#857F7A; --n600:#736D68; --n700:#615B57; --n800:#4B4744; --n900:#353331;
+    --success:#16A34A; --warning:#D97706; --danger:#DC2626;
+    --card-bg:#FFFFFF; --card-border:#DAD9D8; --radius-md:8px; --radius-lg:12px; --radius-xl:16px;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+    --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.05);
+    --shadow-lg:0 10px 15px rgba(0,0,0,.1),0 4px 6px rgba(0,0,0,.05);
+    --font-head:"Plus Jakarta Sans",system-ui,sans-serif;
+    --font-body:"Inter",system-ui,sans-serif;
+    --font-mono:"JetBrains Mono","Fira Code",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--font-body);color:var(--n900);background:var(--n50);
+    background-image:radial-gradient(var(--n200) 1px,transparent 1px);
+    background-size:22px 22px;min-height:100vh;}
+  .glow{position:fixed;top:-220px;left:50%;transform:translateX(-50%);
+    width:1200px;height:420px;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at center,rgba(255,210,4,.22),rgba(255,210,4,0) 65%);
+    filter:blur(10px);}
+
+  /* ===== HEADER ===== */
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--card-border);}
+  header::before{content:"";display:block;height:4px;
+    background:linear-gradient(90deg,var(--primary-base) 0%,var(--primary-base) 55%,var(--secondary-base) 55%,var(--secondary-base) 72%,var(--navy) 72%);}
+  .header-inner{max-width:1100px;margin:0 auto;padding:14px 24px;
+    display:flex;align-items:center;gap:16px;}
+  .header-icon{width:44px;height:44px;border-radius:12px;flex-shrink:0;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--navy),var(--navy-800));color:#fff;}
+  .header-icon svg{width:22px;height:22px}
+  .title-block h1{font-family:var(--font-head);font-size:1.15rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;color:var(--navy)}
+  .title-block p{font-size:.75rem;color:var(--n600);letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-top:2px}
+  .header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .btn-ghost{display:inline-flex;align-items:center;gap:8px;text-decoration:none;cursor:pointer;
+    font-family:var(--font-head);font-size:.82rem;font-weight:700;color:var(--navy);
+    background:#fff;border:1px solid var(--card-border);border-radius:9999px;padding:9px 16px;
+    transition:background .2s,transform .2s;}
+  .btn-ghost:hover{background:var(--primary-100)}
+  .btn-ghost svg{width:15px;height:15px}
+  .theme-toggle{width:38px;height:38px;border:1px solid var(--card-border);border-radius:50%;cursor:pointer;
+    background:var(--card-bg);display:grid;place-items:center;color:var(--navy);
+    transition:background .25s,transform .35s cubic-bezier(.34,1.56,.64,1);flex-shrink:0;}
+  .theme-toggle:hover{background:var(--primary-100);transform:rotate(30deg)}
+  .theme-toggle svg{width:18px;height:18px}
+  .theme-toggle .icon-sun{display:none}
+  [data-theme="dark"] .theme-toggle .icon-sun{display:block}
+  [data-theme="dark"] .theme-toggle .icon-moon{display:none}
+
+  /* ===== LAYOUT ===== */
+  main{max-width:1100px;margin:0 auto;padding:36px 24px 80px;position:relative;z-index:1}
+
+  /* ===== BUTTONS ===== */
+  .btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:none;
+    font-family:var(--font-head);font-size:.85rem;font-weight:700;border-radius:var(--radius-md);
+    padding:11px 20px;transition:transform .15s,filter .2s,background .2s,box-shadow .2s;}
+  .btn:active{transform:translateY(1px)}
+  .btn svg{width:15px;height:15px}
+  .btn-primary{background:var(--navy);color:#fff;box-shadow:0 2px 8px rgba(0,44,99,.2)}
+  .btn-primary:hover{filter:brightness(1.12)}
+  .btn-secondary{background:var(--primary-base);color:var(--navy)}
+  .btn-secondary:hover{filter:brightness(1.04)}
+  .btn-outline{background:#fff;color:var(--n700);border:1px solid var(--card-border)}
+  .btn-outline:hover{background:var(--n100)}
+  .btn-danger{background:#fff;color:var(--danger);border:1px solid var(--card-border)}
+  .btn-danger:hover{background:#FDECEC;border-color:var(--danger)}
+  .btn-success{background:#E7F6EC;color:var(--success);border:1px solid #bbf0d0}
+  .btn-success:hover{background:#d1f0df}
+  .btn-sm{padding:7px 14px;font-size:.78rem}
+
+  /* ===== CARD ===== */
+  .card{background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:28px;}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .card-head h2{font-family:var(--font-head);font-size:1.05rem;font-weight:700;color:var(--n900)}
+  .card-desc{font-size:.8rem;color:var(--n500);margin-bottom:22px;line-height:1.55}
+
+  /* ===== FORM ===== */
+  .field{margin-bottom:18px}
+  .field:last-child{margin-bottom:0}
+  .field label{display:block;font-family:var(--font-head);font-size:.78rem;font-weight:700;
+    color:var(--n800);margin-bottom:7px;}
+  .field .help{font-size:.72rem;color:var(--n500);margin-top:6px;line-height:1.45}
+  .field .help code{font-family:var(--font-mono);font-size:.7rem;background:var(--n100);padding:1px 5px;border-radius:4px;color:var(--navy)}
+  input[type=text],input[type=number],input[type=password],textarea,select{
+    width:100%;font-family:var(--font-body);font-size:.88rem;color:var(--n900);
+    background:#fff;border:1px solid var(--card-border);border-radius:var(--radius-md);
+    padding:10px 14px;transition:border-color .2s,box-shadow .2s;resize:vertical;}
+  input[type=text]::placeholder,input[type=number]::placeholder,input[type=password]::placeholder,textarea::placeholder{color:var(--n400)}
+  input[type=text]:focus,input[type=number]:focus,input[type=password]:focus,textarea:focus,select:focus{
+    outline:none;border-color:var(--primary-500);box-shadow:0 0 0 3px rgba(242,200,13,.18)}
+  textarea{min-height:140px;line-height:1.6}
+  select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23857F7A' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer;}
+  .color-row{display:flex;gap:16px;flex-wrap:wrap}
+  .color-field{flex:1;min-width:140px}
+  .color-input-wrap{display:flex;align-items:center;gap:10px}
+  input[type=color]{width:44px;height:44px;border:2px solid var(--card-border);border-radius:var(--radius-md);
+    cursor:pointer;padding:2px;background:var(--card-bg);}
+  input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+  input[type=color]::-webkit-color-swatch{border:none;border-radius:4px}
+  .color-hex{font-family:var(--font-mono);font-size:.78rem;color:var(--n600)}
+
+  /* ===== TOAST ===== */
+  .toast{position:fixed;bottom:24px;right:24px;z-index:200;
+    background:var(--n900);color:#fff;font-size:.82rem;font-weight:600;padding:12px 20px;
+    border-radius:var(--radius-md);box-shadow:var(--shadow-lg);
+    opacity:0;transform:translateY(12px);transition:all .35s cubic-bezier(.22,1,.36,1);pointer-events:none;}
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  /* ===== OVERLINE ===== */
+  .overline{font-family:var(--font-head);font-size:.6875rem;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--n500);display:flex;align-items:center;gap:10px;margin:0 0 16px;}
+  .overline::after{content:"";flex:1;height:1px;background:var(--n200)}
+  .overline .num{font-family:var(--font-mono);color:var(--primary-700)}
+
+  /* ===== VIEW SYSTEM ===== */
+  .view{display:none}
+  .view.active{display:block}
+
+  /* ===== VIEW 1: ADD CLIENT ===== */
+  .add-client-wrap{max-width:480px;margin:60px auto 0}
+  .add-client-wrap .brand{text-align:center;margin-bottom:32px}
+  .add-client-wrap .brand .icon-ring{
+    width:72px;height:72px;border-radius:20px;margin:0 auto 16px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--navy),var(--navy-800));color:#fff;
+    box-shadow:0 8px 24px rgba(0,44,99,.3);}
+  .add-client-wrap .brand .icon-ring svg{width:34px;height:34px}
+  .add-client-wrap .brand h2{font-family:var(--font-head);font-size:1.5rem;font-weight:800;color:var(--navy);letter-spacing:-.02em}
+  .add-client-wrap .brand p{font-size:.85rem;color:var(--n500);margin-top:6px}
+  .add-client-wrap .card{padding:32px}
+  .pin-input{letter-spacing:.35em;font-family:var(--font-mono);font-size:1.2rem;text-align:center}
+
+  /* ===== VIEW 2: CLIENT LIST ===== */
+  .list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap}
+  .list-header h2{font-family:var(--font-head);font-size:1.4rem;font-weight:800;color:var(--navy);letter-spacing:-.02em}
+  .clients-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .client-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-md);padding:22px;transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s;
+    position:relative;}
+  .client-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--navy),var(--primary-base));border-top-left-radius:var(--radius-lg);border-top-right-radius:var(--radius-lg);}
+  .client-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+  .client-card-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+  .client-avatar{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--navy-100),var(--navy-300));
+    display:grid;place-items:center;flex-shrink:0;font-family:var(--font-head);font-size:1.1rem;font-weight:800;color:var(--navy);}
+  
+  /* ===== SEARCH WRAPPER & PULSE ===== */
+  .search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 240px;
+  }
+  .search-wrapper svg {
+    position: absolute;
+    left: 12px;
+    width: 15px;
+    height: 15px;
+    color: var(--n400);
+    pointer-events: none;
+  }
+  .search-input {
+    padding-left: 36px !important;
+  }
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    display: inline-block;
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4);
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+    }
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 5px rgba(22, 163, 74, 0);
+    }
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+    }
+  }
+  .client-name{font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--n900);line-height:1.3}
+  .client-date{font-size:.72rem;color:var(--n500);margin-top:3px;font-family:var(--font-mono)}
+  .client-card-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .empty-state{text-align:center;padding:80px 24px;color:var(--n500)}
+  .empty-state svg{width:56px;height:56px;margin:0 auto 16px;opacity:.35;display:block}
+  .empty-state p{font-size:.95rem;line-height:1.6}
+
+  /* ===== VIEW 3: EDIT CLIENT ===== */
+  .edit-layout{display:grid;grid-template-columns:230px 1fr;gap:24px;align-items:start}
+  @media(max-width:768px){.edit-layout{grid-template-columns:1fr}}
+  .edit-back{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-head);font-size:.82rem;
+    font-weight:700;color:var(--n600);cursor:pointer;border:none;background:none;padding:0;
+    margin-bottom:20px;transition:color .2s;}
+  .edit-back:hover{color:var(--navy)}
+  .edit-back svg{width:14px;height:14px}
+  .edit-client-name{font-family:var(--font-head);font-size:1.5rem;font-weight:800;color:var(--navy);letter-spacing:-.02em;margin-bottom:4px}
+  .edit-client-meta{font-size:.75rem;color:var(--n500);font-family:var(--font-mono);margin-bottom:24px}
+  
+  .client-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 24px;
+    margin-top: 16px;
+    align-items: start;
+  }
+  @media(max-width:992px){
+    .client-edit-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Badge Styles */
+  .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 9999px;
+    font-family: var(--font-head);
+  }
+  .badge-success {
+    background-color: #E7F6EC;
+    color: var(--success);
+  }
+  .badge-secondary {
+    background-color: var(--n100);
+    color: var(--n500);
+  }
+
+  /* Sidebar nav */
+  .tab-sidebar{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-sm);padding:8px;position:sticky;top:80px}
+  .tab-btn{display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border:none;background:none;
+    cursor:pointer;border-radius:var(--radius-md);font-family:var(--font-head);font-size:.83rem;font-weight:600;
+    color:var(--n600);text-align:left;transition:background .18s,color .18s;}
+  .tab-btn:hover{background:var(--n50);color:var(--n900)}
+  .tab-btn.active{background:var(--navy);color:#fff}
+  .tab-btn .tab-icon{width:20px;height:20px;flex-shrink:0;opacity:.7}
+  .tab-btn.active .tab-icon{opacity:1}
+  .tab-sep{height:1px;background:var(--n100);margin:6px 0}
+
+  /* Tab content panes */
+  .tab-pane{display:none}
+  .tab-pane.active{display:block}
+  .tab-pane .card{margin-bottom:16px}
+  .tab-pane .card:last-child{margin-bottom:0}
+
+  /* ===== DOKUMENTASI ===== */
+  .day-list{display:flex;flex-direction:column;gap:10px}
+  .day-item{border:1px solid var(--card-border);border-radius:var(--radius-md);overflow:hidden}
+  .day-item-head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;
+    background:var(--card-bg);transition:background .15s;user-select:none;}
+  .day-item-head:hover{background:var(--primary-100)}
+  .day-item-head .day-label{font-family:var(--font-head);font-size:.88rem;font-weight:700;color:var(--n900);flex:1}
+  .day-item-head .day-count{font-family:var(--font-mono);font-size:.7rem;color:var(--n500);background:var(--n100);padding:3px 10px;border-radius:9999px}
+  .day-item-head .chevron{width:16px;height:16px;color:var(--n400);transition:transform .25s;flex-shrink:0}
+  .day-item.open .day-item-head .chevron{transform:rotate(180deg)}
+  .day-item-body{display:none;padding:18px;background:var(--n50);border-top:1px solid var(--n100)}
+  .day-item.open .day-item-body{display:block}
+  .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:14px}
+  .photo-thumb{position:relative;border-radius:var(--radius-md);overflow:hidden;aspect-ratio:4/3;
+    border:1px solid var(--card-border);background:var(--n100);}
+  .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .photo-thumb .remove-photo{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;
+    background:rgba(220,38,38,.85);border:none;cursor:pointer;display:grid;place-items:center;color:#fff;
+    opacity:0;transition:opacity .15s;}
+  .photo-thumb:hover .remove-photo{opacity:1}
+  .photo-thumb .remove-photo svg{width:12px;height:12px}
+  .add-url-row{display:flex;gap:8px;margin-top:10px}
+  .add-url-row input{flex:1}
+  .day-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+  /* ===== ACTION PLAN TABLE ===== */
+  .ap-table-wrap{overflow-x:auto;border:1px solid var(--card-border);border-radius:var(--radius-md);margin-top:10px}
+  .ap-table{width:100%;border-collapse:collapse;font-size:.84rem;min-width:560px}
+  .ap-table th{background:var(--navy);color:#fff;font-family:var(--font-head);font-size:.72rem;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;text-align:left;white-space:nowrap}
+  .ap-table td{padding:9px 12px;border-bottom:1px solid var(--n100);vertical-align:middle}
+  .ap-table tr:last-child td{border-bottom:none}
+  .ap-table td input{border:none;background:transparent;font-size:.84rem;width:100%;outline:none;
+    font-family:var(--font-body);color:var(--n900);padding:0;}
+  .ap-table td input:focus{background:var(--primary-100);border-radius:4px;padding:2px 6px}
+  .ap-table .col-del{width:36px;text-align:center}
+  .del-row-btn{background:none;border:none;cursor:pointer;color:var(--n400);padding:4px;border-radius:6px;
+    display:grid;place-items:center;transition:color .15s,background .15s;}
+  .del-row-btn:hover{color:var(--danger);background:#FDECEC}
+  .del-row-btn svg{width:14px;height:14px}
+
+  /* ===== TEST RESULT ===== */
+  .test-result{margin-top:16px;display:none}
+  .test-result.show{display:block}
+  .test-status{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:600;
+    padding:10px 14px;border-radius:var(--radius-md);margin-bottom:12px;}
+  .test-status.ok{background:#E7F6EC;color:var(--success)}
+  .test-status.err{background:#FDECEC;color:var(--danger)}
+  .test-status.warn{background:var(--primary-100);color:var(--primary-700)}
+  .test-status .dot{width:9px;height:9px;border-radius:50%;background:currentColor;flex-shrink:0}
+  .preview-table{overflow-x:auto;border:1px solid var(--card-border);border-radius:var(--radius-md)}
+  .preview-table table{width:100%;border-collapse:collapse;font-size:.74rem;font-family:var(--font-mono)}
+  .preview-table th,.preview-table td{padding:6px 10px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--n100)}
+  .preview-table th{background:var(--n100);color:var(--n700);font-weight:700;position:sticky;top:0}
+  .preview-table tr:last-child td{border-bottom:none}
+  .spin{animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ===== DARK MODE ===== */
+  [data-theme="dark"]{
+    --n50:#111113;--n100:#1e1e22;--n200:#2a2a30;--n300:#3e3e46;
+    --n400:#6e6e78;--n500:#8e8e98;--n600:#a8a8b2;--n700:#c2c2ca;--n800:#d8d8de;--n900:#ececf0;
+    --card-bg:#1a1a1e;--card-border:#2a2a30;
+    --navy:#7eb3f0;--navy-800:#5a9de6;--navy-300:#2c5a8f;--navy-100:#1c2a3a;
+    --primary-100:#2a2616;--primary-200:#3a3520;--primary-300:#5a5020;
+    --primary-700:#e0b800;--primary-900:#f0d850;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.25);
+    --shadow-md:0 4px 6px rgba(0,0,0,.35),0 2px 4px rgba(0,0,0,.25);
+    --shadow-lg:0 10px 15px rgba(0,0,0,.4),0 4px 6px rgba(0,0,0,.3);
+  }
+  [data-theme="dark"] body{background-image:radial-gradient(var(--n200) 1px,transparent 1px)}
+  [data-theme="dark"] header{background:rgba(17,17,19,.92)}
+  [data-theme="dark"] header::before{background:linear-gradient(90deg,var(--primary-base) 0%,var(--primary-base) 55%,var(--secondary-base) 55%,var(--secondary-base) 72%,#7eb3f0 72%)}
+  [data-theme="dark"] .glow{background:radial-gradient(ellipse at center,rgba(255,210,4,.08),rgba(255,210,4,0) 65%)}
+  [data-theme="dark"] input[type=text],[data-theme="dark"] input[type=number],[data-theme="dark"] input[type=password],[data-theme="dark"] textarea,[data-theme="dark"] select{background:var(--card-bg);color:var(--n900)}
+  [data-theme="dark"] .btn-ghost,[data-theme="dark"] .btn-outline,[data-theme="dark"] .btn-danger{background:var(--card-bg)}
+  [data-theme="dark"] .test-status.ok{background:#122a1a;color:#4ade80}
+  [data-theme="dark"] .test-status.err{background:#2a1212;color:#f87171}
+  [data-theme="dark"] .toast{background:var(--n800);color:var(--n50)}
+  [data-theme="dark"] .day-item-body{background:var(--n100)}
+  [data-theme="dark"] .tab-btn.active{background:var(--navy-800)}
+  [data-theme="dark"] .ap-table th{background:var(--navy-800)}
+  [data-theme="dark"] .client-card::before{background:linear-gradient(90deg,var(--navy-800),var(--primary-700))}
+
+  /* ===== DROPDOWN MENU ===== */
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  .dropdown-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    color: var(--n500);
+    display: grid;
+    place-items: center;
+    transition: background 0.2s, color 0.2s;
+  }
+  .dropdown-btn:hover {
+    background: var(--n100);
+    color: var(--navy);
+  }
+  .dropdown-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 100;
+    min-width: 140px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 6px 0;
+    margin-top: 4px;
+  }
+  .dropdown-content.show {
+    display: block;
+    animation: dropFade 0.2s ease;
+  }
+  @keyframes dropFade {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--n700);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .dropdown-item:hover {
+    background: var(--n50);
+    color: var(--navy);
+  }
+  .dropdown-item.danger {
+    color: var(--danger);
+  }
+  .dropdown-item.danger:hover {
+    background: #FDECEC;
+    color: var(--danger);
+  }
+  [data-theme="dark"] .dropdown-btn:hover {
+    background: var(--n200);
+  }
+  [data-theme="dark"] .dropdown-content {
+    background: var(--n100);
+  }
+  [data-theme="dark"] .dropdown-item:hover {
+    background: var(--n200);
+  }
+
+  footer{max-width:1100px;margin:0 auto;padding:0 24px 40px;
+    font-size:.72rem;color:var(--n500);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+
+<header>
+  <div class="header-inner">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+    </div>
+    <div class="title-block">
+      <h1>Manajemen Klien</h1>
+      <p id="headerSub">Backend · Manajemen Klien</p>
+    </div>
+    <div class="header-right">
+      <button class="btn-ghost" id="headerDashBtn" style="display:none" onclick="window.open('index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        Buka Dashboard
+      </button>
+      <button class="theme-toggle" id="themeToggle" title="Ganti tema" aria-label="Toggle dark mode">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ VIEW 1: TAMBAH KLIEN ============ -->
+  <div class="view active" id="viewAdd">
+    <div class="add-client-wrap">
+      <div class="brand">
+        <div class="icon-ring">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h2>Tambah Klien Baru</h2>
+        <p>Buat akun login untuk perusahaan/klien. Mereka akan login menggunakan <b>Nama Perusahaan</b> + <b>PIN</b>.</p>
+      </div>
+      <div class="card">
+        <div class="field">
+          <label for="newClientName">Nama Perusahaan <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="newClientName" placeholder="contoh: PT Maju Bersama" autocomplete="off">
+          <div class="help">Nama ini digunakan klien saat login di halaman dashboard.</div>
+        </div>
+        <div class="field">
+          <label for="newClientPin">PIN Akses (4 digit angka) <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="newClientPin" class="pin-input" maxlength="4" placeholder="contoh: 1234" inputmode="numeric" pattern="[0-9]{4}">
+          <div class="help">PIN integer 4 digit. Klien memasukkan nama perusahaan + PIN ini untuk login.</div>
+        </div>
+        <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="createClientBtn" style="flex:1;justify-content:center">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Buat Akun Klien
+          </button>
+          <button class="btn btn-outline" id="cancelAddBtn" style="display:none" onclick="showView('list')">Batal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ VIEW 2: DAFTAR KLIEN ============ -->
+  <div class="view" id="viewList">
+    <div class="list-header">
+      <div>
+        <h2>Daftar Klien</h2>
+        <p style="font-size:.8rem;color:var(--n500);margin-top:4px" id="clientCountLabel">0 klien terdaftar</p>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <div class="search-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="searchClientInput" class="search-input" placeholder="Cari nama klien..." style="margin-bottom: 0;" oninput="renderClientList()">
+        </div>
+        <button class="btn btn-primary" onclick="showAddForm()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Tambah Klien Baru
+        </button>
+      </div>
+    </div>
+    <div class="clients-grid" id="clientsGrid"></div>
+  </div>
+
+  <!-- ============ VIEW 3: EDIT KLIEN ============ -->
+  <!-- ============ VIEW 3: DETAIL KLIEN & SESI PELATIHAN ============ -->
+  <div class="view" id="viewEdit">
+    <button class="edit-back" id="backToListBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+      Kembali ke Daftar Klien
+    </button>
+    <div class="edit-client-name" id="editClientName">—</div>
+    <div class="edit-client-meta" id="editClientMeta">—</div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; margin-top: 16px; align-items: start;" class="client-edit-grid">
+      <!-- COLUMN 1: TEMA & APPEARANCE (HEADER & FOOTER) -->
+      <div class="card">
+        <div class="card-head"><h2>Header, Footer &amp; Tema Klien</h2></div>
+        <p class="card-desc">Konfigurasi tampilan dashboard untuk klien ini.</p>
+        <div class="field">
+          <label for="cfgTitle">Judul Dashboard</label>
+          <input type="text" id="cfgTitle" placeholder="Program Country MDP 2026">
+        </div>
+        <div class="field">
+          <label for="cfgSubtitle">Subjudul</label>
+          <input type="text" id="cfgSubtitle" placeholder="Dashboard Report · Evaluasi Pre &amp; Post Test">
+        </div>
+        <div class="field">
+          <label for="cfgLogoUrl">URL Logo (opsional)</label>
+          <input type="text" id="cfgLogoUrl" placeholder="https://example.com/logo.png atau logo.png">
+        </div>
+        
+        <div class="color-row" style="margin-top:14px; margin-bottom:14px;">
+          <div class="field color-field">
+            <label for="cfgColorPrimary">Warna Primer</label>
+            <div class="color-input-wrap"><input type="color" id="cfgColorPrimary" value="#ffd204"><code class="color-hex" id="hexPrimary">#ffd204</code></div>
+          </div>
+          <div class="field color-field">
+            <label for="cfgColorSecondary">Warna Sekunder</label>
+            <div class="color-input-wrap"><input type="color" id="cfgColorSecondary" value="#ee3f34"><code class="color-hex" id="hexSecondary">#ee3f34</code></div>
+          </div>
+          <div class="field color-field">
+            <label for="cfgColorNavy">Warna Navy</label>
+            <div class="color-input-wrap"><input type="color" id="cfgColorNavy" value="#002c63"><code class="color-hex" id="hexNavy">#002c63</code></div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px;">
+          <div class="field">
+            <label for="cfgTitleWeight">Judul: Tebal</label>
+            <select id="cfgTitleWeight">
+              <option value="bold">Tebal</option>
+              <option value="normal">Normal</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cfgTitleStyle">Judul: Miring</label>
+            <select id="cfgTitleStyle">
+              <option value="normal">Normal</option>
+              <option value="italic">Miring</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cfgTitleDeco">Judul: Garis</label>
+            <select id="cfgTitleDeco">
+              <option value="none">Normal</option>
+              <option value="underline">Garis</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="cfgFooterLeft">Teks Kiri Footer</label>
+          <input type="text" id="cfgFooterLeft" placeholder="Sinkronisasi otomatis setiap 10 detik">
+        </div>
+        <div class="field">
+          <label for="cfgFooterRight">Teks Kanan Footer</label>
+          <input type="text" id="cfgFooterRight" placeholder="Program Country MDP 2026">
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px;">
+          <div class="field">
+            <label for="cfgFooterWeight">Footer: Tebal</label>
+            <select id="cfgFooterWeight">
+              <option value="normal">Normal</option>
+              <option value="bold">Tebal</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cfgFooterStyle">Footer: Miring</label>
+            <select id="cfgFooterStyle">
+              <option value="normal">Normal</option>
+              <option value="italic">Miring</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cfgFooterDeco">Footer: Garis</label>
+            <select id="cfgFooterDeco">
+              <option value="none">Normal</option>
+              <option value="underline">Garis</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="hfSaveBtn" style="width:100%; justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Simpan Tema &amp; Footer Klien
+        </button>
+      </div>
+
+      <!-- COLUMN 2: DAFTAR SESI PELATIHAN (CRUD) -->
+      <div>
+        <div class="card" style="margin-bottom: 16px;">
+          <div class="card-head"><h2>Tambah Sesi Pelatihan</h2></div>
+          <p class="card-desc">Tambahkan topik/judul pelatihan baru untuk klien ini.</p>
+          <div class="field">
+            <label for="newTrainingTitle">Judul Pelatihan</label>
+            <input type="text" id="newTrainingTitle" placeholder="contoh: Leadership Development Program - Batch 1">
+          </div>
+          <div class="field">
+            <label>Tanggal Pelaksanaan</label>
+            <div style="display:flex; gap:10px;">
+              <div style="flex:1;">
+                <span style="font-size:0.75rem; color:var(--n500); display:block; margin-bottom:4px;">Dari</span>
+                <input type="date" id="newTrainingDateStart">
+              </div>
+              <div style="flex:1;">
+                <span style="font-size:0.75rem; color:var(--n500); display:block; margin-bottom:4px;">Sampai</span>
+                <input type="date" id="newTrainingDateEnd">
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="createTrainingBtn" style="margin-top:10px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Buat Sesi Pelatihan
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>Daftar Sesi Pelatihan Klien</h2></div>
+          <p class="card-desc">Topik sesi pelatihan terdaftar. Klik <b>Edit Konten</b> untuk mengelola modul prepost, evaluasi, komentar, dll.</p>
+          <div style="position: relative; margin-top: 14px; min-height: 180px;">
+            <table class="ap-table" id="trainingsTable">
+              <thead>
+                <tr>
+                  <th>Detail Sesi</th>
+                  <th>Status</th>
+                  <th style="text-align:right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="trainingsTableBody">
+                <!-- Dinamis -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ VIEW 4: EDIT KONTEN SESI PELATIHAN ============ -->
+  <div class="view" id="viewEditTraining">
+    <button class="edit-back" id="backToClientEditBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+      Kembali ke Detail Klien
+    </button>
+    <div class="edit-client-name" id="editTrainingName">—</div>
+    <div class="edit-client-meta" id="editTrainingMeta">—</div>
+
+    <div class="edit-layout">
+      <!-- Sidebar Tab Nav -->
+      <div class="tab-sidebar">
+        <button class="tab-btn active" data-tab="prepost">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+          Evaluasi Pre &amp; Post
+        </button>
+        <button class="tab-btn" data-tab="evaluasi">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Evaluasi
+        </button>
+        <button class="tab-btn" data-tab="komentar">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Komentar Trainer
+        </button>
+        <button class="tab-btn" data-tab="dokumentasi">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          Dokumentasi Pelatihan
+        </button>
+        <button class="tab-btn" data-tab="actionplan">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 12 2 2 4-4"/></svg>
+          Action Plan
+        </button>
+      </div>
+
+      <!-- Tab Content -->
+      <div id="tabContent">
+        <!-- TAB: EVALUASI PRE & POST -->
+        <div class="tab-pane active" id="pane-prepost">
+          
+          <!-- Detail Sesi Pelatihan Card -->
+          <div class="card" style="margin-bottom: 16px;">
+            <div class="card-head"><h2>Detail Sesi Pelatihan</h2></div>
+            <p class="card-desc">Ubah judul dan rentang tanggal pelaksanaan sesi pelatihan ini.</p>
+            <div class="field">
+              <label for="cfgTrainingTitle">Judul Pelatihan</label>
+              <input type="text" id="cfgTrainingTitle" placeholder="contoh: Leadership Development Program">
+            </div>
+            <div class="field">
+              <label>Tanggal Pelaksanaan</label>
+              <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                  <span style="font-size:0.75rem; color:var(--n500); display:block; margin-bottom:4px;">Dari</span>
+                  <input type="date" id="cfgTrainingDateStart">
+                </div>
+                <div style="flex:1;">
+                  <span style="font-size:0.75rem; color:var(--n500); display:block; margin-bottom:4px;">Sampai</span>
+                  <input type="date" id="cfgTrainingDateEnd">
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="saveTrainingDetailsBtn" style="margin-top:10px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Simpan Detail Sesi
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Google Sheet</h2></div>
+            <p class="card-desc">Tentukan Google Sheet sumber data dashboard sesi pelatihan ini.</p>
+            <div class="field">
+              <label for="cfgSheetId">Google Sheet ID atau URL</label>
+              <input type="text" id="cfgSheetId" placeholder="ID atau https://docs.google.com/spreadsheets/d/…/edit">
+              <div class="help">ID terdeteksi: <code id="cfgIdEcho">—</code></div>
+            </div>
+            <div class="field">
+              <label for="cfgCsvUrl">URL CSV Publish (opsional)</label>
+              <input type="text" id="cfgCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?output=csv">
+              <div class="help">Dari <b>File › Share › Publish to web › CSV</b>.</div>
+            </div>
+            <div class="field">
+              <label for="cfgSheet1Name">Nama Tab Sheet 1 (Pre &amp; Post Test)</label>
+              <input type="text" id="cfgSheet1Name" placeholder="Kosongkan untuk tab pertama, contoh: Sheet1">
+            </div>
+            <div class="field">
+              <label for="cfgSheet2Name">Nama Tab Sheet 2 (Evaluasi Survey)</label>
+              <input type="text" id="cfgSheet2Name" placeholder="contoh: Sheet2">
+            </div>
+            <div class="field">
+              <label for="cfgPollSec">Interval Auto-Refresh (detik)</label>
+              <input type="number" id="cfgPollSec" placeholder="10" style="max-width:180px" min="5">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+            <button class="btn btn-primary" id="cfgSaveBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Simpan Konfigurasi Sheet
+            </button>
+            <button class="btn btn-secondary" id="cfgTestBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="cfgTestIcon"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              Uji Koneksi
+            </button>
+          </div>
+          <div class="test-result" id="cfgTestResult"></div>
+        </div>
+
+        <!-- TAB: EVALUASI -->
+        <div class="tab-pane" id="pane-evaluasi">
+          <!-- Card 1: Google Sheet Evaluasi (Dinamis) -->
+          <div class="card" style="margin-bottom: 16px;">
+            <div class="card-head"><h2>Google Sheet Evaluasi</h2></div>
+            <p class="card-desc">Tentukan Google Sheet sumber data respon survei evaluasi sesi pelatihan ini. Jika dikosongkan, akan otomatis menggunakan Google Sheet utama.</p>
+            <div class="field">
+              <label for="cfgEvalSheetId">Google Sheet ID atau URL Evaluasi</label>
+              <input type="text" id="cfgEvalSheetId" placeholder="Kosongkan jika menggunakan Sheet ID utama">
+              <div class="help">ID terdeteksi: <code id="cfgEvalIdEcho">—</code></div>
+            </div>
+            <div class="field">
+              <label for="cfgEvalCsvUrl">URL CSV Publish Evaluasi (opsional)</label>
+              <input type="text" id="cfgEvalCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?output=csv">
+            </div>
+            <div class="field">
+              <label for="cfgEvalSheetName">Nama Tab Sheet Evaluasi</label>
+              <input type="text" id="cfgEvalSheetName" placeholder="contoh: Sheet2">
+            </div>
+            <div class="field">
+              <label for="cfgEvalDataRange">Data Range (Opsional)</label>
+              <input type="text" id="cfgEvalDataRange" placeholder="contoh: A1:Z100 — kosongkan untuk ambil semua">
+            </div>
+            <div class="field">
+              <label for="cfgTrainerNames">Nama Trainer (untuk deteksi kolom evaluasi)</label>
+              <input type="text" id="cfgTrainerNames" placeholder="contoh: Arif Hidayat, Atik Fauzia">
+              <div class="help">Pisahkan nama trainer dengan koma. Digunakan untuk mencari kolom penilaian & kesan trainer di sheet evaluasi.</div>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+              <button class="btn btn-primary" id="cfgEvalSaveBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Simpan Konfigurasi Evaluasi
+              </button>
+              <button class="btn btn-secondary" id="cfgEvalTestBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="cfgEvalTestIcon"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Uji Koneksi Evaluasi
+              </button>
+            </div>
+            <div class="test-result" id="cfgEvalTestResult"></div>
+          </div>
+
+          <!-- Card 2: Catatan Evaluasi (Manual - Fallback) -->
+          <div class="card">
+            <div class="card-head"><h2>Catatan Evaluasi (Fallback Manual)</h2></div>
+            <p class="card-desc">Tulis catatan evaluasi manual di sini sebagai cadangan jika Google Sheet tidak diatur atau gagal dimuat.</p>
+            <div class="field">
+              <label for="evalText">Catatan Evaluasi</label>
+              <textarea id="evalText" placeholder="Tulis evaluasi pelatihan di sini…" style="min-height:160px"></textarea>
+            </div>
+            <button class="btn btn-primary" id="evalSaveBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Simpan Evaluasi Sesi
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB: KOMENTAR TRAINER -->
+        <div class="tab-pane" id="pane-komentar">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+            <h2>Komentar Trainer</h2>
+            <button class="btn btn-secondary btn-sm" id="ktAddTrainerBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              + Tambah Trainer
+            </button>
+          </div>
+          <p class="card-desc" style="margin-bottom:16px">Daftar komentar dari fasilitator/trainer. Anda bisa menambah lebih dari 1 trainer.</p>
+          
+          <div id="ktTrainersWrapper" style="display:flex; flex-direction:column; gap:24px;">
+            <!-- Dynamically populated trainer forms -->
+          </div>
+
+          <button class="btn btn-primary" id="komentarSaveBtn" style="margin-top:24px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Simpan Komentar Sesi
+          </button>
+        </div>
+
+        <!-- TAB: DOKUMENTASI PELATIHAN -->
+        <div class="tab-pane" id="pane-dokumentasi">
+          <div class="card">
+            <div class="card-head">
+              <h2>Dokumentasi Pelatihan</h2>
+              <button class="btn btn-secondary btn-sm" id="addDayBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                Tambah Hari
+              </button>
+            </div>
+            <p class="card-desc">Dokumentasi foto per hari pelatihan. Foto dimasukkan via URL link.</p>
+            <div class="day-list" id="dayList">
+              <div style="text-align:center;padding:40px;color:var(--n400);font-size:.85rem">
+                Belum ada hari. Klik <b>Tambah Hari</b> untuk mulai.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: ACTION PLAN -->
+        <div class="tab-pane" id="pane-actionplan">
+          <div class="card">
+            <div class="card-head">
+              <h2>Action Plan</h2>
+              <button class="btn btn-secondary btn-sm" id="addApRowBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                Tambah Baris
+              </button>
+            </div>
+            <p class="card-desc">Rencana tindak lanjut yang disusun bersama klien untuk sesi ini.</p>
+            <div class="ap-table-wrap">
+              <table class="ap-table">
+                <thead>
+                  <tr>
+                    <th>Item / Kegiatan</th>
+                    <th>Target</th>
+                    <th>PIC</th>
+                    <th>Deadline</th>
+                    <th class="col-del"></th>
+                  </tr>
+                </thead>
+                <tbody id="apTableBody"></tbody>
+              </table>
+            </div>
+            <button class="btn btn-primary" id="apSaveBtn" style="margin-top:16px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Simpan Action Plan Sesi
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ===========================
+   STORAGE & HELPERS
+   =========================== */
+const CLIENTS_KEY = "mdp-clients-db"; // MUST match key in index.html
+const CONFIG_KEY  = "mdp-dashboard-config";
+
+function loadClients(){
+  try{ return JSON.parse(localStorage.getItem(CLIENTS_KEY)||"[]"); }catch(e){ return []; }
+}
+function saveClients(arr){ localStorage.setItem(CLIENTS_KEY, JSON.stringify(arr)); }
+
+// Migrasi otomatis dari key lama "mdp-clients" jika ada
+(function migrateOldData(){
+  try {
+    const oldData = localStorage.getItem("mdp-clients");
+    if(oldData && !localStorage.getItem(CLIENTS_KEY)) {
+      const arr = JSON.parse(oldData) || [];
+      // Normalkan: PIN jadi integer
+      arr.forEach(c => { if(typeof c.pin === "string") c.pin = parseInt(c.pin, 10) || c.pin; });
+      localStorage.setItem(CLIENTS_KEY, JSON.stringify(arr));
+      localStorage.removeItem("mdp-clients");
+    }
+  } catch(e){}
+})();
+
+function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function toast(msg, dur=2600){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), dur);
+}
+
+/* ===========================
+   VIEWS
+   =========================== */
+let currentClientId = null;
+let currentTrainingId = null;
+
+function showView(name){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  $("view"+name.charAt(0).toUpperCase()+name.slice(1)).classList.add("active");
+  $("headerDashBtn").style.display = (name==="list"||name==="edit"||name==="editTraining") ? "" : "none";
+}
+
+/* ===========================
+   VIEW 1 — ADD CLIENT
+   =========================== */
+function showAddForm(){
+  $("newClientName").value = "";
+  $("newClientPin").value  = "";
+  $("cancelAddBtn").style.display = loadClients().length ? "" : "none";
+  showView("add");
+}
+
+$("createClientBtn").addEventListener("click", ()=>{
+  const name = $("newClientName").value.trim();
+  const pin  = $("newClientPin").value.trim();
+  if(!name){ toast("⚠ Nama perusahaan wajib diisi"); return; }
+  if(!/^\d{4}$/.test(pin)){ toast("⚠ PIN harus 4 digit angka (integer)"); return; }
+
+  const clients = loadClients();
+  // Cegah nama duplikat
+  if(clients.some(c => c.name.trim().toLowerCase() === name.toLowerCase())){
+    toast("⚠ Nama perusahaan sudah terdaftar"); return;
+  }
+
+  const client = {
+    id: Date.now(),          // numeric ID, konsisten dengan index.html
+    name,
+    pin: parseInt(pin, 10),  // simpan sebagai integer
+    createdAt: new Date().toISOString(),
+    config: {
+      colorPrimary:"#ffd204",
+      colorSecondary:"#ee3f34",
+      colorNavy:"#002c63",
+      title: name,
+      subtitle:"Dashboard Report · Evaluasi Pre & Post Test",
+      logoUrl:"",
+      titleWeight:"bold",
+      titleStyle:"normal",
+      titleDeco:"none",
+      footerLeft:"Sinkronisasi otomatis setiap 10 detik",
+      footerRight: name,
+      footerWeight:"normal",
+      footerStyle:"normal",
+      footerDeco:"none",
+    },
+    activeTrainingId: null,
+    trainings: []
+  };
+  clients.push(client);
+  saveClients(clients);
+  toast(`✓ Akun "${name}" berhasil dibuat · PIN: ${pin}`);
+  renderClientList();
+  showView("list");
+});
+
+/* ===========================
+   VIEW 2 — CLIENT LIST
+   =========================== */
+function renderClientList(){
+  const clients = loadClients();
+  const q = ($("searchClientInput")?.value || "").trim().toLowerCase();
+  const filtered = clients.filter(c => c.name.toLowerCase().includes(q));
+
+  $("clientCountLabel").textContent = q 
+    ? `${filtered.length} ditemukan dari ${clients.length} klien`
+    : `${clients.length} klien terdaftar`;
+    
+  const grid = $("clientsGrid");
+  if(!clients.length){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <p>Belum ada klien terdaftar.<br>Klik <b>Tambah Klien Baru</b> untuk mulai.</p></div>`;
+    return;
+  }
+  if(!filtered.length){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <p>Klien dengan pencarian "${esc(q)}" tidak ditemukan.</p></div>`;
+    return;
+  }
+  
+  let activeClientId = null;
+  try {
+    const activeCfg = JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
+    activeClientId = activeCfg.clientId;
+  } catch(e){}
+
+  grid.innerHTML = filtered.map(c=>{
+    const initials = c.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+    const trainingCount = (c.trainings || []).length;
+
+    return `<div class="client-card" style="padding: 16px 20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div class="client-card-head" style="margin-bottom:0; flex:1;">
+          <div class="client-avatar">${esc(initials)}</div>
+          <div>
+            <div class="client-name">${esc(c.name)}</div>
+            <div style="font-size:0.72rem; color:var(--n500); margin-top:3px; display:flex; gap:10px; flex-wrap:wrap;">
+              <span title="PIN Login">🔐 PIN: <b style="color:var(--navy); font-family:var(--font-mono);">${esc(String(c.pin))}</b></span>
+              <span>📋 ${trainingCount} sesi pelatihan</span>
+            </div>
+          </div>
+        </div>
+        <div class="dropdown">
+          <button class="dropdown-btn" onclick="toggleDropdown(event, 'drop-client-${c.id}')" title="Pilihan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+          </button>
+          <div class="dropdown-content" id="drop-client-${c.id}">
+            <div class="dropdown-item" onclick="openEdit('${c.id}')">Edit Klien</div>
+            <div class="dropdown-item danger" onclick="deleteClient('${c.id}')">Hapus</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function activateClient(id){
+  window.closeAllDropdowns();
+  const clients = loadClients();
+  const c = clients.find(x=>x.id===id);
+  if(!c) return;
+
+  const training = (c.trainings || []).find(x=>x.id===c.activeTrainingId) || (c.trainings || [])[0];
+  
+  if (training) {
+    c.activeTrainingId = training.id;
+    saveClients(clients);
+    
+    const activeConfig = {
+      ...c.config,
+      clientId: c.id,
+      trainingId: training.id,
+      pin: c.pin,
+      sheetId: training.sheetId,
+      csvUrl: training.csvUrl,
+      pollMs: training.pollMs,
+      evaluasi: training.evaluasi,
+      komentarTrainer: training.komentarTrainer,
+      dokumentasi: training.dokumentasi,
+      actionPlan: training.actionPlan
+    };
+    localStorage.setItem(CONFIG_KEY, JSON.stringify(activeConfig));
+    toast(`✓ Dashboard diaktifkan: ${c.name} (${training.title})`);
+  } else {
+    const activeConfig = {
+      ...c.config,
+      clientId: c.id,
+      pin: c.pin,
+      sheetId: "",
+      csvUrl: "",
+      pollMs: 10000,
+      evaluasi: "",
+      komentarTrainer: "",
+      dokumentasi: [],
+      actionPlan: []
+    };
+    localStorage.setItem(CONFIG_KEY, JSON.stringify(activeConfig));
+    toast(`✓ Dashboard diaktifkan untuk "${c.name}"`);
+  }
+}
+
+function deleteClient(id){
+  window.closeAllDropdowns();
+  if(!confirm("Hapus klien ini beserta semua datanya? Tindakan ini tidak bisa dibatalkan.")) return;
+  const arr = loadClients().filter(x=>String(x.id)!==String(id));
+  saveClients(arr);
+  renderClientList();
+  toast("Klien dihapus");
+}
+
+/* ===========================
+   VIEW 3 — DETAIL KLIEN & TEMA (EDIT CLIENT)
+   =========================== */
+function openEdit(id){
+  window.closeAllDropdowns();
+  currentClientId = id;
+  const c = loadClients().find(x=>String(x.id)===String(id));
+  if(!c) return;
+
+  $("editClientName").textContent = c.name;
+  $("editClientMeta").textContent = `Nama: ${c.name} · PIN: ${c.pin} · Dibuat ${new Date(c.createdAt).toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"})}`;
+
+  loadConfigForm(c.config);
+  renderTrainingList();
+  showView("edit");
+}
+
+$("backToListBtn").addEventListener("click",()=>{
+  showView("list");
+  renderClientList();
+});
+
+/* ----- Helper: update client ----- */
+function updateClient(patch){
+  const arr = loadClients();
+  const idx = arr.findIndex(x=>String(x.id)===String(currentClientId));
+  if(idx===-1) return;
+  if(patch.config && arr[idx].config){
+    patch.config = { ...arr[idx].config, ...patch.config };
+  }
+  Object.assign(arr[idx], patch);
+  saveClients(arr);
+  return arr[idx];
+}
+
+/* ----- Sesi Pelatihan (Training Session) CRUD ----- */
+function formatTrainingDate(t) {
+  const ds = t.dateStart;
+  const de = t.dateEnd;
+  if (!ds && !de) return "—";
+  
+  const options = { day: "2-digit", month: "long", year: "numeric" };
+  
+  if (ds && de) {
+    if (ds === de) {
+      return new Date(ds).toLocaleDateString("id-ID", options);
+    }
+    const startStr = new Date(ds).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+    const endStr = new Date(de).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+    return `${startStr} s/d ${endStr}`;
+  }
+  return new Date(ds || de).toLocaleDateString("id-ID", options);
+}
+
+function renderTrainingList(){
+  const c = loadClients().find(x=>String(x.id)===String(currentClientId));
+  if(!c) return;
+  const list = c.trainings || [];
+  const tbody = $("trainingsTableBody");
+  if(!list.length){
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--n400)">Belum ada sesi pelatihan. Gunakan form di atas untuk membuat sesi baru.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(t=>{
+    const dateStr = formatTrainingDate(t);
+    const hasSheet = !!(t.sheetId || t.csvUrl);
+    const sheetBadge = hasSheet
+      ? `<span class="badge badge-success">Sheet ✓</span>`
+      : `<span class="badge badge-secondary">Sheet belum diset</span>`;
+    return `<tr>
+      <td>
+        <div style="font-weight:700;color:var(--navy)">${esc(t.title)}</div>
+        <div style="font-size:0.75rem;color:var(--n500);margin-top:2px;">
+          ${dateStr !== '—' ? '📅 ' + dateStr : 'Tanggal belum diset'}
+          ${t.trainerNames ? ' · 👤 ' + esc(t.trainerNames) : ''}
+        </div>
+      </td>
+      <td>${sheetBadge}</td>
+      <td style="text-align:right;">
+        <div class="dropdown">
+          <button class="dropdown-btn" onclick="toggleDropdown(event, 'drop-tr-${t.id}')" title="Pilihan Sesi">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+          </button>
+          <div class="dropdown-content" id="drop-tr-${t.id}">
+            <div class="dropdown-item" onclick="openEditTraining('${t.id}')">Edit Konten</div>
+            <div class="dropdown-item danger" onclick="deleteTraining('${t.id}')">Hapus Sesi</div>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+$("createTrainingBtn").addEventListener("click", ()=>{
+  const title = $("newTrainingTitle").value.trim();
+  const dateStart = $("newTrainingDateStart").value;
+  const dateEnd = $("newTrainingDateEnd").value;
+  if(!title){ toast("⚠ Judul pelatihan wajib diisi"); return; }
+  
+  const clients = loadClients();
+  const c = clients.find(x=>String(x.id)===String(currentClientId));
+  if(!c) return;
+
+  const newTr = {
+    id: Date.now(),      // numerik — konsisten dengan index.html
+    title,
+    dateStart: dateStart || "",
+    dateEnd:   dateEnd   || "",
+    trainerNames: "",
+    sheetId: "",
+    csvUrl: "",
+    evalSheetId: "",
+    evalCsvUrl: "",
+    evalSheetName: "Sheet2",
+    evalDataRange: "",
+    sheet1: { name: "", range: "" },
+    sheet2: { name: "Sheet2", range: "" },
+    pollMs: 10000,
+    evaluasi: "",
+    komentarTrainer: "",
+    dokumentasi: [],
+    actionPlan: []
+  };
+
+  if(!c.trainings) c.trainings = [];
+  c.trainings.push(newTr);
+  saveClients(clients);
+
+  $("newTrainingTitle").value = "";
+  $("newTrainingDateStart").value = "";
+  $("newTrainingDateEnd").value = "";
+  toast(`✓ Sesi "${title}" ditambahkan`);
+  renderTrainingList();
+});
+
+function activateTraining(tid){
+  window.closeAllDropdowns();
+  const clients = loadClients();
+  const c = clients.find(x=>String(x.id)===String(currentClientId));
+  if(!c) return;
+  
+  c.activeTrainingId = tid;
+  saveClients(clients);
+  renderTrainingList();
+
+  const training = c.trainings.find(x=>String(x.id)===String(tid));
+  if(!training) return;
+
+  const activeConfig = {
+    ...c.config,
+    clientId: c.id,
+    trainingId: training.id,
+    pin: c.pin,
+    sheetId: training.sheetId,
+    csvUrl: training.csvUrl,
+    sheet1: training.sheet1 || { name: "", range: "" },
+    sheet2: training.sheet2 || { name: "Sheet2", range: "" },
+    pollMs: training.pollMs,
+    evaluasi: training.evaluasi,
+    komentarTrainer: training.komentarTrainer,
+    dokumentasi: training.dokumentasi,
+    actionPlan: training.actionPlan,
+    evalSheetId:   training.evalSheetId   || "",
+    evalCsvUrl:    training.evalCsvUrl    || "",
+    evalSheetName: training.evalSheetName || "Sheet2",
+    evalDataRange: training.evalDataRange || "",
+    trainerNames:  training.trainerNames  || "",
+    dateStart: training.dateStart || "",
+    dateEnd:   training.dateEnd   || "",
+  };
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(activeConfig));
+  toast(`✓ Sesi "${training.title}" diaktifkan di dashboard`);
+}
+
+function deleteTraining(tid){
+  window.closeAllDropdowns();
+  if(!confirm("Hapus sesi pelatihan ini beserta semua datanya? Tindakan ini tidak bisa dibatalkan.")) return;
+  const clients = loadClients();
+  const c = clients.find(x=>String(x.id)===String(currentClientId));
+  if(!c) return;
+  c.trainings = (c.trainings || []).filter(x=>String(x.id)!==String(tid));
+  saveClients(clients);
+  toast("Sesi pelatihan dihapus");
+  renderTrainingList();
+}
+
+/* ===========================
+   VIEW 4 — EDIT KONTEN SESI (TABS SECTION)
+   =========================== */
+function openEditTraining(tid){
+  window.closeAllDropdowns();
+  currentTrainingId = tid;
+  const c = loadClients().find(x=>String(x.id)===String(currentClientId));
+  if(!c) return;
+  const t = (c.trainings || []).find(x=>String(x.id)===String(tid));
+  if(!t) return;
+  $("editTrainingName").textContent = c.name;
+  $("editTrainingMeta").textContent = `${t.title} · ${formatTrainingDate(t)}`;
+
+  switchTab("prepost");
+
+  $("cfgTrainingTitle").value = t.title || "";
+  $("cfgTrainingDateStart").value = t.dateStart || "";
+  $("cfgTrainingDateEnd").value = t.dateEnd || "";
+
+  loadConfigForm(t);
+  $("evalText").value = t.evaluasi || "";
+  $("cfgEvalSheetId").value = t.evalSheetId || "";
+  $("cfgEvalCsvUrl").value = t.evalCsvUrl || "";
+  $("cfgEvalSheetName").value = t.evalSheetName || "Sheet2";
+  $("cfgEvalDataRange").value = t.evalDataRange || "";
+  $("cfgTrainerNames").value = t.trainerNames || "";
+  refreshEvalCfgPreview();
+  
+  // Komentar Trainer Structured Form (Array of Trainers)
+  let kt = t.komentarTrainer;
+  if(typeof kt === "string"){
+    kt = [{ intro: kt, name: "", role: "", apresiasi: "", days: [], quote: "" }];
+  } else if(kt && !Array.isArray(kt)){
+    kt = [kt]; // migrate single object to array
+  }
+  if(!kt) kt = [];
+  
+  window.ktTrainersData = JSON.parse(JSON.stringify(kt));
+  renderKtTrainers();
+
+  renderDayList(t.dokumentasi || []);
+  renderApTable(t.actionPlan || []);
+
+  showView("editTraining");
+}
+
+$("backToClientEditBtn").addEventListener("click",()=>{
+  openEdit(currentClientId);
+});
+
+$("saveTrainingDetailsBtn").addEventListener("click", () => {
+  const title = $("cfgTrainingTitle").value.trim();
+  const dateStart = $("cfgTrainingDateStart").value;
+  const dateEnd = $("cfgTrainingDateEnd").value;
+  if(!title){ toast("⚠ Judul pelatihan wajib diisi"); return; }
+  
+  updateTraining({ title, dateStart, dateEnd });
+  toast("✓ Detail sesi berhasil diperbarui");
+  
+  // Update header meta text
+  const c = loadClients().find(x=>String(x.id)===String(currentClientId));
+  if(c){
+    const t = c.trainings.find(x=>String(x.id)===String(currentTrainingId));
+    if(t){
+      $("editTrainingMeta").textContent = `${t.title} · Tanggal: ${formatTrainingDate(t)}`;
+    }
+  }
+});
+
+/* ----- Tab switching ----- */
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>switchTab(btn.dataset.tab));
+});
+function switchTab(name){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
+  document.querySelectorAll(".tab-pane").forEach(p=>p.classList.toggle("active", p.id==="pane-"+name));
+}
+
+/* ----- Helper: update training ----- */
+function updateTraining(patch){
+  const arr = loadClients();
+  const cIdx = arr.findIndex(x=>String(x.id)===String(currentClientId));
+  if(cIdx===-1) return;
+  const tIdx = (arr[cIdx].trainings || []).findIndex(x=>String(x.id)===String(currentTrainingId));
+  if(tIdx===-1) return;
+
+  const t = arr[cIdx].trainings[tIdx];
+  Object.assign(t, patch);
+  saveClients(arr);
+
+  // Sync to active CONFIG_KEY if this training is the currently active one
+  let activeCfg = {};
+  try { activeCfg = JSON.parse(localStorage.getItem(CONFIG_KEY)||"{}")||{}; } catch(e){}
+  if (String(activeCfg.clientId) === String(currentClientId) && String(activeCfg.trainingId) === String(currentTrainingId)) {
+    const updatedClient = arr[cIdx];
+    const updatedTraining = t;
+    const newActiveConfig = {
+      ...updatedClient.config,
+      clientId: updatedClient.id,
+      trainingId: updatedTraining.id,
+      pin: updatedClient.pin,
+      sheetId: updatedTraining.sheetId,
+      csvUrl: updatedTraining.csvUrl,
+      sheet1: updatedTraining.sheet1 || { name: "", range: "" },
+      sheet2: updatedTraining.sheet2 || { name: "Sheet2", range: "" },
+      pollMs: updatedTraining.pollMs,
+      evaluasi: updatedTraining.evaluasi,
+      komentarTrainer: updatedTraining.komentarTrainer,
+      dokumentasi: updatedTraining.dokumentasi,
+      actionPlan: updatedTraining.actionPlan,
+      evalSheetId:   updatedTraining.evalSheetId   || "",
+      evalCsvUrl:    updatedTraining.evalCsvUrl    || "",
+      evalSheetName: updatedTraining.evalSheetName || "Sheet2",
+      dateStart: updatedTraining.dateStart || "",
+      dateEnd:   updatedTraining.dateEnd   || "",
+    };
+    localStorage.setItem(CONFIG_KEY, JSON.stringify(newActiveConfig));
+  }
+  return t;
+}
+
+/* ===========================
+   TAB 1 — CONFIG (PRE & POST)
+   =========================== */
+function extractSheetId(url) {
+  if (!url) return "";
+  // Ignore /d/e/ published URLs for ID extraction as they don't contain the real Gviz ID
+  if (url.includes("/d/e/")) return "";
+  const m = url.match(/\/d\/([a-zA-Z0-9-_]{40,})/);
+  if (m) return m[1];
+  if (url.length === 44 && !url.includes("/")) return url;
+  return "";
+}
+
+function buildGvizUrl(id, {out="csv", name="", range="", cb=""}={}){
+  const tqx = out==="json"
+    ? (cb ? `out:json;responseHandler:${cb}` : "out:json")
+    : "out:csv";
+  let url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=${tqx}`;
+  if(name)  url += `&sheet=${encodeURIComponent(name)}`;
+  if(range) url += `&range=${encodeURIComponent(range)}`;
+  return url;
+}
+function parseCSV(text){
+  const rows=[];let row=[],cell="",inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){if(c==='"'){if(text[i+1]==='"'){cell+='"';i++;}else inQ=false;}else cell+=c;}
+    else{if(c==='"')inQ=true;else if(c===','){row.push(cell);cell="";}else if(c==='\n'){row.push(cell);rows.push(row);row=[];cell="";}else if(c!=='\r')cell+=c;}
+  }
+  if(cell!==""||row.length){row.push(cell);rows.push(row);}
+  return rows;
+}
+
+function loadConfigForm(cfg){
+  // Check if we are loading training configuration (sheet details) or client configuration (theme)
+  if(cfg.hasOwnProperty("sheetId")){
+    $("cfgSheetId").value = cfg.sheetId||"";
+    $("cfgCsvUrl").value  = cfg.csvUrl||"";
+    $("cfgSheet1Name").value = (cfg.sheet1?.name)||"";
+    $("cfgSheet2Name").value = (cfg.sheet2?.name)||"";
+    $("cfgPollSec").value = Math.round((cfg.pollMs||10000)/1000);
+    refreshCfgPreview();
+  } else {
+    $("cfgTitle").value     = cfg.title||"";
+    $("cfgSubtitle").value  = cfg.subtitle||"";
+    $("cfgLogoUrl").value   = cfg.logoUrl||"";
+    $("cfgColorPrimary").value   = cfg.colorPrimary||"#ffd204";
+    $("cfgColorSecondary").value = cfg.colorSecondary||"#ee3f34";
+    $("cfgColorNavy").value      = cfg.colorNavy||"#002c63";
+    $("hexPrimary").textContent   = cfg.colorPrimary||"#ffd204";
+    $("hexSecondary").textContent = cfg.colorSecondary||"#ee3f34";
+    $("hexNavy").textContent      = cfg.colorNavy||"#002c63";
+    $("cfgTitleWeight").value = cfg.titleWeight||"bold";
+    $("cfgTitleStyle").value  = cfg.titleStyle||"normal";
+    $("cfgTitleDeco").value   = cfg.titleDeco||"none";
+    $("cfgFooterLeft").value  = cfg.footerLeft||"Sinkronisasi otomatis setiap 10 detik";
+    $("cfgFooterRight").value = cfg.footerRight||cfg.title||"";
+    $("cfgFooterWeight").value = cfg.footerWeight||"normal";
+    $("cfgFooterStyle").value  = cfg.footerStyle||"normal";
+    $("cfgFooterDeco").value   = cfg.footerDeco||"none";
+  }
+}
+function refreshCfgPreview(){
+  const raw=$("cfgSheetId").value.trim();
+  const id=extractSheetId(raw);
+  const echo=$("cfgIdEcho");
+  if(raw&&/\/spreadsheets\/d\/e\//.test(raw)){
+    echo.textContent="⚠ Ini URL publish, bukan URL sheet."; echo.style.color="var(--danger)";
+  }else{ echo.textContent=id||"—"; echo.style.color=""; }
+}
+$("cfgSheetId").addEventListener("input",refreshCfgPreview);
+[["cfgColorPrimary","hexPrimary"],["cfgColorSecondary","hexSecondary"],["cfgColorNavy","hexNavy"]].forEach(([cId,hId])=>{
+  $(cId).addEventListener("input",()=>{ $(hId).textContent=$(cId).value; });
+});
+
+$("cfgSaveBtn").addEventListener("click",()=>{
+  const cfg = {
+    sheetId: extractSheetId($("cfgSheetId").value)||"1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY",
+    csvUrl:  $("cfgCsvUrl").value.trim(),
+    sheet1: { name: $("cfgSheet1Name").value.trim(), range: "" },
+    sheet2: { name: $("cfgSheet2Name").value.trim(), range: "" },
+    pollMs: (parseFloat($("cfgPollSec").value)||10)*1000,
+  };
+  updateTraining(cfg);
+  toast("✓ Konfigurasi Sheet tersimpan");
+});
+
+/* ===========================
+   TAB 1B — HEADER & FOOTER
+   =========================== */
+$("hfSaveBtn").addEventListener("click",()=>{
+  const cfg = {
+    title:    $("cfgTitle").value.trim(),
+    subtitle: $("cfgSubtitle").value.trim(),
+    logoUrl:  $("cfgLogoUrl").value.trim(),
+    colorPrimary:   $("cfgColorPrimary").value,
+    colorSecondary: $("cfgColorSecondary").value,
+    colorNavy:      $("cfgColorNavy").value,
+    titleWeight:    $("cfgTitleWeight").value,
+    titleStyle:     $("cfgTitleStyle").value,
+    titleDeco:      $("cfgTitleDeco").value,
+    footerLeft:     $("cfgFooterLeft").value.trim(),
+    footerRight:    $("cfgFooterRight").value.trim(),
+    footerWeight:   $("cfgFooterWeight").value,
+    footerStyle:    $("cfgFooterStyle").value,
+    footerDeco:     $("cfgFooterDeco").value,
+  };
+  updateClient({config:cfg});
+  toast("✓ Tampilan Header & Footer disimpan");
+});
+
+async function testSheetConnection(id, csvUrl, sheetName, range) {
+  // 1. Try direct CSV fetch first (works only if CSV publish URL is set and has no CORS restrictions)
+  if (csvUrl) {
+    try {
+      const sep = csvUrl.includes("?") ? "&" : "?";
+      const res = await fetch(`${csvUrl}${sep}_cb=${Date.now()}`, { cache: "no-store" });
+      if (res.ok) {
+        const text = await res.text();
+        if (!text.trimStart().startsWith("<")) {
+          const rows = parseCSV(text).filter(r => r.some(c => (c || "").trim() !== ""));
+          return { ok: true, source: "CSV Publish URL", rows };
+        }
+      }
+    } catch (e) {
+      console.warn("Direct CSV test failed, trying JSONP...", e);
+    }
+  }
+
+  // 2. Fallback to JSONP GViz fetch (bypasses CORS completely for shared spreadsheets using ID)
+  if (!id) throw new Error("ID Google Sheet tidak ditemukan. Harap masukkan Sheet ID.");
+  return new Promise((resolve, reject) => {
+    const cb = "_gsheetCbTest_" + Date.now();
+    const script = document.createElement("script");
+    const timer = setTimeout(() => { cleanup(); reject(new Error("Timeout (10 detik) menghubungi Google Sheet")); }, 10000);
+    function cleanup() { clearTimeout(timer); delete window[cb]; script.remove(); }
+    window[cb] = function(resp) {
+      cleanup();
+      try {
+        if (!resp || !resp.table) return reject(new Error("Response tidak valid dari Google Sheets"));
+        const cols = resp.table.cols, dataRows = resp.table.rows;
+        const rows = [cols.map(c => c.label || "")];
+        for (const dr of dataRows) {
+          rows.push(dr.c.map(cell => cell ? String(cell.v ?? "") : ""));
+        }
+        resolve({ ok: true, source: "Google Sheet ID (JSONP)", rows });
+      } catch (e) { reject(e); }
+    };
+    script.src = buildGvizUrl(id, { out: "json", name: sheetName, range: range || "", cb }) + `&_cb=${Date.now()}`;
+    script.onerror = () => { cleanup(); reject(new Error("Koneksi gagal. Pastikan link/ID Sheet benar dan Sheet dibagikan ke publik (Anyone with link can view)")); };
+    document.head.appendChild(script);
+  });
+}
+
+$("cfgTestBtn").addEventListener("click", async()=>{
+  const box=$("cfgTestResult"); box.classList.add("show");
+  const id=extractSheetId($("cfgSheetId").value)||"1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY";
+  const icon=$("cfgTestIcon"); icon.classList.add("spin");
+  box.innerHTML=`<div class="test-status warn"><span class="dot"></span>Menguji koneksi…</div>`;
+  try{
+    const csvUrl=$("cfgCsvUrl").value.trim();
+    const sheetName=$("cfgSheet1Name").value.trim();
+    const result = await testSheetConnection(id, csvUrl, sheetName);
+    const rows = result.rows;
+    const cols = rows.reduce((m,r)=>Math.max(m,r.length),0);
+    const th = rows[0].map(c=>`<th>${esc(c)}</th>`).join("");
+    const tb = rows.slice(1,5).map(r=>`<tr>${rows[0].map((_,i)=>`<td>${esc(r[i]??"")}</td>`).join("")}</tr>`).join("");
+    box.innerHTML=`<div class="test-status ok"><span class="dot"></span>Koneksi OK (${result.source}) · ${rows.length} baris × ${cols} kolom</div>
+      <div class="preview-table"><table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>`;
+  }catch(err){
+    box.innerHTML=`<div class="test-status err"><span class="dot"></span>Gagal: ${esc(err.message)}</div>`;
+  }
+  icon.classList.remove("spin");
+});
+
+/* ===========================
+   TAB 2 — EVALUASI
+   =========================== */
+function refreshEvalCfgPreview(){
+  const raw=$("cfgEvalSheetId").value.trim();
+  const id=extractSheetId(raw);
+  const echo=$("cfgEvalIdEcho");
+  if(raw&&/\/spreadsheets\/d\/e\//.test(raw)){
+    echo.textContent="⚠ Ini URL publish, bukan URL sheet."; echo.style.color="var(--danger)";
+  }else{ echo.textContent=id||"—"; echo.style.color=""; }
+}
+$("cfgEvalSheetId").addEventListener("input",refreshEvalCfgPreview);
+
+$("cfgEvalSaveBtn").addEventListener("click",()=>{
+  const cfg = {
+    evalSheetId: extractSheetId($("cfgEvalSheetId").value),
+    evalCsvUrl:  $("cfgEvalCsvUrl").value.trim(),
+    evalSheetName: $("cfgEvalSheetName").value.trim(),
+    evalDataRange: $("cfgEvalDataRange").value.trim(),
+    trainerNames: $("cfgTrainerNames").value.trim(),
+  };
+  updateTraining(cfg);
+  
+  // SELALU aktifkan dan sinkronkan sesi ini ke dashboard saat disimpan, 
+  // agar user tidak bingung mengapa dashboard tidak berubah.
+  activateTraining(currentTrainingId);
+  
+  toast("✓ Konfigurasi tersimpan & otomatis disinkronkan ke Dashboard");
+});
+
+$("cfgEvalTestBtn").addEventListener("click", async()=>{
+  const box=$("cfgEvalTestResult"); box.classList.add("show");
+  const id=extractSheetId($("cfgEvalSheetId").value) || extractSheetId($("cfgSheetId").value);
+  const icon=$("cfgEvalTestIcon"); icon.classList.add("spin");
+  box.innerHTML=`<div class="test-status warn"><span class="dot"></span>Menguji koneksi…</div>`;
+  try{
+    const csvUrl=$("cfgEvalCsvUrl").value.trim();
+    const sheetName=$("cfgEvalSheetName").value.trim() || "Sheet2";
+    const dataRange=$("cfgEvalDataRange").value.trim();
+    const result = await testSheetConnection(id, csvUrl, sheetName, dataRange);
+    const rows = result.rows;
+    const cols = rows.reduce((m,r)=>Math.max(m,r.length),0);
+    const th = rows[0].map(c=>`<th>${esc(c)}</th>`).join("");
+    const tb = rows.slice(1,5).map(r=>`<tr>${rows[0].map((_,i)=>`<td>${esc(r[i]??"")}</td>`).join("")}</tr>`).join("");
+    box.innerHTML=`<div class="test-status ok"><span class="dot"></span>Koneksi OK (${result.source}) · ${rows.length} baris × ${cols} kolom</div>
+      <div class="preview-table"><table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>`;
+  }catch(err){
+    box.innerHTML=`<div class="test-status err"><span class="dot"></span>Gagal: ${esc(err.message)}</div>`;
+  }
+  icon.classList.remove("spin");
+});
+
+$("evalSaveBtn").addEventListener("click",()=>{
+  updateTraining({evaluasi:$("evalText").value});
+  toast("✓ Evaluasi manual tersimpan");
+});
+
+/* ===========================
+   TAB 3 — KOMENTAR TRAINER
+   =========================== */
+window.renderKtTrainers = function(){
+  const wrap = $("ktTrainersWrapper");
+  if(!window.ktTrainersData || window.ktTrainersData.length === 0){
+    wrap.innerHTML = `<div style="text-align:center;padding:40px;color:var(--n400);font-size:.85rem;border:1px dashed var(--n300);border-radius:var(--radius-md)">Belum ada data trainer. Klik tombol <b>+ Tambah Trainer</b>.</div>`;
+    return;
+  }
+  wrap.innerHTML = window.ktTrainersData.map((tr, ti) => `
+    <div class="card" style="position:relative; overflow:visible;">
+      <button onclick="removeKtTrainer(${ti})" title="Hapus Trainer" style="position:absolute;top:-10px;right:-10px;width:28px;height:28px;border-radius:50%;background:var(--danger);color:#fff;border:none;cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow-md);z-index:10">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:14px;height:14px"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="card-head"><h2>Trainer ${ti+1}</h2></div>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="field">
+          <label>Nama Trainer</label>
+          <input type="text" placeholder="contoh: Arif Hidayat" value="${esc(tr.name||'')}" oninput="window.ktTrainersData[${ti}].name=this.value">
+        </div>
+        <div class="field">
+          <label>Jabatan / Role</label>
+          <input type="text" placeholder="contoh: MDI Tack Facilitator" value="${esc(tr.role||'')}" oninput="window.ktTrainersData[${ti}].role=this.value">
+        </div>
+      </div>
+      <div class="field">
+        <label>Teks Apresiasi (Marquee atas)</label>
+        <input type="text" placeholder="contoh: 🎉 APRESIASI TINGGI UNTUK..." value="${esc(tr.apresiasi||'')}" oninput="window.ktTrainersData[${ti}].apresiasi=this.value">
+      </div>
+      <div class="field">
+        <label>Komentar / Narasi Pembuka</label>
+        <textarea placeholder="Tulis narasi pembuka dari trainer…" style="min-height:100px" oninput="window.ktTrainersData[${ti}].intro=this.value">${esc(tr.intro||'')}</textarea>
+      </div>
+      
+      <!-- DAYS LIST -->
+      <div style="margin-bottom:14px">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:8px;color:var(--n700)">Highlight Hari:</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px">
+          ${(tr.days||[]).map((d, di) => `
+            <div style="background:var(--n50);border:1px solid var(--card-border);padding:14px;border-radius:10px;display:flex;flex-direction:column;gap:10px;position:relative">
+              <div style="display:flex;gap:10px;align-items:center;">
+                <div style="width:26px;height:26px;border-radius:50%;background:var(--primary-base);color:var(--navy);font-weight:800;font-size:.8rem;display:grid;place-items:center;flex-shrink:0;">${di+1}</div>
+                <input type="text" placeholder="Judul Hari (cth: Hari Pertama)" value="${esc(d.title||'')}" oninput="window.ktTrainersData[${ti}].days[${di}].title=this.value" style="font-size:0.85rem;padding:8px 12px;flex:1;font-weight:600;border:1px solid var(--card-border);border-radius:var(--radius-md)">
+                <button onclick="removeKtDay(${ti}, ${di})" title="Hapus hari ini" style="width:28px;height:28px;border-radius:50%;background:var(--danger);color:#fff;border:none;cursor:pointer;display:grid;place-items:center;flex-shrink:0">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:14px;height:14px"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <textarea placeholder="Tulis catatan, dinamika, atau poin penting sesi hari ini…" oninput="window.ktTrainersData[${ti}].days[${di}].text=this.value" style="font-size:0.85rem;padding:10px 12px;min-height:80px;border:1px solid var(--card-border);border-radius:var(--radius-md);margin-top:4px">${esc(d.text||'')}</textarea>
+            </div>
+          `).join("")}
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="addKtDay(${ti})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          + Tambah Highlight Hari
+        </button>
+      </div>
+
+      <div class="field">
+        <label>Quote Penutup</label>
+        <textarea placeholder="contoh: &quot;Potensi kepemimpinan...&quot;" style="min-height:80px" oninput="window.ktTrainersData[${ti}].quote=this.value">${esc(tr.quote||'')}</textarea>
+      </div>
+    </div>
+  `).join("");
+}
+
+window.addKtDay = function(ti) {
+  window.ktTrainersData[ti].days = window.ktTrainersData[ti].days || [];
+  window.ktTrainersData[ti].days.push({title: "", text: ""});
+  renderKtTrainers();
+}
+window.removeKtDay = function(ti, di) {
+  window.ktTrainersData[ti].days.splice(di, 1);
+  renderKtTrainers();
+}
+window.removeKtTrainer = function(ti) {
+  window.ktTrainersData.splice(ti, 1);
+  renderKtTrainers();
+}
+$("ktAddTrainerBtn").addEventListener("click", () => {
+  window.ktTrainersData = window.ktTrainersData || [];
+  window.ktTrainersData.push({name:"", role:"", apresiasi:"", intro:"", quote:"", days:[]});
+  renderKtTrainers();
+  toast("ℹ Form Trainer ke-" + window.ktTrainersData.length + " ditambahkan.");
+});
+
+$("komentarSaveBtn").addEventListener("click",()=>{
+  updateTraining({komentarTrainer: window.ktTrainersData || []});
+  toast("✓ Komentar trainer sesi tersimpan");
+});
+
+/* ===========================
+   TAB 4 — DOKUMENTASI
+   =========================== */
+function renderDayList(docs){
+  const list=$("dayList");
+  if(!docs||!docs.length){
+    list.innerHTML=`<div style="text-align:center;padding:40px;color:var(--n400);font-size:.85rem">Belum ada hari. Klik <b>Tambah Hari</b> untuk mulai.</div>`;
+    return;
+  }
+  list.innerHTML=docs.map((day,di)=>{
+    const thumbs=day.photos.map((ph,pi)=>`
+      <div class="photo-thumb">
+        <img src="${esc(ph.url)}" alt="Foto ${pi+1}" onerror="this.parentElement.style.display='none'">
+        <button class="remove-photo" onclick="removePhoto(${di},${pi})" title="Hapus foto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>`).join("");
+    return `<div class="day-item ${day.open?'open':''}" id="day-${di}">
+      <div class="day-item-head" onclick="toggleDay(${di})">
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <span class="day-label">${esc(day.label||`Hari ${di+1}`)}</span>
+        <span class="day-count">${day.photos.length} foto</span>
+      </div>
+      <div class="day-item-body">
+        <div class="field">
+          <label>Label Hari</label>
+          <input type="text" value="${esc(day.label||`Hari ${di+1}`)}" oninput="updateDayLabel(${di},this.value)" placeholder="contoh: Hari 1">
+        </div>
+        <div class="photo-grid">${thumbs}</div>
+        <div class="add-url-row">
+          <input type="text" id="urlInput-${di}" placeholder="Paste URL foto (https://…)" onkeydown="if(event.key==='Enter')addPhoto(${di})">
+          <button class="btn btn-secondary btn-sm" onclick="addPhoto(${di})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Tambah Foto
+          </button>
+        </div>
+        <div class="day-actions">
+          <button class="btn btn-danger btn-sm" onclick="removeDay(${di})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Hapus Hari Ini
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function getDocs(){
+  const c = loadClients().find(x=>String(x.id)===String(currentClientId));
+  if(!c) return [];
+  const t = (c.trainings || []).find(x=>String(x.id)===String(currentTrainingId));
+  return t ? (t.dokumentasi || []) : [];
+}
+function saveDocs(docs){ updateTraining({dokumentasi:docs}); }
+
+function toggleDay(di){
+  const docs=getDocs(); docs[di].open=!docs[di].open; saveDocs(docs); renderDayList(docs);
+}
+function updateDayLabel(di,val){
+  const docs=getDocs(); docs[di].label=val; saveDocs(docs);
+}
+function addPhoto(di){
+  const inp=$(`urlInput-${di}`);
+  const url=(inp?.value||"").trim();
+  if(!url){toast("⚠ URL foto tidak boleh kosong");return;}
+  const docs=getDocs();
+  docs[di].photos.push({url});
+  saveDocs(docs); renderDayList(docs);
+  toast("✓ Foto ditambahkan");
+  if(inp) inp.value = "";
+}
+function removePhoto(di,pi){
+  const docs=getDocs();
+  docs[di].photos.splice(pi,1);
+  saveDocs(docs); renderDayList(docs);
+}
+function removeDay(di){
+  if(!confirm("Hapus hari ini beserta semua fotonya?")) return;
+  const docs=getDocs(); docs.splice(di,1); saveDocs(docs); renderDayList(docs);
+}
+
+$("addDayBtn").addEventListener("click",()=>{
+  const docs=getDocs();
+  docs.push({label:`Hari ${docs.length+1}`, photos:[], open:true});
+  saveDocs(docs); renderDayList(docs);
+});
+
+/* ===========================
+   TAB 5 — ACTION PLAN
+   =========================== */
+function renderApTable(rows){
+  const tb=$("apTableBody");
+  if(!rows||!rows.length){
+    tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--n400);padding:20px;font-size:.82rem">Belum ada baris. Klik <b>Tambah Baris</b>.</td></tr>`;
+    return;
+  }
+  tb.innerHTML=rows.map((r,i)=>`
+    <tr>
+      <td><input type="text" value="${esc(r.item||"")}" placeholder="Item/kegiatan" oninput="updateApCell(${i},'item',this.value)"></td>
+      <td><input type="text" value="${esc(r.target||"")}" placeholder="Target" oninput="updateApCell(${i},'target',this.value)"></td>
+      <td><input type="text" value="${esc(r.pic||"")}" placeholder="PIC" oninput="updateApCell(${i},'pic',this.value)"></td>
+      <td><input type="text" value="${esc(r.deadline||"")}" placeholder="DD/MM/YYYY" oninput="updateApCell(${i},'deadline',this.value)"></td>
+      <td class="col-del"><button class="del-row-btn" onclick="deleteApRow(${i})" title="Hapus baris">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button></td>
+    </tr>`).join("");
+}
+
+function getAp(){
+  const c = loadClients().find(x=>String(x.id)===String(currentClientId));
+  if(!c) return [];
+  const t = (c.trainings || []).find(x=>String(x.id)===String(currentTrainingId));
+  return t ? (t.actionPlan || []) : [];
+}
+
+$("addApRowBtn").addEventListener("click",()=>{
+  const ap=getAp(); ap.push({item:"",target:"",pic:"",deadline:""});
+  updateTraining({actionPlan:ap}); renderApTable(ap);
+});
+function updateApCell(i,field,val){
+  const ap=getAp(); ap[i][field]=val; updateTraining({actionPlan:ap});
+}
+function deleteApRow(i){
+  const ap=getAp(); ap.splice(i,1); updateTraining({actionPlan:ap}); renderApTable(ap);
+}
+$("apSaveBtn").addEventListener("click",()=>{ toast("✓ Action plan sesi tersimpan"); });
+
+/* ===========================
+   DROPDOWN CONTROLLER
+   =========================== */
+window.toggleDropdown = function(event, dropId){
+  event.stopPropagation();
+  const target = document.getElementById(dropId);
+  if (!target) return;
+  const show = target.classList.contains("show");
+  
+  // Close all other dropdowns
+  window.closeAllDropdowns();
+  
+  if (!show) {
+    target.classList.add("show");
+  }
+};
+
+window.closeAllDropdowns = function() {
+  document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+};
+
+document.addEventListener("click", () => {
+  window.closeAllDropdowns();
+});
+
+/* ===========================
+   THEME
+   =========================== */
+(function initTheme(){
+  const saved=localStorage.getItem("dashboard-theme");
+  if(saved) document.documentElement.setAttribute("data-theme",saved);
+  $("themeToggle").addEventListener("click",()=>{
+    const cur=document.documentElement.getAttribute("data-theme");
+    const next=cur==="dark"?"light":"dark";
+    document.documentElement.setAttribute("data-theme",next);
+    localStorage.setItem("dashboard-theme",next);
+  });
+})();
+
+/* ===========================
+   BOOT
+   =========================== */
+(function boot(){
+  const clients=loadClients();
+  if(clients.length===0){
+    $("cancelAddBtn").style.display="none";
+    showView("add");
+  }else{
+    renderClientList();
+    showView("list");
+  }
+})();
+</script>
+</body>
+</html>
