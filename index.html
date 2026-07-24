@@ -40,6 +40,42 @@
     width:1200px;height:420px;pointer-events:none;z-index:0;
     background:radial-gradient(ellipse at center,rgba(255,210,4,.22),rgba(255,210,4,0) 65%);
     filter:blur(10px);
+    animation: glowFloat 18s ease-in-out infinite alternate;
+  }
+  @keyframes glowFloat {
+    0% { transform: translateX(-55%) translateY(-20px) scale(0.95); opacity: 0.8; }
+    100% { transform: translateX(-45%) translateY(20px) scale(1.05); opacity: 1.2; }
+  }
+
+  /* Ambient background floating orbs */
+  .bg-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.08;
+    z-index: -1;
+    pointer-events: none;
+    animation: orbMove ease-in-out infinite alternate;
+  }
+  .bg-orb-1 {
+    width: 320px; height: 320px;
+    background: var(--navy);
+    top: 20%; left: -80px;
+    animation-duration: 22s;
+  }
+  .bg-orb-2 {
+    width: 420px; height: 420px;
+    background: var(--primary-base);
+    bottom: 15%; right: -120px;
+    animation-duration: 28s;
+    animation-delay: 4s;
+  }
+  [data-theme="dark"] .bg-orb {
+    opacity: 0.05;
+  }
+  @keyframes orbMove {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(60px, 40px) scale(1.15); }
   }
 
   /* ============ HEADER ============ */
@@ -53,18 +89,46 @@
     max-width:1280px;margin:0 auto;padding:14px 24px;
     display:flex;align-items:center;gap:16px;
   }
-  .logo{width:46px;height:46px;object-fit:contain;flex-shrink:0}
+  .logo{height:36px;object-fit:contain;flex-shrink:0}
   .logo-mdi{height:36px;object-fit:contain;flex-shrink:0}
   .logo-sep{width:1px;height:32px;background:var(--n200);flex-shrink:0}
+  
+  /* Back Button - Sleek circular icon standard */
+  .btn-back {
+    background: none;
+    border: 1.5px solid var(--card-border);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: none; /* Controlled dynamically */
+    align-items: center;
+    justify-content: center;
+    color: var(--navy);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    flex-shrink: 0;
+  }
+  .btn-back:hover {
+    background: var(--primary-100);
+    border-color: var(--primary-600);
+    color: var(--primary-700);
+    transform: translateX(-2px) scale(1.02);
+  }
+  [data-theme="dark"] .btn-back {
+    color: var(--navy-800);
+  }
+  [data-theme="dark"] .btn-back:hover {
+    background: rgba(255, 210, 4, 0.08);
+    border-color: var(--primary-base);
+    color: var(--primary-base);
+  }
+
   .title-block h1{font-family:var(--font-head);font-size:1.15rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;color:var(--navy)}
   .title-block p{font-size:.75rem;color:var(--n600);letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-top:2px}
   .header-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
 
   .live-badge{
-    display:inline-flex;align-items:center;gap:7px;
-    font-family:var(--font-mono);font-size:.7rem;font-weight:700;letter-spacing:.12em;
-    color:#fff;background:var(--secondary-base);
-    padding:6px 12px;border-radius:9999px;box-shadow:var(--shadow-sm);
+    display:none !important;
   }
   .live-badge.offline{background:var(--danger);color:#fff}
   .live-dot{width:8px;height:8px;border-radius:50%;background:var(--navy);position:relative}
@@ -371,85 +435,148 @@
 
   /* ============ LOGIN GATE ============ */
   #pinGate{
-    position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;
-    background: linear-gradient(135deg, #001a3d 0%, #002c63 50%, #003a80 100%);
-    transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1);
+    position:fixed;inset:0;z-index:999;display:flex;
+    flex-direction: row;
+    align-items:center;justify-content:space-between;
+    padding: 0 10%;
+    box-sizing: border-box;
+    background: url('background_gedung.jpg') no-repeat center center;
+    background-size: cover;
+    transition:opacity .2s cubic-bezier(.22,1,.36,1),transform .2s cubic-bezier(.22,1,.36,1);
   }
   #pinGate::before {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(circle at 20% 50%, rgba(255,210,4,0.08) 0%, transparent 50%),
-                      radial-gradient(circle at 80% 20%, rgba(238,63,52,0.06) 0%, transparent 40%);
+    background: rgba(11, 22, 38, 0.45);
+    z-index: 1;
     pointer-events: none;
   }
   #pinGate.unlocked{opacity:0;transform:scale(1.04);pointer-events:none}
+  
+  /* Left Info Panel */
+  .login-info-panel {
+    position: relative;
+    z-index: 10;
+    max-width: 500px;
+    color: #fff;
+    animation: pinBoxIn .55s cubic-bezier(.22,1,.36,1) both;
+    text-align: left;
+  }
+  .login-info-logo {
+    height: 80px;
+    object-fit: contain;
+    display: block;
+    margin-bottom: 32px;
+    filter: drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.45));
+  }
+  .login-info-title {
+    font-family: var(--font-head);
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .login-info-desc {
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .login-info-subdesc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
   .pin-box{
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 24px;
-    box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
-    padding: 44px 40px 40px;
-    width: 420px;
+    position: relative;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px) saturate(120%);
+    -webkit-backdrop-filter: blur(24px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 28px;
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.4);
+    padding: 52px 40px;
+    width: 430px;
     max-width: calc(100vw - 32px);
     text-align: center;
-    animation: pinBoxIn .55s cubic-bezier(.22,1,.36,1);
-    position: relative;
+    box-sizing: border-box;
+    animation: pinBoxIn .55s cubic-bezier(.22,1,.36,1) 0.15s both;
   }
   @keyframes pinBoxIn{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
   .pin-logo{
-    width: 72px; height: 72px; border-radius: 20px; margin: 0 auto 22px;
-    background: linear-gradient(135deg, #ffd204, #f5a623);
-    display: grid; place-items: center;
-    box-shadow: 0 12px 32px rgba(255,210,4,0.35);
+    display: none; /* Removed logo box to match reference styling exactly */
   }
   .pin-logo img { width: 44px; height: 44px; object-fit: contain; }
   .pin-logo svg { width: 32px; height: 32px; color: #002c63; }
   .pin-title{
     font-family: var(--font-head); font-size: 1.5rem; font-weight: 800;
-    color: #fff; letter-spacing: -.03em; margin-bottom: 6px;
+    color: #fff; letter-spacing: -.03em; margin-bottom: 24px;
+    text-align: left;
   }
-  .pin-sub{ font-size: .82rem; color: rgba(255,255,255,0.55); margin-bottom: 28px; line-height: 1.5; }
+  .pin-sub{ display: none; }
   /* Company name step */
   .login-step { transition: opacity 0.3s ease, transform 0.3s ease; }
   .login-step.hidden { opacity: 0; pointer-events: none; height: 0; overflow: hidden; }
+  
   .company-input-wrap {
-    position: relative;
-    margin-bottom: 16px;
+    margin-bottom: 22px;
+    text-align: left;
   }
-  .company-input-wrap svg {
-    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-    width: 18px; height: 18px; color: rgba(255,255,255,0.4);
-    pointer-events: none;
+  .lf-label-travel {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+    font-family: var(--font-head);
+    letter-spacing: 0.2px;
   }
-  #companyNameInput {
-    width: 100%; padding: 14px 16px 14px 44px;
-    background: rgba(255,255,255,0.08);
-    border: 1.5px solid rgba(255,255,255,0.15);
-    border-radius: 12px;
-    font-family: var(--font-body); font-size: 0.95rem;
-    color: #fff; outline: none;
-    transition: border-color 0.2s, background 0.2s;
+  #companyNameInput, #companyPinInput {
+    width: 100%; padding: 13px 16px;
+    background: #ffffff;
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    outline: none;
+    font-size: 14.5px;
+    color: #1e293b;
+    font-family: var(--font-body);
     box-sizing: border-box;
+    transition: all 0.2s;
   }
-  #companyNameInput::placeholder { color: rgba(255,255,255,0.35); }
-  #companyNameInput:focus {
-    border-color: #ffd204;
-    background: rgba(255,255,255,0.12);
+  #companyNameInput::placeholder, #companyPinInput::placeholder { color: #94a3b8; }
+  #companyNameInput:focus, #companyPinInput:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
   }
   .btn-next {
     width: 100%;
-    padding: 13px;
-    background: linear-gradient(135deg, #ffd204, #f5a623);
-    border: none; border-radius: 12px;
-    font-family: var(--font-head); font-size: 0.9rem; font-weight: 800;
-    color: #002c63; cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-    box-shadow: 0 6px 20px rgba(255,210,4,0.35);
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: #3b82f6;
+    color: #fff;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  .btn-next:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(255,210,4,0.45); }
-  .btn-next:active { transform: scale(0.97); }
+  .btn-next:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(59, 130, 246, 0.45);
+  }
+  .btn-next:active {
+    transform: scale(0.96) !important;
+  }
   /* PIN step */
   .pin-step-header {
     display: flex; align-items: center; gap: 10px;
@@ -493,6 +620,218 @@
   .pin-err.show{ opacity: 1; }
   @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
   .pin-box.shake{ animation: shake .35s ease; }
+
+  /* ============ PREMIUM MAIN MENU PORTAL REDESIGN ============ */
+  .mm-hero-card {
+    background: linear-gradient(135deg, #021530 0%, #002c63 50%, #083c7a 100%);
+    background-size: 200% 200%;
+    animation: gradientMove 15s ease infinite;
+    border-radius: 20px;
+    padding: 48px 40px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 44, 99, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  @keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Slow floating ambient glow orbs (not moving text, but smooth graphic shapes) */
+  .mm-hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.45;
+  }
+  .mm-hero-orb-1 {
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(255, 210, 4, 0.25) 0%, transparent 70%);
+    right: -20px; top: -30px;
+    animation: floatOrb1 16s ease-in-out infinite alternate;
+  }
+  .mm-hero-orb-2 {
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(238, 63, 52, 0.15) 0%, transparent 70%);
+    left: 20%; bottom: -80px;
+    animation: floatOrb2 20s ease-in-out infinite alternate;
+  }
+  @keyframes floatOrb1 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-40px, 30px) scale(1.15); }
+  }
+  @keyframes floatOrb2 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(50px, -40px) scale(0.9); }
+  }
+
+  .mm-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 680px;
+  }
+  .mm-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 210, 4, 0.12);
+    border: 1px solid rgba(255, 210, 4, 0.25);
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--primary-base);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 18px;
+  }
+  .mm-hero-title {
+    font-family: var(--font-head);
+    font-size: 2.35rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.03em;
+    line-height: 1.25;
+    margin: 0;
+  }
+  .mm-hero-desc {
+    color: rgba(255, 255, 255, 0.75);
+    margin-top: 14px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 580px;
+  }
+
+  /* Glassmorphism Quick Stats Card */
+  .mm-hero-stats {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px 28px;
+    min-width: 280px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .mm-stats-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.45);
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .mm-stats-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+  .mm-stats-row.bordered {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Session Cards Layout */
+  .mm-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+  }
+  .mm-card-item {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+  .mm-card-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 44, 99, 0.15), 0 0 0 1px var(--primary-base);
+    border-color: var(--primary-base);
+  }
+  .mm-card-banner {
+    background: linear-gradient(135deg, var(--navy) 0%, #032b5c 100%);
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .mm-card-banner::before {
+    content: '';
+    position: absolute; top: -20px; right: -20px;
+    width: 90px; height: 90px; border-radius: 50%;
+    background: rgba(255, 210, 4, 0.08);
+    transition: transform 0.4s ease, background 0.4s ease;
+  }
+  .mm-card-item:hover .mm-card-banner::before {
+    transform: scale(1.35);
+    background: rgba(255, 210, 4, 0.14);
+  }
+  .mm-card-title {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #fff;
+    line-height: 1.4;
+    position: relative;
+    z-index: 2;
+  }
+  .mm-card-badge {
+    position: absolute; top: 18px; right: 18px;
+    background: rgba(74, 222, 128, 0.15);
+    border: 1px solid rgba(74, 222, 128, 0.35);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #4ade80;
+    letter-spacing: 0.06em;
+    z-index: 3;
+  }
+  .mm-card-body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    background: var(--card-bg);
+  }
+  .mm-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: var(--n600);
+  }
+  .mm-card-meta svg {
+    color: var(--n400);
+    flex-shrink: 0;
+  }
+  .mm-card-divider {
+    height: 1px;
+    background: var(--n100);
+    margin: 4px 0;
+  }
+
   /* ============ NEW CLIENT SECTIONS ============ */
   /* ============ NEW CLIENT SECTIONS ============ */
   .nav-pills-container {
@@ -560,19 +899,49 @@
     background: rgba(255, 255, 255, 0.05);
   }
 
-  /* Pane View Switcher Styles */
+  /* Pane View Switcher Styles (Faster transition: 0.22s) */
   .dash-pane {
     display: none;
     opacity: 0;
-    transform: translateY(18px);
-    transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateY(12px);
+    transition: opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .dash-pane.active {
     display: block;
     opacity: 1;
     transform: translateY(0);
   }
+
+  /* Global Tactile Click Animations for Instant Clicks & Feedback */
+  button, .nav-pill, .mm-card-item, .refresh-btn, .theme-toggle, .podium-tab, .back-btn, .logout-btn, .pin-key, .btn-next {
+    transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.15s, box-shadow 0.15s, opacity 0.15s !important;
+  }
+  button:active, .nav-pill:active, .mm-card-item:active, .refresh-btn:active, .theme-toggle:active, .podium-tab:active, .back-btn:active, .logout-btn:active, .pin-key:active, .btn-next:active {
+    transform: scale(0.95) !important;
+  }
+
+  /* Premium Dark Loader styles */
+  #loader {
+    position: fixed; inset: 0;
+    background: radial-gradient(circle at center, #0b1e36 0%, #001227 100%);
+    z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.35s ease, visibility 0.35s;
+  }
+  #loader.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .loader-spinner-premium {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(255, 210, 4, 0.1);
+    border-top: 3px solid #ffd204;
+    border-radius: 50%;
+    animation: spinPremium 0.8s linear infinite;
+  }
+  @keyframes spinPremium { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
   .two-col-grid {
     display: grid;
@@ -648,10 +1017,8 @@
     position: relative;
     border-radius: var(--radius-md);
     overflow: hidden;
-    aspect-ratio: 4/3;
     border: 1px solid var(--card-border);
     background: var(--n100);
-    cursor: zoom-in;
     transition: transform 0.2s;
   }
   .gallery-img-wrap:hover {
@@ -659,8 +1026,8 @@
   }
   .gallery-img-wrap img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    object-fit: contain;
     display: block;
   }
   [data-theme="dark"] .day-acc-body {
@@ -710,7 +1077,7 @@
     background-color: var(--primary-base);
     color: var(--navy);
     font-weight: 800;
-    padding: 0.75rem 0;
+    height: 42px;
     border-radius: 9999px;
     margin-bottom: 5rem;
     box-shadow: var(--shadow-lg);
@@ -721,14 +1088,14 @@
     font-size: 0.875rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    padding: 0 1rem;
     white-space: nowrap;
-    animation: ktMarquee 20s linear infinite;
-    display: inline-block;
+    position: absolute;
+    top: 50%;
+    animation: ktMarquee 15s linear infinite;
   }
   @keyframes ktMarquee {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
+    0% { left: 100%; transform: translateY(-50%) translateX(0); }
+    100% { left: 0; transform: translateY(-50%) translateX(-100%); }
   }
   .kt-user-wrap {
     max-width: 56rem;
@@ -901,8 +1268,9 @@
     cursor: pointer;
   }
   .eval-kpi:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(15,35,65,0.1);
+    transform: translateY(-6px);
+    box-shadow: 0 14px 30px rgba(15,35,65,0.12), 0 0 0 1px var(--primary-base);
+    border-color: var(--primary-base);
   }
   .eval-kpi .kpi-ring {
     width: 72px; height: 72px;
@@ -1040,74 +1408,160 @@
     .quote-grid { grid-template-columns: 1fr; }
     .trainer-grid { grid-template-columns: 1fr; }
   }
+/* ACTION PLAN DASHBOARD CSS */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --mdi-dark:    #0f172a;
+  --mdi-navy:    #1e293b;
+  --mdi-navy-light: #334155;
+  --mdi-orange:  #f97316;
+  --mdi-orange-hover: #ea580c;
+  --mdi-light:   #f8fafc;
+  --mdi-white:   #ffffff;
+  --mdi-border:  #e2e8f0;
+  --mdi-muted:   #475569;
+  --mdi-ink:     #0f172a;
+  --mdi-danger:  #ef4444;
+  --mdi-done:    #10b981;
+  --mdi-prog:    #f59e0b;
+  --mdi-card-bg: #ffffff;
+}
+
+#pane-actionplan .body-wrap { 
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  width: 100%; padding: 24px; color: var(--mdi-ink);
+}
+#pane-actionplan .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 32px; }
+#pane-actionplan .kpi { background: var(--mdi-card-bg); border: 1px solid var(--mdi-border); padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+#pane-actionplan .kpi:hover { background: #f8fafc; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+#pane-actionplan .kpi.active-filter { border-color: var(--mdi-orange); box-shadow: 0 0 0 1px var(--mdi-orange), 0 4px 15px rgba(0,0,0,0.1); background: #fff5f0; }
+#pane-actionplan .kpi-lbl { font-size: 12px; font-weight: 700; color: var(--mdi-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+#pane-actionplan .kpi-val { font-size: 32px; font-weight: 800; color: var(--mdi-ink); margin-bottom: 4px; }
+#pane-actionplan .kpi-total { border-top: 4px solid var(--mdi-ink); }
+#pane-actionplan .kpi-total .kpi-val { color: var(--mdi-ink); }
+#pane-actionplan .kpi-ap { border-top: 4px solid var(--mdi-orange); }
+#pane-actionplan .kpi-ap .kpi-val { color: var(--mdi-orange); }
+#pane-actionplan .kpi-done { border-top: 4px solid var(--mdi-done); }
+#pane-actionplan .kpi-done .kpi-val { color: var(--mdi-done); }
+#pane-actionplan .kpi-prog { border-top: 4px solid var(--mdi-prog); }
+#pane-actionplan .kpi-prog .kpi-val { color: var(--mdi-prog); }
+#pane-actionplan .kpi-tracking { border-top: 4px solid var(--mdi-navy-light); }
+#pane-actionplan .kpi-sub { font-size: 12px; color: var(--mdi-muted); }
+
+#pane-actionplan .progress-summary { margin-bottom: 32px; background: var(--mdi-card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--mdi-border); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+#pane-actionplan .ps-label { font-size: 12px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; margin-bottom: 12px; }
+#pane-actionplan .ps-bar { height: 16px; border-radius: 8px; background: #f1f5f9; display: flex; overflow: hidden; margin-bottom: 16px; }
+#pane-actionplan .ps-done-seg { background: var(--mdi-done); transition: width 0.5s; }
+#pane-actionplan .ps-prog-seg { background: var(--mdi-prog); transition: width 0.5s; }
+#pane-actionplan .ps-legend { display: flex; gap: 16px; }
+#pane-actionplan .ps-leg { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--mdi-muted); font-weight: 600; }
+#pane-actionplan .ps-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+#pane-actionplan .viewer-filterbar { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; background: var(--mdi-card-bg); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--mdi-border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+#pane-actionplan .dept-dropdown { background: #f1f5f9; border: 1px solid var(--mdi-border); color: var(--mdi-ink); padding: 6px 12px; border-radius: 4px; outline: none; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif;}
+#pane-actionplan .search-wrap { display: flex; width: 240px; }
+#pane-actionplan .search-wrap input { background: #f1f5f9; border: 1px solid var(--mdi-border); color: var(--mdi-ink); padding: 6px 12px; border-radius: 4px; outline: none; width: 100%; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif;}
+#pane-actionplan .search-wrap input:focus { border-color: var(--mdi-orange); background: #fff; }
+
+#pane-actionplan .table-card, #pane-reports .table-card { background: var(--mdi-card-bg); border: 1px solid var(--mdi-border); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+#pane-actionplan .table-head, #pane-reports .table-head { padding: 16px 24px; border-bottom: 1px solid var(--mdi-border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+#pane-actionplan .th-title, #pane-reports .th-title { font-weight: 700; color: var(--mdi-ink); display: flex; align-items: center; gap: 8px; }
+#pane-actionplan .th-dot, #pane-reports .th-dot { width: 8px; height: 8px; background: var(--mdi-orange); border-radius: 50%; }
+#pane-actionplan .th-count, #pane-reports .th-count { font-size: 12px; color: var(--mdi-muted); font-weight: 600; }
+
+#pane-actionplan .table-scroll, #pane-reports .table-scroll { overflow-x: auto; width: 100%; }
+#pane-actionplan .table-scroll table, #pane-reports .table-scroll table { width: 100%; min-width: 900px; border-collapse: collapse; text-align: left; table-layout: fixed; }
+#pane-actionplan .table-scroll tr:not(.detail-row), #pane-reports .table-scroll tr:not(.detail-row) { display: table-row; }
+#pane-actionplan .table-scroll th, #pane-reports .table-scroll th { display: table-cell; padding: 12px 24px; font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; border-bottom: 1px solid var(--mdi-border); background: #f8fafc; }
+#pane-actionplan .table-scroll td, #pane-reports .table-scroll td { display: table-cell; padding: 16px 24px; border-bottom: 1px solid var(--mdi-border); vertical-align: middle; }
+#pane-actionplan .table-scroll tr:hover td, #pane-reports .table-scroll tr:hover td { background: #f8fafc; }
+
+#pane-actionplan .td-num { font-family: monospace; color: var(--mdi-muted); font-weight: 600; }
+#pane-actionplan .td-name { font-weight: 600; color: var(--mdi-ink); white-space: nowrap; }
+#pane-actionplan .dept-tag { background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--mdi-muted); font-weight: 600; white-space: nowrap; }
+#pane-actionplan .status-pill { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+#pane-actionplan .s-done { background: rgba(16, 185, 129, 0.1); color: var(--mdi-done); }
+#pane-actionplan .s-prog { background: rgba(245, 158, 11, 0.1); color: var(--mdi-prog); }
+#pane-actionplan .expand-btn { background: none; border: none; color: var(--mdi-muted); font-size: 20px; cursor: pointer; transition: transform 0.2s; }
+#pane-actionplan .expand-btn.open { transform: rotate(90deg); color: var(--mdi-ink); }
+
+#pane-actionplan .detail-row { display: none; }
+#pane-actionplan .detail-row.open { display: table-row; }
+#pane-actionplan .detail-cell { background: #f8fafc; padding: 0 !important; border-bottom: 1px solid var(--mdi-border) !important; border-left: 3px solid var(--mdi-orange); }
+#pane-actionplan .detail-inner { padding: 24px; }
 </style>
 </head>
-<body>
+<body class="light">
+
+<!-- Ambient background floating orbs -->
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+
+<!-- Premium Latar Belakang Loading & Spinner -->
+<div id="loader" style="position:fixed; inset:0; background:radial-gradient(circle at center, #0b1e36 0%, #001227 100%); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+  <div class="loader-spinner-premium"></div>
+  <div style="margin-top:20px; font-family:var(--font-head); font-weight:700; color:#fff; font-size: 1.05rem; letter-spacing: 0.5px;">MDI TACK Portal</div>
+  <div style="margin-top:6px; font-family:var(--font-body); font-weight:500; color:rgba(255,255,255,0.4); font-size: 0.78rem;">Memuat data secara real-time...</div>
+</div>
+
 <div class="glow"></div>
 
 <!-- ============ LOGIN GATE ============ -->
 <div id="pinGate" style="display:none">
+  <!-- LEFT PANEL: Info & branding -->
+  <div class="login-info-panel">
+    <img src="Asset 8-8.png" alt="MDI Logo" class="login-info-logo">
+    <h1 class="login-info-title">Evaluate<br>Performance.</h1>
+    <p class="login-info-desc">Modern Learning Solution portal to track evaluations, analyze feedback, and align action plans in real-time.</p>
+    <p class="login-info-subdesc">Empower your workforce with data-driven insights and continuous corporate learning development.</p>
+  </div>
+
+  <!-- RIGHT PANEL: Glassmorphism Card -->
   <div class="pin-box" id="pinBox">
-    <div class="pin-logo">
-      <img src="mdiweb.png" alt="MDI" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <svg style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    </div>
-    <div class="pin-title">Selamat Datang</div>
-    <div class="pin-sub">Masukkan nama perusahaan &amp; PIN untuk mengakses dashboard</div>
+    <!-- Close icon decorative to match reference image -->
+    <div style="position:absolute; top:20px; right:20px; color:rgba(255,255,255,0.4); font-size:18px; cursor:pointer;" onclick="console.log('Close decorative clicked')">✕</div>
 
-    <!-- STEP 1: Company Name -->
-    <div class="login-step" id="stepCompany">
+    <div class="pin-title">Sign In</div>
+
+    <!-- LOGIN FORM -->
+    <div class="login-step" id="loginForm">
       <div class="company-input-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <input type="text" id="companyNameInput" placeholder="Nama Perusahaan" autocomplete="organization" autocorrect="off" autocapitalize="words" spellcheck="false">
+        <label class="lf-label-travel">Nama Perusahaan</label>
+        <input type="text" id="companyNameInput" placeholder="contoh: PT Maju Bersama" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
       </div>
-      <button class="btn-next" id="btnNextToPIN">Lanjutkan &rarr;</button>
-    </div>
+      
+      <div class="company-input-wrap" style="margin-bottom: 24px;">
+        <label class="lf-label-travel">PIN Akses</label>
+        <input type="password" id="companyPinInput" placeholder="Masukkan PIN Akses" inputmode="numeric" minlength="4" maxlength="6">
+      </div>
 
-    <!-- STEP 2: PIN -->
-    <div class="login-step hidden" id="stepPin">
-      <div class="pin-step-header">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-        <span class="pin-company-badge" id="pinCompanyBadge"></span>
-        <button class="btn-change-company" id="btnChangeCompany">Ubah</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
+        <label style="display:flex; align-items:center; gap:8px; font-size:0.82rem; color:rgba(255,255,255,0.6); cursor:pointer; user-select:none; margin:0;">
+          <input type="checkbox" id="rememberMe" style="accent-color:#3b82f6; cursor:pointer; width:16px; height:16px;">
+          Remember me
+        </label>
       </div>
-      <div class="pin-dots">
-        <span class="pin-dot" id="pd0"></span>
-        <span class="pin-dot" id="pd1"></span>
-        <span class="pin-dot" id="pd2"></span>
-        <span class="pin-dot" id="pd3"></span>
-      </div>
-      <div class="pin-pad">
-        <button class="pin-key" data-k="1">1</button>
-        <button class="pin-key" data-k="2">2</button>
-        <button class="pin-key" data-k="3">3</button>
-        <button class="pin-key" data-k="4">4</button>
-        <button class="pin-key" data-k="5">5</button>
-        <button class="pin-key" data-k="6">6</button>
-        <button class="pin-key" data-k="7">7</button>
-        <button class="pin-key" data-k="8">8</button>
-        <button class="pin-key" data-k="9">9</button>
-        <button class="pin-key del" data-k="clear">✕ Hapus</button>
-        <button class="pin-key" data-k="0">0</button>
-        <button class="pin-key del" data-k="del">⌫</button>
-      </div>
+
+      <button class="btn-next" id="btnSubmitLogin">Masuk Dashboard</button>
     </div>
 
     <div class="pin-err" id="pinErr"></div>
   </div>
 </div>
 
-<header style="visibility:hidden">
+<header>
   <div class="header-inner">
-    <img src="mdiweb.png" alt="MDI" class="logo-mdi" data-animate>
-      <div class="title-block" data-animate>
-        <h1 id="headerTitle">Dashboard Report</h1>
-        <p id="headerSubtitle">Dashboard Report &middot; Evaluasi Pre &amp; Post Test</p>
-      </div>
-      <button id="btnBackToMenu" style="display:none; background:var(--navy); color:#fff; border:none; padding:8px 16px; border-radius:6px; font-family:var(--font-head); font-weight:700; font-size:0.8rem; cursor:pointer; margin-left:14px; box-shadow:var(--shadow-sm); transition:background 0.2s;" onmouseover="this.style.background='var(--navy-800)'" onmouseout="this.style.background='var(--navy)'" onclick="sessionStorage.removeItem('mdp-active-training'); activeTrainingId=null; showMainMenu();">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:4px; margin-top:-2px;"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
-        Kembali ke Beranda
-      </button>
+    <button id="btnBackToMenu" class="btn-back" onclick="sessionStorage.removeItem('mdp-active-training'); sessionStorage.removeItem('mdp-active-tab'); activeTrainingId=null; showMainMenu();" title="Kembali ke Beranda" aria-label="Kembali ke Beranda">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+    </button>
+    <img src="Asset 7-8 (1).png" alt="MDI" class="logo-mdi" data-animate>
+    <div class="logo-sep" id="headerLogoSep" style="display:none;" data-animate></div>
+    <img src="" alt="Client Logo" class="logo" id="headerClientLogo" style="display:none;" data-animate>
+    <div class="title-block" data-animate>
+      <h1 id="headerTitle">Dashboard Report</h1>
+      <p id="headerSubtitle">Dashboard Report &middot; Evaluasi Pre &amp; Post Test</p>
+    </div>
       <div class="header-right">
       <span class="live-badge" id="liveBadge" data-animate>
         <span class="live-dot"></span><span id="liveText">LIVE</span>
@@ -1138,34 +1592,34 @@
 
 <main id="mainMenu" style="display:none; max-width:1280px; margin: 0 auto; padding: 40px 24px 80px; min-height:80vh;">
   <!-- Premium Hero Banner -->
-  <div style="background: linear-gradient(135deg, var(--navy) 0%, #001f4d 100%); border-radius: 20px; padding: 48px 40px; margin-bottom: 40px; position: relative; overflow: hidden; box-shadow: var(--shadow-lg); border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;">
-    <!-- Abstract graphic backgrounds -->
-    <div style="position: absolute; right: -50px; top: -50px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(255,210,4,0.08) 0%, transparent 70%); pointer-events: none;"></div>
-    <div style="position: absolute; left: 30%; bottom: -80px; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(238,63,52,0.04) 0%, transparent 60%); pointer-events: none;"></div>
+  <div class="mm-hero-card">
+    <!-- Slow Floating ambient glow shapes -->
+    <div class="mm-hero-orb mm-hero-orb-1"></div>
+    <div class="mm-hero-orb mm-hero-orb-2"></div>
     
-    <div style="position: relative; z-index: 2; max-width: 680px;">
-      <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,210,4,0.12); border: 1px solid rgba(255,210,4,0.25); padding: 6px 14px; border-radius: 30px; font-family: var(--font-head); font-size: 0.75rem; font-weight: 800; color: var(--primary-base); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 18px;">
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        MDI Portal Terverifikasi
+    <div class="mm-hero-content">
+      <div class="mm-hero-badge">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="mmRealtimeDate">Memuat tanggal...</span>
       </div>
-      <h2 style="font-family: var(--font-head); font-size: 2.35rem; font-weight: 800; color: #fff; letter-spacing: -0.03em; line-height: 1.2;">
+      <h2 class="mm-hero-title">
         Selamat Datang di <span id="mmClientName" style="color: var(--primary-base); text-shadow: 0 2px 10px rgba(255,210,4,0.15);"></span>
       </h2>
-      <p style="color: rgba(255,255,255,0.7); margin-top: 12px; font-size: 0.95rem; line-height: 1.6; max-width: 580px;">
+      <p class="mm-hero-desc">
         Akses laporan evaluasi pelatihan kepemimpinan dan data real-time pre & post test Anda melalui kartu sesi di bawah ini.
       </p>
     </div>
 
     <!-- Client Quick Stats Card -->
-    <div style="position: relative; z-index: 2; background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px 28px; min-width: 260px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); margin-left: auto;">
-      <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.45); font-weight: 700; margin-bottom: 14px;">Ringkasan Client</div>
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 8px;">
-          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.65);">Total Sesi:</span>
+    <div class="mm-hero-stats">
+      <div class="mm-stats-label">Ringkasan Client</div>
+      <div style="display: flex; flex-direction: column;">
+        <div class="mm-stats-row bordered">
+          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.75);">Total Sesi:</span>
           <span style="font-family: var(--font-mono); font-size: 0.95rem; color: var(--primary-base); font-weight: 700;" id="mmTotalSessionsCount">0 Sesi</span>
         </div>
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.65);">Status Server:</span>
+        <div class="mm-stats-row">
+          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.75);">Status Server:</span>
           <span style="font-family: var(--font-head); font-size: 0.72rem; color: #4ade80; font-weight: 800; background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.25); padding: 2px 8px; border-radius: 20px;">ONLINE</span>
         </div>
       </div>
@@ -1181,7 +1635,7 @@
     <span style="font-size: 0.78rem; color: var(--n500); font-weight: 500;">Pilih sesi untuk melihat detail</span>
   </div>
 
-  <div id="mmTrainingsGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
+  <div id="mmTrainingsGrid" class="mm-card-grid">
     <!-- Training Cards Go Here -->
   </div>
 </main>
@@ -1209,6 +1663,10 @@
       <a href="#pane-dokumentasi" class="nav-pill" id="navPillDoc">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
         Dokumentasi Training
+      </a>
+      <a href="#pane-reports" class="nav-pill" id="navPillReports">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Laporan PDF
       </a>
     </div>
   </div>
@@ -1342,13 +1800,7 @@
   <div class="dash-pane" id="pane-evaluasi">
     <div class="overline" data-animate><span class="num">02</span> Evaluasi Pelatihan</div>
     
-    <!-- Fallback Manual Notes (Hidden by default) -->
-    <div class="card" data-animate id="evalManualCard" style="display: none; padding: 24px;">
-      <div class="card-head" style="margin-bottom:14px">
-        <h2>Catatan Evaluasi</h2>
-      </div>
-      <div class="client-note-box" id="evalContent">Belum ada evaluasi.</div>
-    </div>
+
 
     <!-- Dynamic Report (Shaped from the template) -->
     <div id="evalDynamicReport" style="display: block; padding-top: 10px;">
@@ -1410,8 +1862,8 @@
       <div class="card" style="margin-bottom: 24px; background: linear-gradient(120deg, var(--navy) 0%, var(--navy-800) 100%); color: #fff; padding: 30px 34px; border: none; border-radius: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;">
           <div style="max-width: 560px;">
-            <h3 style="margin:0 0 8px; font-size:19px; color:#fff; font-weight:700;">Antusiasme tinggi — peserta meminta sesi lanjutan</h3>
-            <p style="margin:0; font-size:13px; color:#dce8f7; line-height:1.5;">Setiap responden menilai program ini bermanfaat atau sangat bermanfaat, dan banyak peserta secara proaktif meminta jadwal rutin untuk pendalaman materi. Kami merekomendasikan penjadwalan modul berikutnya selagi tingkat antusiasme masih kuat.</p>
+            <h3 id="evalCtaTitle" style="margin:0 0 8px; font-size:19px; color:#fff; font-weight:700;">Antusiasme tinggi — peserta meminta sesi lanjutan</h3>
+            <p id="evalCtaText" style="margin:0; font-size:13px; color:#dce8f7; line-height:1.5;">Setiap responden menilai program ini bermanfaat atau sangat bermanfaat, dan banyak peserta secara proaktif meminta jadwal rutin untuk pendalaman materi. Kami merekomendasikan penjadwalan modul berikutnya selagi tingkat antusiasme masih kuat.</p>
           </div>
           <div style="display: flex; gap: 26px;">
             <div style="text-align:center;">
@@ -1449,30 +1901,150 @@
 
   <!-- ============ ACTION PLAN ============ -->
   <div class="dash-pane" id="pane-actionplan">
-    <div class="overline" data-animate id="titleAp"><span class="num">05</span> Action Plan</div>
-    <section id="sectAp" class="card" data-animate style="padding: 24px;">
-      <div class="plan-table-wrap">
-        <table class="plan-table">
-          <thead>
-            <tr>
-              <th>Item / Kegiatan</th>
-              <th>Target</th>
-              <th>PIC</th>
-              <th>Deadline</th>
-            </tr>
-          </thead>
-          <tbody id="apTableBody">
-            <tr>
-              <td colspan="4" style="text-align:center;color:var(--n400);padding:20px;">Belum ada action plan.</td>
-            </tr>
-          </tbody>
-        </table>
+    <div class="overline" data-animate id="titleAp"><span class="num">05</span> Action Plan Tracker</div>
+    <section id="sectAp" class="card" data-animate style="padding: 0; overflow: hidden; background: #fafcff;">
+      
+      <div class="body-wrap">
+        <!-- Executive KPIs -->
+        <div class="kpi-row">
+          <div class="kpi kpi-total active-filter">
+            <div class="kpi-lbl">Total Participants</div>
+            <div class="kpi-val" id="kpi-total-val">0</div>
+            <div class="kpi-sub">Participants</div>
+          </div>
+          <div class="kpi kpi-ap">
+            <div class="kpi-lbl">ACTION PLANS</div>
+            <div class="kpi-val" id="kpi-ap-val">0</div>
+            <div class="kpi-sub" id="kpi-ap-sub">0 per participant</div>
+          </div>
+          <div class="kpi kpi-done">
+            <div class="kpi-lbl">Completed (Selesai)</div>
+            <div class="kpi-val" id="kpi-done-val">0</div>
+            <div class="kpi-sub" id="kpi-done-sub">0% of batch</div>
+          </div>
+          <div class="kpi kpi-prog">
+            <div class="kpi-lbl">In Progress</div>
+            <div class="kpi-val" id="kpi-prog-val">0</div>
+            <div class="kpi-sub" id="kpi-prog-sub">0% of batch</div>
+          </div>
+          <div class="kpi kpi-tracking" style="padding:12px;">
+            <div class="kpi-lbl">Tracking</div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="flex-shrink:0;">
+                <div id="kpi-donut-bg" style="margin-top:8px; width:48px; height:48px; border-radius:50%; background: conic-gradient(var(--mdi-done) 0% 27%, var(--mdi-prog) 27% 100%); display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                   <div id="kpi-donut-pct" style="width:34px; height:34px; border-radius:50%; background:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; color:var(--mdi-navy);">27%</div>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px; margin-top: 14px;">
+                <div style="display:flex; align-items:flex-start; gap:4px;">
+                  <span style="color:var(--mdi-prog); font-size:12px; margin-top:-2px;">●</span>
+                  <div>
+                    <div style="font-size:10px; color:var(--mdi-muted); font-weight:600; line-height:1;">In Progress</div>
+                    <div id="kpi-donut-prog" style="font-size:11px; font-weight:700; color:var(--mdi-navy); line-height:1; margin-top:2px;">22 (73%)</div>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:4px;">
+                  <span style="color:var(--mdi-done); font-size:12px; margin-top:-2px;">●</span>
+                  <div>
+                    <div style="font-size:10px; color:var(--mdi-muted); font-weight:600; line-height:1;">Completed</div>
+                    <div id="kpi-donut-done" style="font-size:11px; font-weight:700; color:var(--mdi-navy); line-height:1; margin-top:2px;">8 (27%)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-summary">
+          <div class="ps-label">Batch Accomplishment</div>
+          <div class="ps-bar">
+            <div id="ps-done-bar" class="ps-seg ps-done-seg" style="width: 27%"></div>
+            <div id="ps-prog-bar" class="ps-seg ps-prog-seg" style="width: 73%"></div>
+          </div>
+          <div class="ps-legend">
+            <div class="ps-leg">
+              <div class="ps-dot" style="background: var(--mdi-done)"></div>
+              <span id="ps-done-leg">27% Completed</span>
+            </div>
+            <div class="ps-leg">
+              <div class="ps-dot" style="background: var(--mdi-prog)"></div>
+              <span id="ps-prog-leg">73% In Progress</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="viewer-filterbar" style="display: flex; align-items: center; gap: 16px;">
+          <div style="font-weight: 700; font-size: 13px; color: var(--mdi-ink); flex-shrink: 0;">
+            🔍 Search Participant Records
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; letter-spacing: 1px;">Dept</span>
+            <select class="dept-dropdown">
+              <option value="ALL">All Departments</option>
+            </select>
+          </div>
+          <div class="search-wrap">
+            <input type="text" placeholder="Type name..." />
+          </div>
+        </div>
+
+        <!-- Locked Table -->
+        <div class="table-card">
+          <div class="table-head">
+            <div class="th-title">
+              <span class="th-dot"></span>Executive Participant Tracking Database
+            </div>
+            <div class="th-count" id="table-count-label">Showing 30 of 30</div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 4%">#</th>
+                  <th style="width: 18%">Participant Name</th>
+                  <th style="width: 14%">Department</th>
+                  <th style="width: 26%">Action Plan (Commitment)</th>
+                  <th style="width: 12%; text-align:center;">Status</th>
+                  <th style="width: 11%">Updates & Notes</th>
+                  <th style="width: 11%">Challenge</th>
+                  <th style="width: 4%"></th>
+                </tr>
+              </thead>
+              <tbody id="apTableBody">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ REPORTS ============ -->
+  <div class="dash-pane" id="pane-reports" style="display: none; padding: 20px;">
+    <div class="overline" data-animate id="titleReports"><span class="num">06</span> Evaluasi &amp; Laporan PDF</div>
+    <section id="sectReports" class="card" data-animate style="padding: 24px;">
+      <p class="card-desc" style="color: var(--mdi-muted); margin-bottom: 24px; font-size: 13.5px; line-height: 1.5;">Daftar file laporan pelatihan resmi dan berkas evaluasi akhir untuk perusahaan Anda.</p>
+      <div class="table-card">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="padding: 12px 24px; font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase;">Nama Laporan / File</th>
+                <th style="padding: 12px 24px; font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; width: 25%;">Tanggal Upload</th>
+                <th style="padding: 12px 24px; font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; text-align: right; width: 25%;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   </div>
 </main>
 
-<footer style="visibility:hidden">
+<footer>
   <span>Sinkronisasi otomatis setiap 10 detik</span>
   <span></span>
 </footer>
@@ -1483,11 +2055,30 @@
 import { animate, stagger, inView } from "https://cdn.jsdelivr.net/npm/motion@12.0.0/+esm";
 
 /* ================= GLOBAL STATE & ROUTING ================= */
-// Always read fresh from localStorage (backend may have saved after page load)
-function loadClientsDb() {
-  try { return JSON.parse(localStorage.getItem("mdp-clients-db") || "[]"); } catch(e) { return []; }
+/* ================= GLOBAL STATE & ROUTING ================= */
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCAAAkpGxp0tq4MwL2xz8Uq9DjYJS-Jlj9GdnEUPx2zXy5RP6q2vLj8NEXa-Bb--tr2g/exec";
+let clientsDb = [];
+
+async function loadClientsDbAsync() {
+  // Coba ambil cache lokal dulu biar instan
+  const cached = localStorage.getItem("mdp-clients-db");
+  if(cached) {
+    try {
+      clientsDb = JSON.parse(cached);
+    } catch(e) {}
+  }
+
+  try {
+    const res = await fetch(WEB_APP_URL + "?action=getClients");
+    const json = await res.json();
+    if(json.success) {
+      clientsDb = json.data;
+      localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb));
+    }
+  } catch(e) {
+    console.error("Failed to load clients database:", e);
+  }
 }
-let clientsDb = loadClientsDb();
 
 let loggedClient = null;
 let activeTrainingId = sessionStorage.getItem("mdp-active-training");
@@ -1521,7 +2112,7 @@ let CONFIG = {
   fontHead: "Plus Jakarta Sans",
   fontBody: "Inter",
   footerLeft: "Sinkronisasi otomatis setiap 10 detik",
-  footerRight: ""
+footerRight: ""
 };
 
 let SHEET_ID = "";
@@ -1533,107 +2124,109 @@ function initRouting(){
   if(saved) document.documentElement.setAttribute("data-theme", saved);
 
   // Check login
-  const loggedId = sessionStorage.getItem("mdp-logged-client");
+  let loggedId = sessionStorage.getItem("mdp-logged-client") || localStorage.getItem("mdp-logged-client");
   if(loggedId) {
     loggedClient = clientsDb.find(c => String(c.id).trim() === String(loggedId).trim());
+    if (loggedClient) {
+       if (!sessionStorage.getItem("mdp-logged-client")) {
+         sessionStorage.setItem("mdp-logged-client", String(loggedId));
+       }
+       applyClientConfig(loggedClient);
+    }
   }
 
   // If not logged in, show PIN Gate — stop here
   if(!loggedClient) {
+    hideLoader();
     showPinGate();
     return;
   }
 
-  // User is logged in — apply client settings and decide screen
-  applyClientConfig(loggedClient);
-
-  const trainingId = sessionStorage.getItem("mdp-active-training");
-  if(trainingId) {
-    const t = (loggedClient.trainings || []).find(x => String(x.id).trim() === String(trainingId).trim());
-    if(t) {
-      showDashboard(t);
-    } else {
-      sessionStorage.removeItem("mdp-active-training");
-      showMainMenu();
+  hideLoader();
+  
+  if(activeTrainingId && loggedClient) {
+    const trainings = loggedClient.trainings || [];
+    const foundTraining = trainings.find(t => String(t.id).trim() === String(activeTrainingId).trim());
+    if(foundTraining) {
+      showDashboard(foundTraining);
+      return;
     }
-  } else {
-    showMainMenu();
+  }
+
+  showMainMenu();
+}
+
+function hideLoader() {
+  const loader = document.getElementById("loader");
+  if(loader) {
+    loader.classList.add("fade-out");
+    setTimeout(() => { loader.style.display = "none"; }, 350);
   }
 }
 
 /* =============== SCREEN FUNCTIONS =============== */
 function showPinGate() {
+  const header = document.querySelector("header");
+  const footer = document.querySelector("footer");
+  if (header) header.style.visibility = "hidden";
+  if (footer) footer.style.visibility = "hidden";
+
   const gate        = document.getElementById("pinGate");
   const box         = document.getElementById("pinBox");
   const err         = document.getElementById("pinErr");
-  const stepCompany = document.getElementById("stepCompany");
-  const stepPin     = document.getElementById("stepPin");
   const nameInput   = document.getElementById("companyNameInput");
-  const btnNext     = document.getElementById("btnNextToPIN");
-  const btnChange   = document.getElementById("btnChangeCompany");
-  const badge       = document.getElementById("pinCompanyBadge");
+  const companyPinInput = document.getElementById("companyPinInput");
+  const btnSubmitLogin = document.getElementById("btnSubmitLogin");
 
   gate.style.display = "flex";
+  err.classList.remove("show");
+  nameInput.value = "";
+  companyPinInput.value = "";
+  setTimeout(() => nameInput.focus(), 50);
 
-  let companyName = "";
-  let pinInput    = "";
+  function attemptLogin() {
+    const companyNameVal = (nameInput.value || "").trim();
+    const pinInput = (companyPinInput.value || "").trim();
 
-  /* ---- Step helpers ---- */
-  function goToStep1() {
-    stepCompany.classList.remove("hidden");
-    stepPin.classList.add("hidden");
-    err.classList.remove("show");
-    nameInput.value = "";
-    setTimeout(() => nameInput.focus(), 50);
-  }
-
-  function goToStep2(name) {
-    companyName = name;
-    badge.textContent = name;
-    pinInput = "";
-    updateDots();
-    stepCompany.classList.add("hidden");
-    stepPin.classList.remove("hidden");
-    err.classList.remove("show");
-  }
-
-  function proceedWithName() {
-    const val = (nameInput.value || "").trim();
-    if(!val) {
+    if (!companyNameVal) {
       nameInput.style.borderColor = "#ff6b6b";
       nameInput.focus();
       setTimeout(() => { nameInput.style.borderColor = ""; }, 1500);
       return;
     }
-    const match = clientsDb.find(c => c.name.trim().toLowerCase() === val.toLowerCase());
-    if(!match) {
-      err.textContent = "Nama perusahaan tidak ditemukan.";
+
+    if (!pinInput) {
+      err.textContent = "Masukkan PIN!";
+      err.classList.add("show");
+      box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
+      setTimeout(() => { err.classList.remove("show"); }, 2000);
+      return;
+    }
+    
+    // Validasi PIN tepat 4 digit
+    if (!/^\d{4}$/.test(pinInput)) {
+      err.textContent = "PIN harus 4 digit angka!";
       err.classList.add("show");
       box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
       setTimeout(() => { err.classList.remove("show"); }, 2500);
       return;
     }
-    goToStep2(match.name);
-  }
 
-  btnNext.addEventListener("click", proceedWithName);
-  nameInput.addEventListener("keydown", e => { if(e.key === "Enter") proceedWithName(); });
-  btnChange.addEventListener("click", goToStep1);
+    // Cari client berdasarkan nama perusahaan
+    const found = clientsDb.find(c => {
+      const nameMatch = (c.name || "").trim().toLowerCase() === companyNameVal.toLowerCase();
+      const pinMatch = String(c.pin).padStart(4, '0') === pinInput;
+      return nameMatch && pinMatch;
+    });
 
-  /* ---- PIN logic ---- */
-  function updateDots() {
-    for(let i = 0; i < 4; i++) {
-      document.getElementById("pd"+i).classList.toggle("filled", i < pinInput.length);
-    }
-  }
-
-  function checkPin() {
-    const found = clientsDb.find(c =>
-      c.name.trim().toLowerCase() === companyName.toLowerCase() &&
-      String(c.pin).trim() === pinInput
-    );
     if(found) {
       sessionStorage.setItem("mdp-logged-client", String(found.id));
+      const rem = document.getElementById("rememberMe");
+      if(rem && rem.checked) {
+        localStorage.setItem("mdp-logged-client", String(found.id));
+      } else {
+        localStorage.removeItem("mdp-logged-client");
+      }
       gate.classList.add("unlocked");
       loggedClient = found;
       setTimeout(() => {
@@ -1641,41 +2234,19 @@ function showPinGate() {
         gate.classList.remove("unlocked");
         applyClientConfig(loggedClient);
         showMainMenu();
-      }, 400);
+      }, 50);
     } else {
-      pinInput = "";
-      updateDots();
-      err.textContent = "PIN salah. Coba lagi.";
+      companyPinInput.value = "";
+      err.textContent = "Nama Perusahaan atau PIN salah. Coba lagi.";
       err.classList.add("show");
       box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
-      setTimeout(() => { err.classList.remove("show"); }, 2000);
+      setTimeout(() => { err.classList.remove("show"); }, 2500);
     }
   }
 
-  document.querySelectorAll(".pin-key").forEach(btn => {
-    btn.addEventListener("click", () => {
-      if(stepPin.classList.contains("hidden")) return;
-      const k = btn.dataset.k;
-      if(k === "clear") { pinInput = ""; updateDots(); return; }
-      if(k === "del")   { pinInput = pinInput.slice(0,-1); updateDots(); return; }
-      if(pinInput.length >= 4) return;
-      pinInput += k;
-      updateDots();
-      if(pinInput.length === 4) setTimeout(checkPin, 120);
-    });
-  });
-
-  document.addEventListener("keydown", e => {
-    if(gate.style.display === "none") return;
-    if(!stepPin.classList.contains("hidden")) {
-      if(/^[0-9]$/.test(e.key) && pinInput.length < 4) {
-        pinInput += e.key; updateDots();
-        if(pinInput.length === 4) setTimeout(checkPin, 120);
-      } else if(e.key === "Backspace") { pinInput = pinInput.slice(0,-1); updateDots(); }
-    }
-  });
-
-  goToStep1();
+  btnSubmitLogin.addEventListener("click", attemptLogin);
+  nameInput.addEventListener("keydown", e => { if(e.key === "Enter") companyPinInput.focus(); });
+  companyPinInput.addEventListener("keydown", e => { if(e.key === "Enter") attemptLogin(); });
 }
 
 function applyClientConfig(client) {
@@ -1699,41 +2270,73 @@ function applyClientConfig(client) {
   if(fb) CONFIG.fontBody = fb;
   if(fl) CONFIG.footerLeft = fl;
   if(fr) CONFIG.footerRight = fr;
+  applyAppearance();
 }
 
 window.showMainMenu = function() {
-  // Re-read fresh data in case backend updated after page load
-  clientsDb = loadClientsDb();
-  if(loggedClient) {
-    const fresh = clientsDb.find(c => String(c.id) === String(loggedClient.id));
-    if(fresh) loggedClient = fresh;
+  // 1. Tampilkan Menu Utama INSTAN dulu pakai data lokal yang sudah ada
+  const mm = document.getElementById("mainMenu");
+  if(mm && loggedClient) {
+    mm.style.display = "block";
+    mm.style.visibility = "visible";
+    document.getElementById("mmClientName").textContent = loggedClient.name;
+    
+    // Update real-time date in badge (try-catch wrapped for safety)
+    try {
+      const now = new Date();
+      const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateEl = document.getElementById("mmRealtimeDate");
+      if(dateEl) dateEl.textContent = now.toLocaleDateString('id-ID', dateOptions);
+    } catch(e) {
+      console.warn("Failed to format localized date:", e);
+      const dateEl = document.getElementById("mmRealtimeDate");
+      if(dateEl) dateEl.textContent = new Date().toLocaleDateString();
+    }
+
+    const trainingsList = loggedClient.trainings || [];
+    const countEl = document.getElementById("mmTotalSessionsCount");
+    if(countEl) countEl.textContent = trainingsList.length + " Sesi";
+    renderMainMenu(trainingsList);
   }
+
+  // 2. Fetch data terbaru di background secara silent tanpa bikin loading beku
+  loadClientsDbAsync().then(() => {
+    if(loggedClient) {
+      const fresh = clientsDb.find(c => String(c.id) === String(loggedClient.id));
+      if(fresh) {
+        loggedClient = fresh;
+        document.getElementById("mmClientName").textContent = loggedClient.name;
+        const trainingsList = loggedClient.trainings || [];
+        const countEl = document.getElementById("mmTotalSessionsCount");
+        if(countEl) countEl.textContent = trainingsList.length + " Sesi";
+        renderMainMenu(trainingsList);
+      }
+    }
+  }).catch(e => console.warn("Silent background load failed:", e));
   // Hide dashboard
   const mainMain = document.getElementById("mainMain");
   mainMain.style.display = "none";
   mainMain.style.visibility = "hidden";
-  // Hide dashboard-only header elements
+  // Hide dashboard-only header elements (keep update time and refresh ring visible on main menu)
   const liveBadge = document.querySelector(".live-badge");
   const updated = document.querySelector(".updated");
   const refreshWrap = document.querySelector(".refresh-wrap");
   const btnBack = document.getElementById("btnBackToMenu");
   if(liveBadge) liveBadge.style.display = "none";
-  if(updated) updated.style.display = "none";
-  if(refreshWrap) refreshWrap.style.display = "none";
+  if(updated) updated.style.display = "";
+  if(refreshWrap) refreshWrap.style.display = "";
   if(btnBack) btnBack.style.display = "none";
   // Show header & footer
   document.querySelector("header").style.visibility = "visible";
   document.querySelector("footer").style.visibility = "visible";
-  // Show main menu
-  const mm = document.getElementById("mainMenu");
-  if(mm) {
-    mm.style.display = "block";
-    mm.style.visibility = "visible";
-    document.getElementById("mmClientName").textContent = loggedClient.name;
-    const trainingsList = loggedClient.trainings || [];
-    const countEl = document.getElementById("mmTotalSessionsCount");
-    if(countEl) countEl.textContent = trainingsList.length + " Sesi";
-    renderMainMenu(trainingsList);
+  try {
+    animate("header [data-animate]", {opacity:[0,1],y:[-14,0]},{delay:stagger(0.04),duration:.25,ease:EASE_OUT});
+  } catch(e) {
+    console.warn("Header animation failed in main menu:", e);
+    document.querySelectorAll("header [data-animate]").forEach(el => {
+      el.style.opacity = "1";
+      el.style.transform = "none";
+    });
   }
   window.__WAIT_MAIN_MENU = true;
 }
@@ -1741,6 +2344,7 @@ window.showMainMenu = function() {
 window.logout = function() {
   sessionStorage.removeItem("mdp-logged-client");
   sessionStorage.removeItem("mdp-active-training");
+  sessionStorage.removeItem("mdp-active-tab");
   window.location.reload();
 }
 
@@ -1777,6 +2381,8 @@ function showDashboard(training) {
     komentarTrainer: training.komentarTrainer || "",
     dokumentasi:   training.dokumentasi   || [],
     actionPlan:    training.actionPlan    || [],
+    reports:       training.reports       || [],
+    aiSummary:     training.aiSummary     || null,
     trainerNames:  training.trainerNames  || "",
     dateStart:     training.dateStart     || "",
     dateEnd:       training.dateEnd       || "",
@@ -1784,6 +2390,12 @@ function showDashboard(training) {
 
   activeTrainingId = String(training.id);
   sessionStorage.setItem("mdp-active-training", activeTrainingId);
+  
+  // Sync the Action Plan iframe with this training id
+  const iframe = document.getElementById('apIframeFe');
+  if(iframe && iframe.contentWindow) {
+    iframe.contentWindow.postMessage({ type: 'formChanged', formId: activeTrainingId }, '*');
+  }
 
   // Hide main menu
   const mm = document.getElementById("mainMenu");
@@ -1808,8 +2420,52 @@ function showDashboard(training) {
   document.querySelector("header").style.visibility = "visible";
   document.querySelector("footer").style.visibility = "visible";
 
+  // Restore active tab from sessionStorage if available
+  const savedTab = sessionStorage.getItem("mdp-active-tab");
+  if (savedTab) {
+    const targetPill = document.querySelector(`.nav-pill[href="${savedTab}"]`);
+    if (targetPill) {
+      // Deactivate all pills and panes
+      document.querySelectorAll(".nav-pill").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".dash-pane").forEach(p => {
+        p.classList.remove("active");
+        p.style.display = "none";
+      });
+      // Activate the saved one
+      targetPill.classList.add("active");
+      const targetPane = document.querySelector(savedTab);
+      if (targetPane) {
+        targetPane.style.display = "block";
+        targetPane.classList.add("active");
+      }
+    }
+  } else {
+    // Default fallback to first tab (Pre/Post Test) if no active tab is saved
+    const firstPill = document.querySelector(".nav-pill");
+    const prepostPane = document.getElementById("pane-prepost");
+    if(firstPill && prepostPane) {
+      document.querySelectorAll(".nav-pill").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".dash-pane").forEach(p => {
+        p.classList.remove("active");
+        p.style.display = "none";
+      });
+      firstPill.classList.add("active");
+      prepostPane.style.display = "block";
+      prepostPane.classList.add("active");
+    }
+  }
+
   // Apply appearance
   applyAppearance();
+  renderReports();
+  
+  // Set subtitle based on active tab
+  const activePill = document.querySelector(".nav-pill.active");
+  const subtitleEl = document.getElementById("headerSubtitle");
+  if (activePill && subtitleEl) {
+    const pillText = activePill.innerText.replace(/[\n\r]/g, " ").trim();
+    subtitleEl.innerHTML = `Dashboard Report &middot; ${pillText}`;
+  }
   window.__WAIT_MAIN_MENU = false;
 
 
@@ -1850,22 +2506,19 @@ function renderMainMenu(trainings) {
   };
 
   grid.innerHTML = trainings.map((t, idx) => {
-    const hasSheet = !!(t.sheetId || t.csvUrl);
     return `
-    <div class="card mm-card" style="cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; padding:0; display:flex; flex-direction:column; opacity:0; animation:fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards ${idx * 0.07}s; overflow:hidden;" onclick="openTraining('${t.id}')" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='none';this.style.boxShadow='var(--shadow-md)'">
-      <div style="background:linear-gradient(135deg, var(--navy) 0%, #003a80 100%); padding:20px 22px 16px; position:relative; overflow:hidden;">
-        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,210,4,0.12);"></div>
-        <div style="position:absolute;bottom:-30px;right:10px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.05);"></div>
-        <div style="font-family:var(--font-head); font-weight:800; font-size:1.05rem; color:#fff; line-height:1.35; position:relative; z-index:1;">${t.title}</div>
-        ${hasSheet ? `<div style="position:absolute;top:14px;right:14px;background:rgba(74,222,128,0.2);border:1px solid rgba(74,222,128,0.4);border-radius:20px;padding:2px 9px;font-size:0.65rem;font-weight:700;color:#4ade80;letter-spacing:0.05em;">LIVE</div>` : ''}
+    <div class="mm-card-item" onclick="openTraining('${t.id}')">
+      <div class="mm-card-banner">
+        <div class="mm-card-title">${t.title}</div>
       </div>
-      <div style="padding:16px 22px 20px; display:flex; flex-direction:column; gap:10px; flex:1;">
-        <div style="display:flex; align-items:center; gap:8px; font-size:0.82rem; color:var(--n600);">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <div class="mm-card-body">
+        <div class="mm-card-meta">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span>${formatRange(t.dateStart, t.dateEnd)}</span>
         </div>
-        <div style="display:flex; align-items:flex-start; gap:8px; font-size:0.82rem; color:var(--n600); padding-top:10px; border-top:1px solid var(--n100); margin-top:auto;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <div class="mm-card-divider"></div>
+        <div class="mm-card-meta">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span>${t.trainerNames || '<i style="color:var(--n400)">Trainer belum diatur</i>'}</span>
         </div>
       </div>
@@ -1873,12 +2526,8 @@ function renderMainMenu(trainings) {
   }).join("");
 }
 
-window.openTraining = function(id) {
+window.openTraining = async function(id) {
   if(!loggedClient) return;
-  // Re-read fresh in case data changed
-  clientsDb = loadClientsDb();
-  const fresh = clientsDb.find(c => String(c.id) === String(loggedClient.id));
-  if(fresh) loggedClient = fresh;
   const t = (loggedClient.trainings || []).find(x => String(x.id).trim() === String(id).trim());
   if(t) showDashboard(t);
   else console.warn("Training not found:", id, loggedClient.trainings);
@@ -1914,13 +2563,24 @@ function applyAppearance(){
   }
   if(sub) sub.textContent = CONFIG.subtitle;
   document.title = `${CONFIG.title} — Dashboard`;
-  // Logo
+  // Logo (Dual-logo: MDI Logo + Separator + Client Logo)
+  const clientLogo = document.getElementById("headerClientLogo");
+  const logoSep = document.getElementById("headerLogoSep");
   if(CONFIG.logoUrl){
-    document.querySelectorAll(".logo-mdi").forEach(img=>{
-      img.src = CONFIG.logoUrl;
-      img.style.display = "block";
-      img.classList.remove("logo-light","logo-dark");
-    });
+    if(clientLogo) {
+      clientLogo.src = CONFIG.logoUrl;
+      clientLogo.style.display = "block";
+    }
+    if(logoSep) {
+      logoSep.style.display = "block";
+    }
+  } else {
+    if(clientLogo) {
+      clientLogo.style.display = "none";
+    }
+    if(logoSep) {
+      logoSep.style.display = "none";
+    }
   }
   // Footer
   const footerSpans = document.querySelectorAll("footer span");
@@ -2331,7 +2991,12 @@ function renderDynamicEvaluation(evalData) {
     // Header names update
     document.getElementById("evalReportMetaTrainers").textContent = trainers.map(t=>t.name).join(" & ");
 
-    const fupPct = (d.followUpPct != null) ? d.followUpPct : (hasData ? 100 : 0);
+    // Check manual override for CTA Pct
+    let manualFup = null;
+    if (CONFIG.evaluasi && typeof CONFIG.evaluasi === "object" && CONFIG.evaluasi.ctaPct) {
+      manualFup = CONFIG.evaluasi.ctaPct;
+    }
+    const fupPct = manualFup !== null ? manualFup : ((d.followUpPct != null) ? d.followUpPct : (hasData ? 100 : 0));
     const total  = d.total || (hasData ? 0 : "—");
 
     // Avatar initials helper
@@ -2431,30 +3096,47 @@ function renderDynamicEvaluation(evalData) {
     const evalTrainerFeedbackEl = document.getElementById("evalTrainerFeedback");
     if(evalTrainerFeedbackEl) {
       let fbHtml = "";
-      if (d.trainerFeedback && d.trainerFeedback.length > 0) {
+      if (CONFIG.aiSummary && CONFIG.aiSummary.feedback) {
+        fbHtml = `<div style="margin-bottom:6px;font-weight:600;display:flex;align-items:center;gap:6px;">
+                    Umpan Balik untuk Trainer:
+                  </div>` +
+                 `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(CONFIG.aiSummary.feedback)}"</div>`;
+      } else if (d.trainerFeedback && d.trainerFeedback.length > 0) {
         fbHtml = `<div style="margin-bottom:6px;"><b>Beberapa umpan balik untuk Trainer:</b></div>` +
           d.trainerFeedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(w)}"</div>`).join('');
       } else {
         fbHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">Umpan balik trainer akan muncul setelah data evaluasi terhubung.</span>`;
       }
-      evalTrainerFeedbackEl.outerHTML = `<div id="evalTrainerFeedback" style="margin-top:16px;font-size:12.5px;color:var(--text);line-height:1.6;background:#f7f9fc;padding:12px 14px;border-radius:10px;border:1px solid #e7ecf2;">${fbHtml}</div>`;
+      evalTrainerFeedbackEl.innerHTML = fbHtml;
     }
 
     // 4. Topics
-    const valTopics = (d.valuableTopics && d.valuableTopics.length > 0) ? d.valuableTopics : [];
     const evalValuableTopicsEl = document.getElementById("evalValuableTopics");
     if(evalValuableTopicsEl) {
-      evalValuableTopicsEl.innerHTML = valTopics.length
-        ? valTopics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(t.text)} (${t.count})</span>`).join("")
-        : `<span style="color:var(--n500,var(--muted));font-size:13px;">Data topik akan muncul setelah evaluasi terhubung.</span>`;
+      if (CONFIG.aiSummary && CONFIG.aiSummary.topikBermanfaat) {
+        const topics = CONFIG.aiSummary.topikBermanfaat.split(",").map(t => t.trim()).filter(Boolean);
+        evalValuableTopicsEl.innerHTML = 
+          (topics.length > 0 && topics[0] !== "-" ? topics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(t)}</span>`).join("") : `<span style="color:var(--n500);font-size:13px;">Tidak ada topik softskill ditemukan.</span>`);
+      } else {
+        const valTopics = (d.valuableTopics && d.valuableTopics.length > 0) ? d.valuableTopics : [];
+        evalValuableTopicsEl.innerHTML = valTopics.length
+          ? valTopics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(t.text)} (${t.count})</span>`).join("")
+          : `<span style="color:var(--n500,var(--muted));font-size:13px;">Data topik akan muncul setelah evaluasi terhubung.</span>`;
+      }
     }
 
-    const nxtTopics = (d.nextTopics && d.nextTopics.length > 0) ? d.nextTopics : [];
     const evalNextTopicsEl = document.getElementById("evalNextTopics");
     if(evalNextTopicsEl) {
-      evalNextTopicsEl.innerHTML = nxtTopics.length
-        ? nxtTopics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}" style="${idx < 3 ? 'background:#c8102e;' : ''}">${esc(t.text)} (${t.count})</span>`).join("")
-        : `<span style="color:var(--n500,var(--muted));font-size:13px;">Data topik akan muncul setelah evaluasi terhubung.</span>`;
+      if (CONFIG.aiSummary && CONFIG.aiSummary.topikSelanjutnya) {
+        const topics = CONFIG.aiSummary.topikSelanjutnya.split(",").map(t => t.trim()).filter(Boolean);
+        evalNextTopicsEl.innerHTML = 
+          (topics.length > 0 && topics[0] !== "-" ? topics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(t)}</span>`).join("") : `<span style="color:var(--n500);font-size:13px;">Tidak ada topik softskill ditemukan.</span>`);
+      } else {
+        const nxtTopics = (d.nextTopics && d.nextTopics.length > 0) ? d.nextTopics : [];
+        evalNextTopicsEl.innerHTML = nxtTopics.length
+          ? nxtTopics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(t.text)} (${t.count})</span>`).join("")
+          : `<span style="color:var(--n500,var(--muted));font-size:13px;">Data topik akan muncul setelah evaluasi terhubung.</span>`;
+      }
     }
 
     // 5. Quotes
@@ -2846,7 +3528,7 @@ function renderCharts(){
       ]},
       options:{
         responsive:true,maintainAspectRatio:false,
-        animation:{duration:900,easing:"easeOutQuart"},
+        animation:{duration:400,easing:"easeOutQuart"},
         plugins:{
           legend:{display:false},
           tooltip:{
@@ -2899,7 +3581,7 @@ function renderCharts(){
       ]},
       options:{
         responsive:true,maintainAspectRatio:false,
-        animation:{duration:900,easing:"easeOutQuart"},
+        animation:{duration:400,easing:"easeOutQuart"},
         plugins:{legend:{position:"bottom",labels:{boxWidth:10,boxHeight:10,borderRadius:3,useBorderRadius:true,font:{size:10.5}}}},
         scales:{
           x:{grid:{display:false},ticks:{font:{size:10.5}}},
@@ -2985,6 +3667,14 @@ document.getElementById("refreshBtn").addEventListener("click",()=>fetchData(tru
     if(typeof chartCompare!=="undefined"&&chartCompare) updateChartColors();
     if(typeof chartDist!=="undefined"&&chartDist) updateChartColors();
   });
+  
+  // Auto-reload frontend whenever backend saves new data to localStorage
+  window.addEventListener("storage", (e) => {
+    if (e.key === "mdp-clients-db") {
+      console.log("Data changed from backend, refreshing dashboard...");
+      window.location.reload();
+    }
+  });
 })();
 function updateChartColors(){
   const cs=getComputedStyle(document.documentElement);
@@ -3015,13 +3705,27 @@ window.addEventListener("resize",()=>{
 /* ================= CLIENT SECTIONS RENDERING ================= */
 function renderActiveClientSections(){
   // Evaluasi
-  const ev = typeof CONFIG.evaluasi === "string" ? CONFIG.evaluasi : "";
-  const kom = CONFIG.komentarTrainer;
-  if(ev && typeof ev === "string" && ev.trim()){
-    const evalContent = document.getElementById("evalContent");
-    if (evalContent) evalContent.textContent = ev.trim();
+  const ev = CONFIG.evaluasi;
+  if(ev){
+    let evObj = ev;
+    if(typeof ev === "string") evObj = { title: "", text: ev, ctaPct: "" };
+    
+    const evalCtaTitle = document.getElementById("evalCtaTitle");
+    const evalCtaText = document.getElementById("evalCtaText");
+    const evalCtaPctEl = document.getElementById("ctaStatFollowUp");
+    
+    if(evalCtaTitle && evObj.title) {
+      evalCtaTitle.textContent = evObj.title;
+    }
+    if(evalCtaText && evObj.text) {
+      evalCtaText.textContent = evObj.text;
+    }
+    if(evalCtaPctEl && evObj.ctaPct) {
+      evalCtaPctEl.textContent = `${evObj.ctaPct}%`;
+    }
   }
   
+  const kom = CONFIG.komentarTrainer;
   // Render Komentar Trainer (Rich Object - User Tailwind Layout)
   if(kom){
     let ktArr = kom;
@@ -3067,9 +3771,9 @@ function renderActiveClientSections(){
             <div class="kt-user-card">
               <div class="kt-user-avatar-wrap">
                 <div class="kt-user-avatar">
-                  <span id="ktAvatarInitials">${initials}</span>
+                  ${kt.photoUrl ? `<img src="${esc(kt.photoUrl)}" alt="Trainer">` : `<span id="ktAvatarInitials">${initials}</span>`}
                 </div>
-                <div class="kt-user-badge">Fasilitator</div>
+                <div class="kt-user-badge">${esc(kt.role || "Fasilitator")}</div>
               </div>
               <div class="kt-user-head">
                  <h2 class="kt-user-name">${esc(kt.name || "Nama Trainer")}</h2>
@@ -3120,22 +3824,169 @@ function renderActiveClientSections(){
   }
 
   // Action Plan
+  let apList = [];
+  let totalPlans = 0;
+
   const ap = Array.isArray(CONFIG.actionPlan) ? CONFIG.actionPlan : [];
-  if(ap && ap.length > 0){
-    const tbody = document.getElementById("apTableBody");
-    if (tbody) {
-      tbody.innerHTML = ap.map(r=>`
-        <tr>
-          <td style="font-weight:600">${esc(r.item || "—")}</td>
-          <td>${esc(r.target || "—")}</td>
-          <td>${esc(r.pic || "—")}</td>
-          <td style="font-family:var(--font-mono)">${esc(r.deadline || "—")}</td>
-        </tr>`).join("");
+  
+  if (ap.length > 0) {
+    if (ap[0].extractedPlans !== undefined || ap[0].answers) {
+      // Format baru dari dashboard.html (cloud sync)
+      apList = ap.map(p => {
+         let st = (p.status === "done" || p.status === "not_done") ? p.status : "prog";
+         if (p.s2Status === "100%") st = "done";
+         return {
+           no: p.no, name: p.name, dept: p.dept, plans: p.extractedPlans || [], status: st,
+           s2Update: (p.answers && p.answers['q_notes']) ? p.answers['q_notes'] : (p.s2Update || ""),
+           s2Challenge: p.s2Challenge || ""
+         };
+      });
+      apList = apList.filter(p => p.name && p.name.trim() !== "");
+      apList.forEach(p => totalPlans += p.plans.length);
+    } else {
+      // Format lama (fallback manual)
+      const apMap = {};
+      ap.forEach(r => {
+        if (!r.item) return;
+        const pic = (r.pic && r.pic.trim() !== "") ? r.pic.trim() : "Unknown";
+        if (!apMap[pic]) {
+          apMap[pic] = { name: pic, dept: "N/A", plans: [], status: "prog", s2Update: "", s2Challenge: "" };
+        }
+        apMap[pic].plans.push(r.item);
+        totalPlans++;
+        
+        const targetStr = (r.target || "").toLowerCase();
+        if (targetStr.includes("selesai") || targetStr.includes("done")) {
+          apMap[pic].status = "done";
+        }
+      });
+      apList = Object.values(apMap).map((p, i) => { p.no = i + 1; return p; });
     }
   }
 
+    const totalParticipants = apList.length;
+    const completed = apList.filter(p => p.status === 'done').length;
+    const inProgress = totalParticipants - completed;
+    const donePct = totalParticipants > 0 ? Math.round((completed / totalParticipants) * 100) : 0;
+    const progPct = totalParticipants > 0 ? 100 - donePct : 0;
+    
+    const elKpiTotal = document.getElementById("kpi-total-val");
+    if(elKpiTotal) elKpiTotal.textContent = totalParticipants;
+    
+    const elKpiAp = document.getElementById("kpi-ap-val");
+    if(elKpiAp) elKpiAp.textContent = totalPlans;
+    const elKpiApSub = document.getElementById("kpi-ap-sub");
+    if(elKpiApSub) elKpiApSub.textContent = totalParticipants > 0 ? Math.round(totalPlans / totalParticipants) + " per participant" : "0 per participant";
+    
+    const elKpiDone = document.getElementById("kpi-done-val");
+    if(elKpiDone) elKpiDone.textContent = completed;
+    const elKpiDoneSub = document.getElementById("kpi-done-sub");
+    if(elKpiDoneSub) elKpiDoneSub.textContent = donePct + "% of batch";
+    
+    const elKpiProg = document.getElementById("kpi-prog-val");
+    if(elKpiProg) elKpiProg.textContent = inProgress;
+    const elKpiProgSub = document.getElementById("kpi-prog-sub");
+    if(elKpiProgSub) elKpiProgSub.textContent = progPct + "% of batch";
+
+    const donutBg = document.getElementById("kpi-donut-bg");
+    if(donutBg) donutBg.style.background = `conic-gradient(var(--mdi-done) 0% ${donePct}%, var(--mdi-prog) ${donePct}% 100%)`;
+    const donutPct = document.getElementById("kpi-donut-pct");
+    if(donutPct) donutPct.textContent = donePct + "%";
+    const donutProg = document.getElementById("kpi-donut-prog");
+    if(donutProg) donutProg.textContent = `${inProgress} (${progPct}%)`;
+    const donutDone = document.getElementById("kpi-donut-done");
+    if(donutDone) donutDone.textContent = `${completed} (${donePct}%)`;
+
+    const psDoneBar = document.getElementById("ps-done-bar");
+    if(psDoneBar) psDoneBar.style.width = donePct + "%";
+    const psProgBar = document.getElementById("ps-prog-bar");
+    if(psProgBar) psProgBar.style.width = progPct + "%";
+    const psDoneLeg = document.getElementById("ps-done-leg");
+    if(psDoneLeg) psDoneLeg.textContent = donePct + "% Completed";
+    const psProgLeg = document.getElementById("ps-prog-leg");
+    if(psProgLeg) psProgLeg.textContent = progPct + "% In Progress";
+
+    const tableCount = document.getElementById("table-count-label");
+    if(tableCount) tableCount.textContent = `Showing ${totalParticipants} of ${totalParticipants}`;
+
+    const tbody = document.getElementById("apTableBody");
+    if (tbody) {
+      if (apList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 48px; color: var(--mdi-muted);">Belum ada action plan</td></tr>`;
+      } else {
+      const renderHtml = apList.map((p, index) => {
+          const firstPlan = p.plans.length > 0 ? esc(p.plans[0]) : "-";
+          const moreText = p.plans.length > 1 ? `<div style="font-size:11px; color:var(--mdi-orange); margin-top:4px;">+${p.plans.length - 1} more actions</div>` : "";
+          const statusHtml = p.status === 'done' ? `<span class="status-pill s-done">● Selesai</span>` : `<span class="status-pill s-prog">● In Progress</span>`;
+          
+          const s2UpdateVal = (p.s2Update || "").trim();
+          const s2Update = s2UpdateVal ? esc(s2UpdateVal) : `<span style="color:var(--mdi-muted); font-size:12px; font-style: italic;">None</span>`;
+          
+          const s2ChallengeVal = (p.s2Challenge || "").trim();
+          const s2Challenge = s2ChallengeVal ? esc(s2ChallengeVal) : `<span style="color:var(--mdi-danger); font-size:12px;">⚠️ None</span>`;
+
+          return `
+            <tr onclick="toggleApRow('${p.no}')" id="ap-row-${p.no}">
+              <td class="td-num">${index + 1}</td>
+              <td><div class="td-name">${esc(p.name)}</div></td>
+              <td><span class="dept-tag">${esc(p.dept)}</span></td>
+              <td>
+                <div style="font-size:13px; color:var(--mdi-ink); line-height:1.4;">${firstPlan}</div>
+                ${moreText}
+              </td>
+              <td style="text-align:center;">${statusHtml}</td>
+              <td><div style="font-size:12px; color:var(--mdi-muted); line-height:1.4;">${s2Update}</div></td>
+              <td><div style="font-size:12px; color:var(--mdi-muted); line-height:1.4;">${s2Challenge}</div></td>
+              <td><button class="expand-btn" id="ap-btn-${p.no}" onclick="event.stopPropagation(); toggleApRow('${p.no}')">›</button></td>
+            </tr>
+            <tr class="detail-row" id="ap-detail-${p.no}">
+              <td colspan="8" class="detail-cell">
+                <div class="detail-inner">
+                  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+                    <div>
+                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">ALL ${p.plans.length} ACTION PLANS</div>
+                      <ol style="margin:0; padding-left:16px; font-size:13px; color:var(--mdi-ink); line-height:1.6; font-weight:600;">
+                        ${p.plans.map(pl => `<li style="margin-bottom:8px;"><span style="color:var(--mdi-ink); font-weight:400;">${esc(pl)}</span></li>`).join("")}
+                      </ol>
+                    </div>
+                    <div>
+                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">30-DAY UPDATE</div>
+                      <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${s2UpdateVal ? esc(s2UpdateVal) : `<span style="color:var(--mdi-muted); font-style: italic;">None</span>`}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">CHALLENGE / BARRIER</div>
+                      <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${s2ChallengeVal ? esc(s2ChallengeVal) : `<span style="color:var(--mdi-danger);">⚠️ None</span>`}</div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+        tbody.innerHTML = renderHtml;
+      }
+    }
+
   initNavScroll();
 }
+
+window.toggleApRow = function(no) {
+  const detail = document.getElementById("ap-detail-" + no);
+  const btn = document.getElementById("ap-btn-" + no);
+  const row = document.getElementById("ap-row-" + no);
+  if (!detail) return;
+  const isOpen = detail.classList.contains("open");
+  
+  document.querySelectorAll("#apTableBody .detail-row").forEach(r => r.classList.remove("open"));
+  document.querySelectorAll("#apTableBody .expand-btn").forEach(b => b.classList.remove("open"));
+  document.querySelectorAll("#apTableBody tr:not(.detail-row)").forEach(r => r.classList.remove("expanded"));
+  
+  if (!isOpen) {
+    detail.classList.add("open");
+    if(btn) btn.classList.add("open");
+    if(row) row.classList.add("expanded");
+  }
+};
 
 window.toggleDayAcc = function(di){
   const el = document.getElementById(`day-acc-${di}`);
@@ -3145,6 +3996,23 @@ window.toggleDayAcc = function(di){
 };
 
 function initNavScroll(){
+  window.switchApTabFe = function(tab, btn) {
+    document.querySelectorAll('.ap-iframe-tab').forEach(b => {
+      b.style.background = 'var(--n100)';
+      b.style.color = 'var(--n600)';
+      b.classList.remove('active');
+    });
+    if(btn) {
+      btn.style.background = 'var(--orange)';
+      btn.style.color = 'white';
+      btn.classList.add('active');
+    }
+    
+    const iframe = document.getElementById('apIframeFe');
+    if(!iframe) return;
+    iframe.contentWindow.postMessage({ type: 'switchTab', tabId: tab }, '*');
+  };
+
   // Pane tab switcher handler
   document.querySelectorAll(".nav-pill").forEach(pill => {
     pill.addEventListener("click", e => {
@@ -3155,6 +4023,9 @@ function initNavScroll(){
       document.querySelectorAll(".nav-pill").forEach(p => p.classList.remove("active"));
       pill.classList.add("active");
       
+      // Save active tab state to sessionStorage to persist on refresh
+      sessionStorage.setItem("mdp-active-tab", targetId);
+      
       // Switch tab panes with fade animation
       document.querySelectorAll(".dash-pane").forEach(pane => {
         pane.classList.remove("active");
@@ -3164,10 +4035,20 @@ function initNavScroll(){
       const activePane = document.querySelector(targetId);
       if (activePane) {
         activePane.style.display = "block";
+        if (targetId === "#pane-reports") {
+          renderReports();
+        }
         // Force reflow to trigger CSS transitions
         void activePane.offsetWidth;
         activePane.classList.add("active");
         
+        // Dynamically update header subtitle to match current tab name
+        const subtitleEl = document.getElementById("headerSubtitle");
+        if (subtitleEl) {
+          const pillText = pill.innerText.replace(/[\n\r]/g, " ").trim();
+          subtitleEl.innerHTML = `Dashboard Report &middot; ${pillText}`;
+        }
+
         // Scroll smoothly to the top of the tab container to make all tabs behave consistently
         const main = document.getElementById("mainMain");
         if (main) {
@@ -3181,13 +4062,10 @@ function initNavScroll(){
 }
 
 /* ================= ENTRANCE + BOOT ================= */
-// initNavScroll and animations are started lazily from showDashboard()
-// Do NOT call them here unconditionally.
-
 function bootDashboard() {
-  animate("header [data-animate]",{opacity:[0,1],y:[-14,0]},{delay:stagger(0.07),duration:.6,ease:EASE_OUT});
+  animate("header [data-animate]",{opacity:[0,1],y:[-14,0]},{delay:stagger(0.04),duration:.25,ease:EASE_OUT});
   inView("main [data-animate]",(el)=>{
-    animate(el,{opacity:[0,1],y:[22,0]},{duration:.65,ease:EASE_OUT});
+    animate(el,{opacity:[0,1],y:[22,0]},{duration:.3,ease:EASE_OUT});
   },{amount:.15});
 
   (async function _boot() {
@@ -3197,13 +4075,126 @@ function bootDashboard() {
     if(!window.__pollInterval) {
       window.__pollInterval = setInterval(async () => {
         if(window.__WAIT_MAIN_MENU) return; // pause polling on main menu
+        
+        // Sync CONFIG silently to capture any backend edits
+        try {
+          const freshDb = JSON.parse(localStorage.getItem("mdp-clients-db") || "[]");
+          if (typeof loggedClient !== "undefined" && loggedClient && typeof activeTrainingId !== "undefined") {
+            const freshClient = freshDb.find(c => String(c.id) === String(loggedClient.id));
+            if (freshClient) {
+              const freshTraining = (freshClient.trainings || []).find(t => String(t.id) === String(activeTrainingId));
+              if (freshTraining) {
+                CONFIG.evaluasi = freshTraining.evaluasi || "";
+                CONFIG.komentarTrainer = freshTraining.komentarTrainer || "";
+                CONFIG.dokumentasi = freshTraining.dokumentasi || [];
+                CONFIG.actionPlan = freshTraining.actionPlan || [];
+                CONFIG.aiSummary = freshTraining.aiSummary || null;
+              }
+            }
+          }
+        } catch(e) { console.warn("Sync CONFIG failed", e); }
+        
         try { await fetchData(); } catch(e) { console.error("fetchData poll error:", e); }
+        try { renderActiveClientSections(); } catch(e) { console.error("renderActiveClientSections poll error:", e); }
       }, POLL_MS);
     }
   })();
 }
 
-initRouting();
+let REPORTS_DB = [];
+
+function renderReports() {
+  const tbody = document.getElementById("reportsTableBody");
+  if (!tbody) return;
+
+  if (!loggedClient) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 32px; color: var(--mdi-muted);">Silakan login terlebih dahulu.</td></tr>`;
+    return;
+  }
+
+  REPORTS_DB = CONFIG.reports || [];
+
+  if (REPORTS_DB.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 48px; color: var(--mdi-muted);">Belum ada laporan PDF yang diunggah untuk perusahaan Anda.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = REPORTS_DB.map((report, idx) => {
+    const uploadDate = report.uploadedAt ? new Date(report.uploadedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+    return `
+      <tr>
+        <td style="padding: 16px 24px; border-bottom: 1px solid var(--n200);">
+          <div style="font-weight: 600; color: var(--mdi-ink); display: flex; align-items: center; gap: 8px;">
+            📄 ${esc(report.title || 'Laporan Pelatihan')}
+          </div>
+        </td>
+        <td style="padding: 16px 24px; border-bottom: 1px solid var(--n200); color: var(--mdi-muted); font-size: 13px;">${uploadDate}</td>
+        <td style="padding: 16px 24px; border-bottom: 1px solid var(--n200); text-align: right;">
+          <div style="display: inline-flex; gap: 8px; justify-content: flex-end; width: 100%;">
+            <button class="btn-next" style="width: auto; padding: 6px 14px; font-size: 12px; height: 32px; border-radius: 6px;" onclick="reviewReportPdf('${report.id}')">Pratinjau</button>
+            <button class="btn-next" style="width: auto; padding: 6px 14px; font-size: 12px; height: 32px; border-radius: 6px; background: var(--mdi-orange);" onclick="downloadReportPdf('${report.id}')">Unduh</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+window.downloadReportPdf = function(reportId) {
+  const report = REPORTS_DB.find(r => r.id === reportId);
+  if(!report) return;
+  
+  let url = "";
+  if (report.pdfUrl) {
+    url = report.pdfUrl;
+  } else if (report.pdfData) {
+    url = report.pdfData;
+  }
+  if (!url) return;
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = report.filename || 'Laporan_Training.pdf';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
+window.reviewReportPdf = function(reportId) {
+  const report = REPORTS_DB.find(r => r.id === reportId);
+  if(!report) return;
+  if(report.pdfUrl) {
+    window.open(report.pdfUrl, '_blank');
+  } else if(report.pdfData) {
+    const win = window.open();
+    if (win) {
+      win.document.write(`<iframe src="${report.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%; position:absolute;" allowfullscreen></iframe>`);
+    }
+  }
+};
+
+async function bootApp() {
+  const cached = localStorage.getItem("mdp-clients-db");
+  if (cached) {
+    // 1. Jika ada cache, langsung parse dan routing secara instan!
+    try {
+      clientsDb = JSON.parse(cached);
+      initRouting();
+    } catch(e) {
+      // Fallback jika json rusak
+      await loadClientsDbAsync();
+      initRouting();
+      return;
+    }
+    // Jalankan sync database di background agar tetap terupdate
+    loadClientsDbAsync().catch(e => console.warn("Background db sync failed:", e));
+  } else {
+    // 2. Jika baru pertama kali buka (belum ada cache), terpaksa nunggu fetch pertama
+    await loadClientsDbAsync();
+    initRouting();
+  }
+}
+bootApp();
 </script>
 </body>
 </html>

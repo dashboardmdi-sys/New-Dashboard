@@ -40,7 +40,7 @@
     backdrop-filter:blur(10px);border-bottom:1px solid var(--card-border);}
   header::before{content:"";display:block;height:4px;
     background:linear-gradient(90deg,var(--primary-base) 0%,var(--primary-base) 55%,var(--secondary-base) 55%,var(--secondary-base) 72%,var(--navy) 72%);}
-  .header-inner{max-width:1100px;margin:0 auto;padding:14px 24px;
+  .header-inner{max-width:1440px;margin:0 auto;padding:14px 24px;
     display:flex;align-items:center;gap:16px;}
   .header-icon{width:44px;height:44px;border-radius:12px;flex-shrink:0;display:grid;place-items:center;
     background:linear-gradient(135deg,var(--navy),var(--navy-800));color:#fff;}
@@ -64,7 +64,7 @@
   [data-theme="dark"] .theme-toggle .icon-moon{display:none}
 
   /* ===== LAYOUT ===== */
-  main{max-width:1100px;margin:0 auto;padding:36px 24px 80px;position:relative;z-index:1}
+  main{max-width:1440px;margin:0 auto;padding:36px 24px 80px;position:relative;z-index:1}
 
   /* ===== BUTTONS ===== */
   .btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:none;
@@ -314,7 +314,7 @@
   .del-row-btn svg{width:14px;height:14px}
 
   /* ===== TEST RESULT ===== */
-  .test-result{margin-top:16px;display:none}
+  .test-result{margin-top:16px;display:none;max-width:100%;overflow-x:auto;}
   .test-result.show{display:block}
   .test-status{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:600;
     padding:10px 14px;border-radius:var(--radius-md);margin-bottom:12px;}
@@ -438,7 +438,7 @@
     background: var(--n200);
   }
 
-  footer{max-width:1100px;margin:0 auto;padding:0 24px 40px;
+  footer{max-width:1440px;margin:0 auto;padding:0 24px 40px;
     font-size:.72rem;color:var(--n500);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;}
 </style>
 </head>
@@ -487,8 +487,8 @@
         </div>
         <div class="field">
           <label for="newClientPin">PIN Akses (4 digit angka) <span style="color:var(--danger)">*</span></label>
-          <input type="text" id="newClientPin" class="pin-input" maxlength="4" placeholder="contoh: 1234" inputmode="numeric" pattern="[0-9]{4}">
-          <div class="help">PIN integer 4 digit. Klien memasukkan nama perusahaan + PIN ini untuk login.</div>
+          <input type="text" id="newClientPin" class="pin-input" minlength="4" maxlength="4" placeholder="contoh: 1234" inputmode="numeric" pattern="[0-9]{4}">
+          <div class="help">PIN integer 4 digit. Klien memasukkan Nama Perusahaan + PIN ini untuk login.</div>
         </div>
         <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-primary" id="createClientBtn" style="flex:1;justify-content:center">
@@ -710,6 +710,10 @@
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 12 2 2 4-4"/></svg>
           Action Plan
         </button>
+        <button class="tab-btn" data-tab="laporan">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Laporan PDF
+        </button>
       </div>
 
       <!-- Tab Content -->
@@ -817,7 +821,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                 Simpan Konfigurasi Evaluasi
               </button>
-              <button class="btn btn-secondary" id="cfgEvalTestBtn">
+<button class="btn btn-secondary" id="cfgEvalTestBtn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="cfgEvalTestIcon"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                 Uji Koneksi Evaluasi
               </button>
@@ -825,13 +829,44 @@
             <div class="test-result" id="cfgEvalTestResult"></div>
           </div>
 
-          <!-- Card 2: Catatan Evaluasi (Manual - Fallback) -->
+          <!-- Card 1b: Pengaturan Prompt AI -->
           <div class="card">
-            <div class="card-head"><h2>Catatan Evaluasi (Fallback Manual)</h2></div>
-            <p class="card-desc">Tulis catatan evaluasi manual di sini sebagai cadangan jika Google Sheet tidak diatur atau gagal dimuat.</p>
+            <div class="card-head"><h2>⚙️ Pengaturan Prompt AI</h2></div>
+            <p class="card-desc">Sesuaikan instruksi yang dikirim ke AI. Data dari form evaluasi akan otomatis ditambahkan di akhir setiap prompt.</p>
             <div class="field">
-              <label for="evalText">Catatan Evaluasi</label>
-              <textarea id="evalText" placeholder="Tulis evaluasi pelatihan di sini…" style="min-height:160px"></textarea>
+              <label for="aiPromptFeedback">Prompt: Ringkasan Umpan Balik (Teks Paragraf)</label>
+              <textarea id="aiPromptFeedback" style="min-height:90px;font-size:0.82rem;">Baca semua umpan balik berikut. Pilih beberapa poin terbaik dan gabungkan menjadi 1 paragraf ringkasan yang suportif, profesional, dan menunjukkan apresiasi untuk trainer:</textarea>
+            </div>
+            <div class="field">
+              <label for="aiPromptTopikBermanfaat">Prompt: Topik Paling Bermanfaat (Keyword)</label>
+              <textarea id="aiPromptTopikBermanfaat" style="min-height:90px;font-size:0.82rem;">Ekstrak keyword utama dari daftar topik ini. Buang duplikasi. Hapus topik yang BUKAN merupakan pelatihan softskill (seperti hal teknis/IT). Balas HANYA dengan kata kunci yang paling banyak diminta, pisahkan dengan koma:</textarea>
+            </div>
+            <div class="field">
+              <label for="aiPromptTopikSelanjutnya">Prompt: Topik Training Selanjutnya (Keyword)</label>
+              <textarea id="aiPromptTopikSelanjutnya" style="min-height:90px;font-size:0.82rem;">Ekstrak keyword utama dari daftar topik request ini. Buang duplikasi. Hapus topik yang BUKAN softskill. Balas HANYA dengan kata kunci yang paling banyak diminta, pisahkan dengan koma:</textarea>
+            </div>
+            <p style="font-size:0.78rem;color:var(--n500);margin-top:4px;">💡 Tip: Edit prompt sesuai kebutuhan, lalu klik <b>Simpan Prompt</b> agar tersimpan permanen ke database.</p>
+            <button class="btn btn-secondary" id="saveAiPromptsBtn" style="margin-top:10px;width:100%">
+              💾 Simpan Prompt AI ke Database
+            </button>
+            <div id="aiSummaryBtnContainer" style="margin-top: 16px;"></div>
+          </div>
+
+          <!-- Card 2: Highlight Evaluasi (Manual) -->
+          <div class="card">
+            <div class="card-head"><h2>Highlight Evaluasi (Manual)</h2></div>
+            <p class="card-desc">Tulis ringkasan atau highlight utama dari hasil evaluasi program di sini.</p>
+            <div class="field">
+              <label for="evalTitle">Judul Highlight</label>
+              <input type="text" id="evalTitle" placeholder="contoh: Antusiasme tinggi — peserta meminta sesi lanjutan">
+            </div>
+            <div class="field">
+              <label for="evalText">Isi Highlight</label>
+              <textarea id="evalText" placeholder="Tulis penjelasan/deskripsi dari evaluasi tersebut di sini." style="min-height:120px"></textarea>
+            </div>
+            <div class="field">
+              <label for="evalCtaPct">Angka Persentase (%) Ingin Training Selanjutnya (Opsional Override)</label>
+              <input type="number" id="evalCtaPct" placeholder="contoh: 95 (biarkan kosong jika ingin otomatis dari Excel)">
             </div>
             <button class="btn btn-primary" id="evalSaveBtn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -881,34 +916,77 @@
         </div>
 
         <!-- TAB: ACTION PLAN -->
-        <div class="tab-pane" id="pane-actionplan">
+        <div class="tab-pane" id="pane-actionplan" style="padding: 0; background: transparent; box-shadow: none; border: none;">
+          
+          <!-- PILL TABS UNTUK ACTION PLAN IFRAME -->
+          <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; background: #fff; padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid var(--card-border); box-shadow: var(--shadow-sm);">
+            <button class="btn btn-primary" id="apTabAdmin" onclick="switchApTab('tracker', this)" style="border-radius: 20px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              Dashboard Admin
+            </button>
+            <button class="btn btn-secondary" id="apTabFormBackend" onclick="switchApTab('backend', this)" style="border-radius: 20px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              Form Backend
+            </button>
+            <button class="btn btn-secondary" id="apTabAwal" onclick="switchApTab('spreadsheet', this)" style="border-radius: 20px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              Rekap Awal
+            </button>
+            <button class="btn btn-secondary" id="apTabPenyelesaian" onclick="switchApTab('spreadsheet2', this)" style="border-radius: 20px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><polyline points="9 15 11 17 15 12"></polyline></svg>
+              Rekap Penyelesaian
+            </button>
+          </div>
+
+          <!-- IFRAME DASHBOARD ACTION PLAN -->
+          <div style="background: #fff; border-radius: var(--radius-md); border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); overflow: hidden;">
+            <iframe id="apIframe" src="dashboard.html?embedded=true" style="width: 100%; height: 800px; border: none; display: block;"></iframe>
+          </div>
+          
+        </div>
+
+        <!-- TAB: LAPORAN PDF -->
+        <div class="tab-pane" id="pane-laporan">
           <div class="card">
             <div class="card-head">
-              <h2>Action Plan</h2>
-              <button class="btn btn-secondary btn-sm" id="addApRowBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                Tambah Baris
+              <h2>Kelola Laporan PDF Sesi</h2>
+              <button class="btn btn-secondary btn-sm" id="addReportTabBtn" onclick="toggleAddReportForm()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; margin-right: 4px;"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                Tambah Laporan PDF
               </button>
             </div>
-            <p class="card-desc">Rencana tindak lanjut yang disusun bersama klien untuk sesi ini.</p>
-            <div class="ap-table-wrap">
-              <table class="ap-table">
+            <p class="card-desc" style="margin-bottom: 20px;">Tambahkan tautan berkas laporan evaluasi PDF dari Google Drive/Dropbox khusus untuk sesi pelatihan ini.</p>
+            
+            <!-- Tambah Laporan Form (Collapsible/Hidden by default) -->
+            <div id="addReportFormSection" style="margin-bottom: 24px; padding: 18px; border: 1px dashed var(--card-border); border-radius: var(--radius-md); background: var(--n50); display: none;">
+              <div class="field">
+                <label for="newReportTitle">Nama Laporan</label>
+                <input type="text" id="newReportTitle" placeholder="contoh: Laporan Evaluasi Akhir Batch 1">
+              </div>
+              <div class="field">
+                <label for="newReportUrl">Link URL PDF (Google Drive/Dropbox)</label>
+                <input type="text" id="newReportUrl" placeholder="contoh: https://drive.google.com/...">
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 16px;">
+                <button class="btn btn-primary btn-sm" id="addReportBtn">Simpan Laporan</button>
+                <button class="btn btn-outline btn-sm" onclick="toggleAddReportForm(false)">Batal</button>
+              </div>
+            </div>
+
+            <div style="border: 1px solid var(--card-border); border-radius: var(--radius-md); overflow: hidden;">
+              <table class="ap-table" id="reportsManageTable">
                 <thead>
-                  <tr>
-                    <th>Item / Kegiatan</th>
-                    <th>Target</th>
-                    <th>PIC</th>
-                    <th>Deadline</th>
-                    <th class="col-del"></th>
+                  <tr style="background: var(--navy); color: #fff;">
+                    <th style="font-size: 0.72rem; padding: 8px 12px; font-weight:700;">Nama Laporan / File</th>
+                    <th style="font-size: 0.72rem; padding: 8px 12px; font-weight:700; width: 150px;">Tanggal Upload</th>
+                    <th style="font-size: 0.72rem; padding: 8px 12px; text-align: right; width: 60px; font-weight:700;">Aksi</th>
                   </tr>
                 </thead>
-                <tbody id="apTableBody"></tbody>
+                <tbody id="reportsManageTableBody">
+                  <!-- Dynamically populated -->
+                </tbody>
               </table>
             </div>
-            <button class="btn btn-primary" id="apSaveBtn" style="margin-top:16px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              Simpan Action Plan Sesi
-            </button>
           </div>
         </div>
       </div>
@@ -921,33 +999,239 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Latar Belakang Loading & Spinner -->
+<div id="loader" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.9);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+  <div style="width:40px;height:40px;border:4px solid #eee;border-top:4px solid var(--gold);border-radius:50%;animation:spin 1s linear infinite;"></div>
+  <div style="margin-top:16px;font-family:var(--font-head);font-weight:600;color:var(--navy);">Menghubungkan ke Database...</div>
+</div>
+<style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+
 <script>
 "use strict";
 
-/* ===========================
-   STORAGE & HELPERS
-   =========================== */
-const CLIENTS_KEY = "mdp-clients-db"; // MUST match key in index.html
-const CONFIG_KEY  = "mdp-dashboard-config";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCAAAkpGxp0tq4MwL2xz8Uq9DjYJS-Jlj9GdnEUPx2zXy5RP6q2vLj8NEXa-Bb--tr2g/exec";
+let clientsDb = [];
 
-function loadClients(){
-  try{ return JSON.parse(localStorage.getItem(CLIENTS_KEY)||"[]"); }catch(e){ return []; }
-}
-function saveClients(arr){ localStorage.setItem(CLIENTS_KEY, JSON.stringify(arr)); }
-
-// Migrasi otomatis dari key lama "mdp-clients" jika ada
-(function migrateOldData(){
-  try {
-    const oldData = localStorage.getItem("mdp-clients");
-    if(oldData && !localStorage.getItem(CLIENTS_KEY)) {
-      const arr = JSON.parse(oldData) || [];
-      // Normalkan: PIN jadi integer
-      arr.forEach(c => { if(typeof c.pin === "string") c.pin = parseInt(c.pin, 10) || c.pin; });
-      localStorage.setItem(CLIENTS_KEY, JSON.stringify(arr));
-      localStorage.removeItem("mdp-clients");
+// ===========================
+// INITIALIZATION
+// ===========================
+function initApp() {
+  const prevC = sessionStorage.getItem("mdi_currentClientId");
+  const prevT = sessionStorage.getItem("mdi_currentTrainingId");
+  
+  if (prevC) {
+    const clients = clientsDb;
+    const c = clients.find(x => String(x.id) === String(prevC));
+    if (c) {
+      if (prevT) {
+        const t = (c.trainings||[]).find(x => String(x.id) === String(prevT));
+        if (t) {
+          currentClientId = String(prevC); // <--- Set this globally first!
+          openEditTraining(String(prevT));
+          return;
+        }
+      }
+      openEdit(String(prevC));
+      return;
     }
-  } catch(e){}
-})();
+  }
+
+  let activeView = sessionStorage.getItem("mdi_activeView") || "list";
+  if (activeView === "add") activeView = "list"; // Prevent getting stuck on add form without cancel button
+  showView(activeView);
+  if(activeView === "list") renderClientList();
+}
+
+// Function to update the memory array locally
+function updateLocalClientArray(c) {
+  const i = clientsDb.findIndex(x => String(x.id) === String(c.id));
+  if(i > -1) clientsDb[i] = c;
+  else clientsDb.push(c);
+}
+
+// Menarik data dari server saat halaman dimuat
+async function fetchDatabase() {
+  try {
+    const res = await fetch(WEB_APP_URL + "?action=getClients");
+    const json = await res.json();
+    if(json.success) {
+      clientsDb = json.data;
+      document.getElementById("loader").style.display = "none";
+      initApp();
+    } else {
+      toast("⚠️ Gagal mengambil database");
+    }
+  } catch(e) {
+    toast("⚠️ Error koneksi database");
+    console.error(e);
+  }
+}
+
+async function apiAddClient(c) {
+  try {
+    toast("⏳ Menyimpan ke database...");
+    const res = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({action: 'addClient', client: c})
+    });
+    const json = await res.json();
+    if(json.success) toast(`✅ Akun "${c.name}" berhasil dibuat | PIN: ${String(c.pin).padStart(4, '0')}`);
+    else toast("⚠️ Gagal menyimpan client");
+  } catch(e) {
+    toast("⚠️ Error jaringan");
+  }
+}
+
+async function apiUpdateClient(c, successMsg="✅ Tersimpan!") {
+  try {
+    toast("⏳ Menyimpan perubahan...");
+    const res = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({action: 'updateClient', client: c})
+    });
+    const json = await res.json();
+    if(json.success) toast(successMsg);
+    else toast("⚠️ Gagal update client");
+  } catch(e) {
+    toast("⚠️ Error jaringan");
+  }
+}
+
+async function apiGenerateAISummary(training, client) {
+  const targetId = training.evalSheetId || training.sheetId;
+  const targetCsvUrl = training.evalCsvUrl || training.csvUrl;
+  const targetSheetName = training.evalSheetName || "Sheet2";
+  const targetDataRange = training.evalDataRange || "";
+
+  if(!targetId && !targetCsvUrl) { toast("Masukkan Sheet ID atau URL CSV Evaluasi terlebih dahulu!"); return; }
+  
+  toast("Membaca Data Evaluasi...");
+  let csvData = [];
+  try {
+    const result = await testSheetConnection(targetId, targetCsvUrl, targetSheetName, targetDataRange);
+    csvData = result.rows;
+  } catch(e) {
+    toast("Gagal membaca Data Evaluasi. Pastikan link sudah 'Anyone can view'.");
+    console.warn(e);
+    return;
+  }
+  
+  if(csvData.length < 2) { toast("⚠️ CSV kosong atau belum ada respon."); return; }
+  
+  const headers = csvData[0].map(h => h.toLowerCase());
+  // Cocokkan kolom: "penilaian trainer" (umpan balik), "topik + bermanfaat", "training selanjutnya"
+  const idxFB = headers.findIndex(h => h.includes("penilaian") && h.includes("trainer"));
+  const idxMB = headers.findIndex(h => h.includes("topik") && (h.includes("bermanfaat") || h.includes("paling bermanfaat")));
+  const idxTS = headers.findIndex(h => h.includes("training selanjutnya") || h.includes("pelatihan selanjutnya") || (h.includes("topik") && h.includes("selanjutnya")));
+  
+  const fbs = [], mbs = [], tss = [];
+  for(let i=1; i<csvData.length; i++) {
+    const row = csvData[i];
+    if(idxFB > -1 && row[idxFB]) fbs.push(row[idxFB]);
+    if(idxMB > -1 && row[idxMB]) mbs.push(row[idxMB]);
+    if(idxTS > -1 && row[idxTS]) tss.push(row[idxTS]);
+  }
+  
+  // Baca prompt: prioritas dari database (training.aiPrompts) → textarea → default
+  const _dbPrompts = training.aiPrompts || {};
+  const _DEFAULT_FB = "Baca semua umpan balik berikut. Pilih beberapa poin terbaik dan gabungkan menjadi 1 paragraf ringkasan yang suportif, profesional, dan menunjukkan apresiasi untuk trainer:";
+  const _DEFAULT_MB = "Ekstrak keyword utama dari daftar topik ini. Buang duplikasi. Hapus topik yang BUKAN merupakan pelatihan softskill (seperti hal teknis/IT). Balas HANYA dengan kata kunci yang paling banyak diminta, pisahkan dengan koma:";
+  const _DEFAULT_TS = "Ekstrak keyword utama dari daftar topik request ini. Buang duplikasi. Hapus topik yang BUKAN softskill. Balas HANYA dengan kata kunci yang paling banyak diminta, pisahkan dengan koma:";
+  const promptFeedback = (document.getElementById('aiPromptFeedback')?.value.trim()) || _dbPrompts.feedback || _DEFAULT_FB;
+  const promptTopikBermanfaat = (document.getElementById('aiPromptTopikBermanfaat')?.value.trim()) || _dbPrompts.topikBermanfaat || _DEFAULT_MB;
+  const promptTopikSelanjutnya = (document.getElementById('aiPromptTopikSelanjutnya')?.value.trim()) || _dbPrompts.topikSelanjutnya || _DEFAULT_TS;
+
+  toast("🤖 AI sedang memproses... (Sekitar 10-15 detik)");
+  try {
+    const res = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'generateAISummary', 
+        feedbacks: fbs,
+        topikBermanfaat: mbs,
+        topikSelanjutnya: tss,
+        promptFeedback: promptFeedback,
+        promptTopikBermanfaat: promptTopikBermanfaat,
+        promptTopikSelanjutnya: promptTopikSelanjutnya
+      })
+    });
+    const json = await res.json();
+    if(json.success) {
+      toast("AI selesai memproses data.");
+      // Strip kalimat pembuka otomatis dari AI
+      const stripPrefix = (text) => {
+        if(!text) return text;
+        const prefixPatterns = [
+          /^berikut adalah[^:]*:/i,
+          /^berikut[^:]*ringkasan[^:]*:/i,
+          /^tentu[^.]*\.\s*/i,
+          /^baik[^.]*\.\s*/i,
+          /^dengan senang hati[^.]*\.\s*/i,
+        ];
+        let cleaned = text.trim();
+        for(const pat of prefixPatterns) {
+          cleaned = cleaned.replace(pat, '').trim();
+        }
+        // Hapus tanda kutip di awal/akhir jika ada
+        cleaned = cleaned.replace(/^"|"$/g, '').trim();
+        return cleaned;
+      };
+      const cleanedData = {
+        feedback: stripPrefix(json.data.feedback),
+        topikBermanfaat: stripPrefix(json.data.topikBermanfaat),
+        topikSelanjutnya: stripPrefix(json.data.topikSelanjutnya)
+      };
+      const btnWrap = document.getElementById("aiSummaryBtnContainer");
+      btnWrap.innerHTML = `
+        <div style="background: #F4F7FB; padding: 16px; border-radius: 8px; margin-top: 16px; border: 1px solid #E2E8F0;">
+          <h4 style="margin: 0 0 10px 0; color: var(--navy); font-size: 0.9rem;">Pratinjau Hasil AI</h4>
+          <div style="font-size: 0.85rem; color: var(--n700); margin-bottom: 12px;">
+            <b>Ringkasan:</b><br/>${esc(cleanedData.feedback)}
+          </div>
+          <div style="font-size: 0.85rem; color: var(--n700); margin-bottom: 12px;">
+            <b>Topik Bermanfaat:</b><br/>${esc(cleanedData.topikBermanfaat)}
+          </div>
+          <div style="font-size: 0.85rem; color: var(--n700); margin-bottom: 16px;">
+            <b>Topik Selanjutnya:</b><br/>${esc(cleanedData.topikSelanjutnya)}
+          </div>
+          <button id="saveAiPreviewBtn" class="btn btn-primary" style="width:100%">Simpan Kesimpulan AI ke Dashboard</button>
+        </div>
+      `;
+      document.getElementById("saveAiPreviewBtn").onclick = async () => {
+        const btn = document.getElementById("saveAiPreviewBtn");
+        btn.innerText = "Menyimpan...";
+        btn.disabled = true;
+        training.aiSummary = cleanedData;
+        updateLocalClientArray(client);
+        await apiUpdateClient(client, "Ringkasan AI Berhasil Disimpan!");
+        renderTrainingList();
+        notifyIframeTrainingChanged();
+        openEditTraining(training.id);
+      };
+    } else {
+      toast("⚠️ Gagal memproses AI");
+    }
+  } catch(e) {
+    toast("⚠️ Error koneksi AI");
+  }
+}
+
+// Basic CSV Parser
+function parseCSV(text) {
+  let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0, l;
+  for (l of text) {
+    if ('"' === l) {
+      if (s && l === p) row[i] += l;
+      s = !s;
+    } else if (',' === l && s) l = row[++i] = '';
+    else if ('\n' === l && s) {
+      if ('\r' === p) row[i] = row[i].slice(0, -1);
+      row = ret[++r] = [l = '']; i = 0;
+    } else row[i] += l;
+    p = l;
+  }
+  return ret;
+}
 
 function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
@@ -965,10 +1249,19 @@ function toast(msg, dur=2600){
 let currentClientId = null;
 let currentTrainingId = null;
 
+function saveState() {
+  if (currentClientId) sessionStorage.setItem("mdi_currentClientId", currentClientId);
+  else sessionStorage.removeItem("mdi_currentClientId");
+  
+  if (currentTrainingId) sessionStorage.setItem("mdi_currentTrainingId", currentTrainingId);
+  else sessionStorage.removeItem("mdi_currentTrainingId");
+}
+
 function showView(name){
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
   $("view"+name.charAt(0).toUpperCase()+name.slice(1)).classList.add("active");
   $("headerDashBtn").style.display = (name==="list"||name==="edit"||name==="editTraining") ? "" : "none";
+  sessionStorage.setItem("mdi_activeView", name);
 }
 
 /* ===========================
@@ -977,33 +1270,32 @@ function showView(name){
 function showAddForm(){
   $("newClientName").value = "";
   $("newClientPin").value  = "";
-  $("cancelAddBtn").style.display = loadClients().length ? "" : "none";
+  $("cancelAddBtn").style.display = clientsDb.length ? "" : "none";
   showView("add");
 }
 
 $("createClientBtn").addEventListener("click", ()=>{
   const name = $("newClientName").value.trim();
   const pin  = $("newClientPin").value.trim();
-  if(!name){ toast("⚠ Nama perusahaan wajib diisi"); return; }
-  if(!/^\d{4}$/.test(pin)){ toast("⚠ PIN harus 4 digit angka (integer)"); return; }
+  if(!name){ toast("⚠️ Nama perusahaan wajib diisi"); return; }
+  if(!/^\d{4}$/.test(pin)){ toast("⚠️ PIN harus 4 digit angka (integer)"); return; }
 
-  const clients = loadClients();
-  // Cegah nama duplikat
+  const clients = clientsDb;
   if(clients.some(c => c.name.trim().toLowerCase() === name.toLowerCase())){
-    toast("⚠ Nama perusahaan sudah terdaftar"); return;
+    toast("⚠️ Nama perusahaan sudah terdaftar"); return;
   }
 
   const client = {
-    id: Date.now(),          // numeric ID, konsisten dengan index.html
+    id: Date.now(),
     name,
-    pin: parseInt(pin, 10),  // simpan sebagai integer
+    pin: String(pin).padStart(4, '0'),
     createdAt: new Date().toISOString(),
     config: {
       colorPrimary:"#ffd204",
       colorSecondary:"#ee3f34",
       colorNavy:"#002c63",
       title: name,
-      subtitle:"Dashboard Report · Evaluasi Pre & Post Test",
+      subtitle:"Dashboard Report – Evaluasi Pre & Post Test",
       logoUrl:"",
       titleWeight:"bold",
       titleStyle:"normal",
@@ -1017,18 +1309,17 @@ $("createClientBtn").addEventListener("click", ()=>{
     activeTrainingId: null,
     trainings: []
   };
-  clients.push(client);
-  saveClients(clients);
-  toast(`✓ Akun "${name}" berhasil dibuat · PIN: ${pin}`);
+  updateLocalClientArray(client);
   renderClientList();
   showView("list");
+  apiAddClient(client);
 });
 
 /* ===========================
    VIEW 2 — CLIENT LIST
    =========================== */
 function renderClientList(){
-  const clients = loadClients();
+  const clients = clientsDb;
   const q = ($("searchClientInput")?.value || "").trim().toLowerCase();
   const filtered = clients.filter(c => c.name.toLowerCase().includes(q));
 
@@ -1049,12 +1340,6 @@ function renderClientList(){
     return;
   }
   
-  let activeClientId = null;
-  try {
-    const activeCfg = JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
-    activeClientId = activeCfg.clientId;
-  } catch(e){}
-
   grid.innerHTML = filtered.map(c=>{
     const initials = c.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
     const trainingCount = (c.trainings || []).length;
@@ -1066,8 +1351,8 @@ function renderClientList(){
           <div>
             <div class="client-name">${esc(c.name)}</div>
             <div style="font-size:0.72rem; color:var(--n500); margin-top:3px; display:flex; gap:10px; flex-wrap:wrap;">
-              <span title="PIN Login">🔐 PIN: <b style="color:var(--navy); font-family:var(--font-mono);">${esc(String(c.pin))}</b></span>
-              <span>📋 ${trainingCount} sesi pelatihan</span>
+              <span title="PIN Login">🔑 PIN: <b style="color:var(--navy); font-family:var(--font-mono);">${esc(String(c.pin).padStart(4, '0'))}</b></span>
+              <span>📚 ${trainingCount} sesi pelatihan</span>
             </div>
           </div>
         </div>
@@ -1085,58 +1370,12 @@ function renderClientList(){
   }).join("");
 }
 
-function activateClient(id){
-  window.closeAllDropdowns();
-  const clients = loadClients();
-  const c = clients.find(x=>x.id===id);
-  if(!c) return;
-
-  const training = (c.trainings || []).find(x=>x.id===c.activeTrainingId) || (c.trainings || [])[0];
-  
-  if (training) {
-    c.activeTrainingId = training.id;
-    saveClients(clients);
-    
-    const activeConfig = {
-      ...c.config,
-      clientId: c.id,
-      trainingId: training.id,
-      pin: c.pin,
-      sheetId: training.sheetId,
-      csvUrl: training.csvUrl,
-      pollMs: training.pollMs,
-      evaluasi: training.evaluasi,
-      komentarTrainer: training.komentarTrainer,
-      dokumentasi: training.dokumentasi,
-      actionPlan: training.actionPlan
-    };
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(activeConfig));
-    toast(`✓ Dashboard diaktifkan: ${c.name} (${training.title})`);
-  } else {
-    const activeConfig = {
-      ...c.config,
-      clientId: c.id,
-      pin: c.pin,
-      sheetId: "",
-      csvUrl: "",
-      pollMs: 10000,
-      evaluasi: "",
-      komentarTrainer: "",
-      dokumentasi: [],
-      actionPlan: []
-    };
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(activeConfig));
-    toast(`✓ Dashboard diaktifkan untuk "${c.name}"`);
-  }
-}
-
 function deleteClient(id){
   window.closeAllDropdowns();
   if(!confirm("Hapus klien ini beserta semua datanya? Tindakan ini tidak bisa dibatalkan.")) return;
-  const arr = loadClients().filter(x=>String(x.id)!==String(id));
-  saveClients(arr);
+  clientsDb = clientsDb.filter(x=>String(x.id)!==String(id));
   renderClientList();
-  toast("Klien dihapus");
+  apiUpdateClient({id, deleted: true}, "Klien dihapus");
 }
 
 /* ===========================
@@ -1145,33 +1384,36 @@ function deleteClient(id){
 function openEdit(id){
   window.closeAllDropdowns();
   currentClientId = id;
-  const c = loadClients().find(x=>String(x.id)===String(id));
+  saveState();
+  const c = clientsDb.find(x=>String(x.id)===String(id));
   if(!c) return;
 
   $("editClientName").textContent = c.name;
-  $("editClientMeta").textContent = `Nama: ${c.name} · PIN: ${c.pin} · Dibuat ${new Date(c.createdAt).toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"})}`;
+  $("editClientMeta").textContent = `Nama: ${c.name} | PIN: ${String(c.pin).padStart(4, '0')} | Dibuat ${new Date(c.createdAt).toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"})}`;
 
   loadConfigForm(c.config);
   renderTrainingList();
+  renderReportsList();
   showView("edit");
 }
 
 $("backToListBtn").addEventListener("click",()=>{
+  currentClientId = null;
+  saveState();
   showView("list");
   renderClientList();
 });
 
 /* ----- Helper: update client ----- */
 function updateClient(patch){
-  const arr = loadClients();
-  const idx = arr.findIndex(x=>String(x.id)===String(currentClientId));
+  const idx = clientsDb.findIndex(x=>String(x.id)===String(currentClientId));
   if(idx===-1) return;
-  if(patch.config && arr[idx].config){
-    patch.config = { ...arr[idx].config, ...patch.config };
+  if(patch.config && clientsDb[idx].config){
+    patch.config = { ...clientsDb[idx].config, ...patch.config };
   }
-  Object.assign(arr[idx], patch);
-  saveClients(arr);
-  return arr[idx];
+  Object.assign(clientsDb[idx], patch);
+  apiUpdateClient(clientsDb[idx]);
+  return clientsDb[idx];
 }
 
 /* ----- Sesi Pelatihan (Training Session) CRUD ----- */
@@ -1194,7 +1436,7 @@ function formatTrainingDate(t) {
 }
 
 function renderTrainingList(){
-  const c = loadClients().find(x=>String(x.id)===String(currentClientId));
+  const c = clientsDb.find(x=>String(x.id)===String(currentClientId));
   if(!c) return;
   const list = c.trainings || [];
   const tbody = $("trainingsTableBody");
@@ -1238,15 +1480,14 @@ $("createTrainingBtn").addEventListener("click", ()=>{
   const dateEnd = $("newTrainingDateEnd").value;
   if(!title){ toast("⚠ Judul pelatihan wajib diisi"); return; }
   
-  const clients = loadClients();
-  const c = clients.find(x=>String(x.id)===String(currentClientId));
+  const c = clientsDb.find(x=>String(x.id)===String(currentClientId));
   if(!c) return;
 
-  const newTr = {
-    id: Date.now(),      // numerik — konsisten dengan index.html
+  const t = {
+    id: Date.now(),
     title,
-    dateStart: dateStart || "",
-    dateEnd:   dateEnd   || "",
+    dateStart,
+    dateEnd,
     trainerNames: "",
     sheetId: "",
     csvUrl: "",
@@ -1263,65 +1504,25 @@ $("createTrainingBtn").addEventListener("click", ()=>{
     actionPlan: []
   };
 
-  if(!c.trainings) c.trainings = [];
-  c.trainings.push(newTr);
-  saveClients(clients);
-
+  c.trainings.push(t);
+  updateLocalClientArray(c);
+  
   $("newTrainingTitle").value = "";
   $("newTrainingDateStart").value = "";
   $("newTrainingDateEnd").value = "";
-  toast(`✓ Sesi "${title}" ditambahkan`);
-  renderTrainingList();
-});
-
-function activateTraining(tid){
-  window.closeAllDropdowns();
-  const clients = loadClients();
-  const c = clients.find(x=>String(x.id)===String(currentClientId));
-  if(!c) return;
   
-  c.activeTrainingId = tid;
-  saveClients(clients);
   renderTrainingList();
-
-  const training = c.trainings.find(x=>String(x.id)===String(tid));
-  if(!training) return;
-
-  const activeConfig = {
-    ...c.config,
-    clientId: c.id,
-    trainingId: training.id,
-    pin: c.pin,
-    sheetId: training.sheetId,
-    csvUrl: training.csvUrl,
-    sheet1: training.sheet1 || { name: "", range: "" },
-    sheet2: training.sheet2 || { name: "Sheet2", range: "" },
-    pollMs: training.pollMs,
-    evaluasi: training.evaluasi,
-    komentarTrainer: training.komentarTrainer,
-    dokumentasi: training.dokumentasi,
-    actionPlan: training.actionPlan,
-    evalSheetId:   training.evalSheetId   || "",
-    evalCsvUrl:    training.evalCsvUrl    || "",
-    evalSheetName: training.evalSheetName || "Sheet2",
-    evalDataRange: training.evalDataRange || "",
-    trainerNames:  training.trainerNames  || "",
-    dateStart: training.dateStart || "",
-    dateEnd:   training.dateEnd   || "",
-  };
-  localStorage.setItem(CONFIG_KEY, JSON.stringify(activeConfig));
-  toast(`✓ Sesi "${training.title}" diaktifkan di dashboard`);
-}
+  apiUpdateClient(c, "✅ Pelatihan ditambahkan");
+});
 
 function deleteTraining(tid){
   window.closeAllDropdowns();
   if(!confirm("Hapus sesi pelatihan ini beserta semua datanya? Tindakan ini tidak bisa dibatalkan.")) return;
-  const clients = loadClients();
-  const c = clients.find(x=>String(x.id)===String(currentClientId));
+  const c = clientsDb.find(x=>String(x.id)===String(currentClientId));
   if(!c) return;
   c.trainings = (c.trainings || []).filter(x=>String(x.id)!==String(tid));
-  saveClients(clients);
-  toast("Sesi pelatihan dihapus");
+  updateLocalClientArray(c);
+  apiUpdateClient(c, "Sesi pelatihan dihapus");
   renderTrainingList();
 }
 
@@ -1331,7 +1532,8 @@ function deleteTraining(tid){
 function openEditTraining(tid){
   window.closeAllDropdowns();
   currentTrainingId = tid;
-  const c = loadClients().find(x=>String(x.id)===String(currentClientId));
+  saveState();
+  const c = clientsDb.find(x=>String(x.id)===String(currentClientId));
   if(!c) return;
   const t = (c.trainings || []).find(x=>String(x.id)===String(tid));
   if(!t) return;
@@ -1345,7 +1547,13 @@ function openEditTraining(tid){
   $("cfgTrainingDateEnd").value = t.dateEnd || "";
 
   loadConfigForm(t);
-  $("evalText").value = t.evaluasi || "";
+  
+  let ev = t.evaluasi;
+  if(typeof ev === "string") ev = { title: "", text: ev, ctaPct: "" };
+  if(!ev) ev = { title: "", text: "", ctaPct: "" };
+  $("evalTitle").value = ev.title || "";
+  $("evalText").value = ev.text || "";
+  $("evalCtaPct").value = ev.ctaPct || "";
   $("cfgEvalSheetId").value = t.evalSheetId || "";
   $("cfgEvalCsvUrl").value = t.evalCsvUrl || "";
   $("cfgEvalSheetName").value = t.evalSheetName || "Sheet2";
@@ -1353,12 +1561,11 @@ function openEditTraining(tid){
   $("cfgTrainerNames").value = t.trainerNames || "";
   refreshEvalCfgPreview();
   
-  // Komentar Trainer Structured Form (Array of Trainers)
   let kt = t.komentarTrainer;
   if(typeof kt === "string"){
     kt = [{ intro: kt, name: "", role: "", apresiasi: "", days: [], quote: "" }];
   } else if(kt && !Array.isArray(kt)){
-    kt = [kt]; // migrate single object to array
+    kt = [kt];
   }
   if(!kt) kt = [];
   
@@ -1366,12 +1573,57 @@ function openEditTraining(tid){
   renderKtTrainers();
 
   renderDayList(t.dokumentasi || []);
-  renderApTable(t.actionPlan || []);
+  
+  // ADD AI LOGIC UI
+  const btnWrap = document.getElementById("aiSummaryBtnContainer");
+  btnWrap.innerHTML = ""; // Clear previous button if any
+  const aiBtn = document.createElement("button");
+  aiBtn.className = "btn btn-secondary";
+  aiBtn.style.marginTop = "10px";
+  aiBtn.onclick = () => {
+    if(confirm("Apakah Anda yakin ingin menghasilkan Ulang Rangkuman AI? Proses ini memakan waktu ~10-15 detik.")) {
+      apiGenerateAISummary(t, c);
+    }
+  };
 
+  if(!t.aiSummary) {
+    aiBtn.innerHTML = `🌟 <b>Hasilkan Kesimpulan AI dari Data Evaluasi</b>`;
+  } else {
+    aiBtn.innerHTML = `🔄 <b>Perbarui Kesimpulan AI (Refresh)</b>`;
+  }
+  btnWrap.appendChild(aiBtn);
+
+  // ✅ Load prompt dari data training (tersimpan di database Google Sheets)
+  const savedAiPrompts = t.aiPrompts || {};
+  const promptFeedbackEl = document.getElementById('aiPromptFeedback');
+  const promptMBEl = document.getElementById('aiPromptTopikBermanfaat');
+  const promptTSEl = document.getElementById('aiPromptTopikSelanjutnya');
+  if(promptFeedbackEl && savedAiPrompts.feedback) promptFeedbackEl.value = savedAiPrompts.feedback;
+  if(promptMBEl && savedAiPrompts.topikBermanfaat) promptMBEl.value = savedAiPrompts.topikBermanfaat;
+  if(promptTSEl && savedAiPrompts.topikSelanjutnya) promptTSEl.value = savedAiPrompts.topikSelanjutnya;
+
+  // ✅ Tombol Simpan Prompt ke database
+  const savePromptsBtn = document.getElementById('saveAiPromptsBtn');
+  if(savePromptsBtn) {
+    savePromptsBtn.onclick = async () => {
+      t.aiPrompts = {
+        feedback: promptFeedbackEl?.value.trim() || '',
+        topikBermanfaat: promptMBEl?.value.trim() || '',
+        topikSelanjutnya: promptTSEl?.value.trim() || ''
+      };
+      updateLocalClientArray(c);
+      await apiUpdateClient(c, "💾 Prompt AI berhasil disimpan ke database!");
+    };
+  }
+
+  notifyIframeTrainingChanged();
+  renderReportsList();
   showView("editTraining");
 }
 
 $("backToClientEditBtn").addEventListener("click",()=>{
+  currentTrainingId = null;
+  saveState();
   openEdit(currentClientId);
 });
 
@@ -1382,10 +1634,10 @@ $("saveTrainingDetailsBtn").addEventListener("click", () => {
   if(!title){ toast("⚠ Judul pelatihan wajib diisi"); return; }
   
   updateTraining({ title, dateStart, dateEnd });
+  notifyIframeTrainingChanged();
   toast("✓ Detail sesi berhasil diperbarui");
   
-  // Update header meta text
-  const c = loadClients().find(x=>String(x.id)===String(currentClientId));
+  const c = clientsDb.find(x=>String(x.id)===String(currentClientId));
   if(c){
     const t = c.trainings.find(x=>String(x.id)===String(currentTrainingId));
     if(t){
@@ -1401,48 +1653,19 @@ document.querySelectorAll(".tab-btn").forEach(btn=>{
 function switchTab(name){
   document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
   document.querySelectorAll(".tab-pane").forEach(p=>p.classList.toggle("active", p.id==="pane-"+name));
+  sessionStorage.setItem("mdi_activeTab", name);
 }
 
 /* ----- Helper: update training ----- */
 function updateTraining(patch){
-  const arr = loadClients();
-  const cIdx = arr.findIndex(x=>String(x.id)===String(currentClientId));
+  const cIdx = clientsDb.findIndex(x=>String(x.id)===String(currentClientId));
   if(cIdx===-1) return;
-  const tIdx = (arr[cIdx].trainings || []).findIndex(x=>String(x.id)===String(currentTrainingId));
+  const tIdx = (clientsDb[cIdx].trainings || []).findIndex(x=>String(x.id)===String(currentTrainingId));
   if(tIdx===-1) return;
 
-  const t = arr[cIdx].trainings[tIdx];
+  const t = clientsDb[cIdx].trainings[tIdx];
   Object.assign(t, patch);
-  saveClients(arr);
-
-  // Sync to active CONFIG_KEY if this training is the currently active one
-  let activeCfg = {};
-  try { activeCfg = JSON.parse(localStorage.getItem(CONFIG_KEY)||"{}")||{}; } catch(e){}
-  if (String(activeCfg.clientId) === String(currentClientId) && String(activeCfg.trainingId) === String(currentTrainingId)) {
-    const updatedClient = arr[cIdx];
-    const updatedTraining = t;
-    const newActiveConfig = {
-      ...updatedClient.config,
-      clientId: updatedClient.id,
-      trainingId: updatedTraining.id,
-      pin: updatedClient.pin,
-      sheetId: updatedTraining.sheetId,
-      csvUrl: updatedTraining.csvUrl,
-      sheet1: updatedTraining.sheet1 || { name: "", range: "" },
-      sheet2: updatedTraining.sheet2 || { name: "Sheet2", range: "" },
-      pollMs: updatedTraining.pollMs,
-      evaluasi: updatedTraining.evaluasi,
-      komentarTrainer: updatedTraining.komentarTrainer,
-      dokumentasi: updatedTraining.dokumentasi,
-      actionPlan: updatedTraining.actionPlan,
-      evalSheetId:   updatedTraining.evalSheetId   || "",
-      evalCsvUrl:    updatedTraining.evalCsvUrl    || "",
-      evalSheetName: updatedTraining.evalSheetName || "Sheet2",
-      dateStart: updatedTraining.dateStart || "",
-      dateEnd:   updatedTraining.dateEnd   || "",
-    };
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(newActiveConfig));
-  }
+  apiUpdateClient(clientsDb[cIdx]);
   return t;
 }
 
@@ -1451,7 +1674,6 @@ function updateTraining(patch){
    =========================== */
 function extractSheetId(url) {
   if (!url) return "";
-  // Ignore /d/e/ published URLs for ID extraction as they don't contain the real Gviz ID
   if (url.includes("/d/e/")) return "";
   const m = url.match(/\/d\/([a-zA-Z0-9-_]{40,})/);
   if (m) return m[1];
@@ -1468,19 +1690,8 @@ function buildGvizUrl(id, {out="csv", name="", range="", cb=""}={}){
   if(range) url += `&range=${encodeURIComponent(range)}`;
   return url;
 }
-function parseCSV(text){
-  const rows=[];let row=[],cell="",inQ=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i];
-    if(inQ){if(c==='"'){if(text[i+1]==='"'){cell+='"';i++;}else inQ=false;}else cell+=c;}
-    else{if(c==='"')inQ=true;else if(c===','){row.push(cell);cell="";}else if(c==='\n'){row.push(cell);rows.push(row);row=[];cell="";}else if(c!=='\r')cell+=c;}
-  }
-  if(cell!==""||row.length){row.push(cell);rows.push(row);}
-  return rows;
-}
 
 function loadConfigForm(cfg){
-  // Check if we are loading training configuration (sheet details) or client configuration (theme)
   if(cfg.hasOwnProperty("sheetId")){
     $("cfgSheetId").value = cfg.sheetId||"";
     $("cfgCsvUrl").value  = cfg.csvUrl||"";
@@ -1557,8 +1768,108 @@ $("hfSaveBtn").addEventListener("click",()=>{
   toast("✓ Tampilan Header & Footer disimpan");
 });
 
+/* ===========================
+   TAB 1C — KELOLA LAPORAN PDF
+   =========================== */
+function getReports() {
+  const idx = clientsDb.findIndex(x=>String(x.id)===String(currentClientId));
+  if (idx === -1) return [];
+  const c = clientsDb[idx];
+  const t = (c.trainings || []).find(x=>String(x.id)===String(currentTrainingId));
+  return t ? (t.reports || []) : [];
+}
+
+function saveReports(reports) {
+  updateTraining({ reports: reports });
+}
+
+function renderReportsList() {
+  const tbody = $("reportsManageTableBody");
+  if (!tbody) return;
+
+  const reports = getReports();
+  if (reports.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:18px; color:var(--n500); font-size:12.5px;">Belum ada laporan PDF khusus untuk sesi ini. Klik tombol di atas untuk menambah.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = reports.map((rep) => {
+    const uploadDate = rep.uploadedAt ? new Date(rep.uploadedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+    return `
+      <tr>
+        <td style="padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--n100);">
+          <a href="${rep.pdfUrl}" target="_blank" style="color: var(--navy); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px;">
+            📄 ${rep.title || 'Laporan'}
+          </a>
+        </td>
+        <td style="padding: 10px 12px; border-bottom: 1px solid var(--n100); font-size: 12px; color: var(--n500);">${uploadDate}</td>
+        <td style="padding: 10px 12px; border-bottom: 1px solid var(--n100); text-align: right;">
+          <button class="del-row-btn" onclick="deleteReport('${rep.id}')" title="Hapus Laporan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+window.toggleAddReportForm = function(show) {
+  const section = $("addReportFormSection");
+  if (!section) return;
+  if (show === undefined) {
+    section.style.display = section.style.display === "none" ? "block" : "none";
+  } else {
+    section.style.display = show ? "block" : "none";
+  }
+};
+
+$("addReportBtn").addEventListener("click", () => {
+  const titleInput = $("newReportTitle");
+  const urlInput = $("newReportUrl");
+  const title = (titleInput.value || "").trim();
+  const url = (urlInput.value || "").trim();
+
+  if (!title) {
+    toast("⚠ Nama laporan tidak boleh kosong!");
+    titleInput.focus();
+    return;
+  }
+  if (!url) {
+    toast("⚠ URL Link PDF tidak boleh kosong!");
+    urlInput.focus();
+    return;
+  }
+
+  const reports = getReports();
+  const activeClient = clientsDb.find(x=>String(x.id)===String(currentClientId));
+  
+  const report = {
+    id: "rep_" + Date.now(),
+    title: title,
+    pdfUrl: url,
+    uploadedAt: new Date().toISOString(),
+    clientName: activeClient ? activeClient.name : "Client"
+  };
+
+  reports.push(report);
+  saveReports(reports);
+  renderReportsList();
+
+  titleInput.value = "";
+  urlInput.value = "";
+  toggleAddReportForm(false);
+  toast("✓ Laporan PDF ditambahkan & disimpan");
+});
+
+window.deleteReport = function(reportId) {
+  if (!confirm("Hapus laporan PDF ini dari sesi pelatihan?")) return;
+  const reports = getReports().filter(rep => rep.id !== reportId);
+  saveReports(reports);
+  renderReportsList();
+  toast("✓ Laporan PDF dihapus");
+};
+
 async function testSheetConnection(id, csvUrl, sheetName, range) {
-  // 1. Try direct CSV fetch first (works only if CSV publish URL is set and has no CORS restrictions)
   if (csvUrl) {
     try {
       const sep = csvUrl.includes("?") ? "&" : "?";
@@ -1575,7 +1886,6 @@ async function testSheetConnection(id, csvUrl, sheetName, range) {
     }
   }
 
-  // 2. Fallback to JSONP GViz fetch (bypasses CORS completely for shared spreadsheets using ID)
   if (!id) throw new Error("ID Google Sheet tidak ditemukan. Harap masukkan Sheet ID.");
   return new Promise((resolve, reject) => {
     const cb = "_gsheetCbTest_" + Date.now();
@@ -1674,7 +1984,7 @@ $("cfgEvalTestBtn").addEventListener("click", async()=>{
 });
 
 $("evalSaveBtn").addEventListener("click",()=>{
-  updateTraining({evaluasi:$("evalText").value});
+  updateTraining({evaluasi: { title: $("evalTitle").value.trim(), text: $("evalText").value.trim(), ctaPct: $("evalCtaPct").value.trim() }});
   toast("✓ Evaluasi manual tersimpan");
 });
 
@@ -1703,6 +2013,10 @@ window.renderKtTrainers = function(){
           <label>Jabatan / Role</label>
           <input type="text" placeholder="contoh: MDI Tack Facilitator" value="${esc(tr.role||'')}" oninput="window.ktTrainersData[${ti}].role=this.value">
         </div>
+      </div>
+      <div class="field">
+        <label>URL Foto Trainer (Opsional)</label>
+        <input type="text" placeholder="contoh: https://contoh.com/foto.jpg" value="${esc(tr.photoUrl||'')}" oninput="window.ktTrainersData[${ti}].photoUrl=this.value">
       </div>
       <div class="field">
         <label>Teks Apresiasi (Marquee atas)</label>
@@ -1817,7 +2131,7 @@ function renderDayList(docs){
 }
 
 function getDocs(){
-  const c = loadClients().find(x=>String(x.id)===String(currentClientId));
+  const c = clientsDb.find(x=>String(x.id)===String(currentClientId));
   if(!c) return [];
   const t = (c.trainings || []).find(x=>String(x.id)===String(currentTrainingId));
   return t ? (t.dokumentasi || []) : [];
@@ -1857,44 +2171,72 @@ $("addDayBtn").addEventListener("click",()=>{
 });
 
 /* ===========================
-   TAB 5 — ACTION PLAN
+   TAB 5 — ACTION PLAN (IFRAME CONTROLLER)
    =========================== */
-function renderApTable(rows){
-  const tb=$("apTableBody");
-  if(!rows||!rows.length){
-    tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--n400);padding:20px;font-size:.82rem">Belum ada baris. Klik <b>Tambah Baris</b>.</td></tr>`;
-    return;
+function switchApTab(tabId, btnEl) {
+  // Update button styles
+  const btns = [document.getElementById('apTabAdmin'), document.getElementById('apTabFormBackend'), document.getElementById('apTabAwal'), document.getElementById('apTabPenyelesaian')];
+  btns.forEach(b => {
+    if(b) {
+      b.classList.remove('btn-primary');
+      b.classList.add('btn-secondary');
+    }
+  });
+  if(btnEl) {
+    btnEl.classList.remove('btn-secondary');
+    btnEl.classList.add('btn-primary');
   }
-  tb.innerHTML=rows.map((r,i)=>`
-    <tr>
-      <td><input type="text" value="${esc(r.item||"")}" placeholder="Item/kegiatan" oninput="updateApCell(${i},'item',this.value)"></td>
-      <td><input type="text" value="${esc(r.target||"")}" placeholder="Target" oninput="updateApCell(${i},'target',this.value)"></td>
-      <td><input type="text" value="${esc(r.pic||"")}" placeholder="PIC" oninput="updateApCell(${i},'pic',this.value)"></td>
-      <td><input type="text" value="${esc(r.deadline||"")}" placeholder="DD/MM/YYYY" oninput="updateApCell(${i},'deadline',this.value)"></td>
-      <td class="col-del"><button class="del-row-btn" onclick="deleteApRow(${i})" title="Hapus baris">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button></td>
-    </tr>`).join("");
+
+// Send message to iframe
+  const iframe = document.getElementById("apIframe");
+  if(iframe && iframe.contentWindow) {
+    // Ambil data Action Plan dari state lokal (c.trainings)
+    let actionPlanData = [];
+    if (currentClientId && currentTrainingId) {
+      const c = clientsDb.find(x => String(x.id) === String(currentClientId));
+      if (c && c.trainings) {
+        const t = c.trainings.find(x => String(x.id) === String(currentTrainingId));
+        if (t && t.actionPlan) actionPlanData = t.actionPlan;
+      }
+    }
+    // Send formId along with tabId so it opens the current active training
+    iframe.contentWindow.postMessage({ type: 'switchApTab', tab: tabId, formId: 'form_' + currentTrainingId, actionPlanData: actionPlanData }, '*');
+  }
 }
 
-function getAp(){
-  const c = loadClients().find(x=>String(x.id)===String(currentClientId));
-  if(!c) return [];
-  const t = (c.trainings || []).find(x=>String(x.id)===String(currentTrainingId));
-  return t ? (t.actionPlan || []) : [];
+// Function to notify iframe when training session changes
+function notifyIframeTrainingChanged() {
+  const iframe = document.getElementById("apIframe");
+  if(iframe && iframe.contentWindow) {
+    let actionPlanData = [];
+    if (currentClientId && currentTrainingId) {
+      const c = clientsDb.find(x => String(x.id) === String(currentClientId));
+      if (c && c.trainings) {
+        const t = c.trainings.find(x => String(x.id) === String(currentTrainingId));
+        if (t && t.actionPlan) actionPlanData = t.actionPlan;
+      }
+    }
+    iframe.contentWindow.postMessage({ type: 'trainingChanged', formId: 'form_' + currentTrainingId, actionPlanData: actionPlanData }, '*');
+  }
 }
 
-$("addApRowBtn").addEventListener("click",()=>{
-  const ap=getAp(); ap.push({item:"",target:"",pic:"",deadline:""});
-  updateTraining({actionPlan:ap}); renderApTable(ap);
+// Listen for saveActionPlan from iframe
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'saveActionPlan') {
+    if (!currentClientId || !currentTrainingId) return;
+    const formId = e.data.formId;
+    if (formId !== 'form_' + currentTrainingId) return; // ignore if mismatch
+    
+    const c = clientsDb.find(x => String(x.id) === String(currentClientId));
+    if (!c || !c.trainings) return;
+    const t = c.trainings.find(x => String(x.id) === String(currentTrainingId));
+    if (!t) return;
+    
+    t.actionPlan = e.data.data || [];
+    updateLocalClientArray(c);
+    apiUpdateClient(c, "Cloud Sync: Action Plan Tersimpan!");
+  }
 });
-function updateApCell(i,field,val){
-  const ap=getAp(); ap[i][field]=val; updateTraining({actionPlan:ap});
-}
-function deleteApRow(i){
-  const ap=getAp(); ap.splice(i,1); updateTraining({actionPlan:ap}); renderApTable(ap);
-}
-$("apSaveBtn").addEventListener("click",()=>{ toast("✓ Action plan sesi tersimpan"); });
 
 /* ===========================
    DROPDOWN CONTROLLER
@@ -1935,19 +2277,8 @@ document.addEventListener("click", () => {
   });
 })();
 
-/* ===========================
-   BOOT
-   =========================== */
-(function boot(){
-  const clients=loadClients();
-  if(clients.length===0){
-    $("cancelAddBtn").style.display="none";
-    showView("add");
-  }else{
-    renderClientList();
-    showView("list");
-  }
-})();
+// Fetch initial data
+fetchDatabase();
 </script>
 </body>
 </html>
