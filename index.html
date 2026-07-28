@@ -4231,6 +4231,13 @@ function bootDashboard() {
                     CONFIG.dokumentasi     = freshTraining.dokumentasi     || [];
                     CONFIG.actionPlan      = freshTraining.actionPlan      || [];
                     CONFIG.aiSummary       = freshTraining.aiSummary       || null;
+                  } else {
+                    // Sesi aktif tidak ditemukan di data fresh — kosongkan agar tidak bocor
+                    CONFIG.evaluasi        = "";
+                    CONFIG.komentarTrainer = "";
+                    CONFIG.dokumentasi     = [];
+                    CONFIG.actionPlan      = [];
+                    CONFIG.aiSummary       = null;
                   }
                 }
               }
