@@ -2098,7 +2098,8 @@ const DEFAULT_CONFIG = {
   fontHead: "Plus Jakarta Sans",
   fontBody: "Inter",
   footerLeft: "Sinkronisasi otomatis setiap 10 detik",
-  footerRight: ""
+  footerRight: "",
+  sessionTitle: ""
 };
 
 let CONFIG = {
@@ -2415,6 +2416,7 @@ function showDashboard(training) {
     trainerNames:  training.trainerNames  || "",
     dateStart:     training.dateStart     || "",
     dateEnd:       training.dateEnd       || "",
+    sessionTitle:  training.title         || "",
   });
 
   activeTrainingId = String(training.id);
@@ -2531,13 +2533,11 @@ function showDashboard(training) {
     console.warn("Failed to render active client sections in showDashboard:", e);
   }
 
-  // Render the cached data immediately if we have it
-  if (!firstLoad && participants.length > 0) {
-    try {
-      render(false);
-    } catch(e) {
-      console.warn("Instant cached render failed:", e);
-    }
+  // Always render immediately to clear old data or show cached data
+  try {
+    render(false);
+  } catch(e) {
+    console.warn("Instant render failed:", e);
   }
   
   // Set subtitle based on active tab
@@ -2628,17 +2628,21 @@ function applyAppearance(){
   if(CONFIG.fontBody !== DEFAULT_CONFIG.fontBody){
     r.setProperty("--font-body", `"${CONFIG.fontBody}",system-ui,sans-serif`);
   }
-  // Title & subtitle
+  // Title & subtitle (Client Name - Session Title)
   const h1 = document.querySelector(".title-block h1");
   const sub = document.querySelector(".title-block p");
   if(h1) {
-    h1.textContent = CONFIG.title;
+    const clientName = CONFIG.title || "";
+    const sessionName = CONFIG.sessionTitle || "";
+    h1.textContent = sessionName ? `${clientName} - ${sessionName}` : clientName;
     h1.style.fontWeight = CONFIG.titleWeight || "bold";
     h1.style.fontStyle  = CONFIG.titleStyle  || "normal";
     h1.style.textDecoration = CONFIG.titleDeco || "none";
   }
   if(sub) sub.textContent = CONFIG.subtitle;
-  document.title = `${CONFIG.title} — Dashboard`;
+  const clientTitle = CONFIG.title || "";
+  const sessionTitle = CONFIG.sessionTitle || "";
+  document.title = sessionTitle ? `${clientTitle} - ${sessionTitle} — Dashboard` : `${clientTitle} — Dashboard`;
   // Logo (Dual-logo: MDI Logo + Separator + Client Logo)
   const clientLogo = document.getElementById("headerClientLogo");
   const logoSep = document.getElementById("headerLogoSep");
@@ -3340,13 +3344,14 @@ async function fetchSheet2(){
 }
 
 async function fetchData(manual=false){
+  const startingTrainingId = activeTrainingId;
   const btn=document.getElementById("refreshBtn");
   const targetMainId = SHEET_ID;
   // Hanya fetch evaluasi jika sheet evaluasi KHUSUS dikonfigurasi (tidak fallback ke sheet utama)
   const hasEvalSheet = !!(CONFIG.evalCsvUrl || CONFIG.evalSheetId);
 
   if(!targetMainId && !hasEvalSheet) {
-    if (firstLoad) render(false);
+    render(false);
     setOnline(false);
     document.getElementById("liveText").textContent = "BELUM DI-SET";
     const nextIn = document.getElementById("nextIn");
@@ -3416,6 +3421,10 @@ async function fetchData(manual=false){
   }
 
   // 3. Process and Render
+  if (activeTrainingId !== startingTrainingId) {
+    console.warn("Discarding fetch results: active training changed from", startingTrainingId, "to", activeTrainingId);
+    return;
+  }
   let dataChanged = false;
   
   if (mainSuccess) {
@@ -3620,6 +3629,13 @@ function renderCharts(){
   Chart.defaults.font.family=css("--font-body")||"Inter";
   Chart.defaults.color=css("--n600");
 
+  // If session has no participants, destroy existing charts and reset
+  if (participants.length === 0) {
+    if (chartCompare) { chartCompare.destroy(); chartCompare = null; }
+    if (chartDist)    { chartDist.destroy();    chartDist = null;    }
+    return;
+  }
+
   if(!chartCompare){
     chartCompare=new Chart(document.getElementById("chartCompare"),{
       type:"bar",
@@ -3732,7 +3748,11 @@ function renderTable(flash){
   }).join("");
 
   if(firstLoad){
-    animate("[data-row]",{opacity:[0,1],y:[10,0]},{delay:stagger(0.025,{startDelay:.15}),duration:.4,ease:EASE_OUT});
+    try {
+      animate("[data-row]",{opacity:[0,1],y:[10,0]},{delay:stagger(0.025,{startDelay:.15}),duration:.4,ease:EASE_OUT});
+    } catch(e) {
+      console.warn("Table rows entrance animation failed:", e);
+    }
   }else if(flash){
     tb.querySelectorAll("td").forEach(td=>{td.classList.add("cell-flash");
       td.addEventListener("animationend",()=>td.classList.remove("cell-flash"),{once:true});});
