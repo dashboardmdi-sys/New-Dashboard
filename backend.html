@@ -721,10 +721,6 @@
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 12 2 2 4-4"/></svg>
           Action Plan
         </button>
-        <button class="tab-btn" data-tab="laporan">
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Laporan PDF
-        </button>
       </div>
 
       <!-- Tab Content -->
@@ -956,50 +952,7 @@
           
         </div>
 
-        <!-- TAB: LAPORAN PDF -->
-        <div class="tab-pane" id="pane-laporan">
-          <div class="card">
-            <div class="card-head">
-              <h2>Kelola Laporan PDF Sesi</h2>
-              <button class="btn btn-secondary btn-sm" id="addReportTabBtn" onclick="toggleAddReportForm()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; margin-right: 4px;"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                Tambah Laporan PDF
-              </button>
-            </div>
-            <p class="card-desc" style="margin-bottom: 20px;">Tambahkan tautan berkas laporan evaluasi PDF dari Google Drive/Dropbox khusus untuk sesi pelatihan ini.</p>
-            
-            <!-- Tambah Laporan Form (Collapsible/Hidden by default) -->
-            <div id="addReportFormSection" style="margin-bottom: 24px; padding: 18px; border: 1px dashed var(--card-border); border-radius: var(--radius-md); background: var(--n50); display: none;">
-              <div class="field">
-                <label for="newReportTitle">Nama Laporan</label>
-                <input type="text" id="newReportTitle" placeholder="contoh: Laporan Evaluasi Akhir Batch 1">
-              </div>
-              <div class="field">
-                <label for="newReportUrl">Link URL PDF (Google Drive/Dropbox)</label>
-                <input type="text" id="newReportUrl" placeholder="contoh: https://drive.google.com/...">
-              </div>
-              <div style="display: flex; gap: 8px; margin-top: 16px;">
-                <button class="btn btn-primary btn-sm" id="addReportBtn">Simpan Laporan</button>
-                <button class="btn btn-outline btn-sm" onclick="toggleAddReportForm(false)">Batal</button>
-              </div>
-            </div>
 
-            <div style="border: 1px solid var(--card-border); border-radius: var(--radius-md); overflow: hidden;">
-              <table class="ap-table" id="reportsManageTable">
-                <thead>
-                  <tr style="background: var(--navy); color: #fff;">
-                    <th style="font-size: 0.72rem; padding: 8px 12px; font-weight:700;">Nama Laporan / File</th>
-                    <th style="font-size: 0.72rem; padding: 8px 12px; font-weight:700; width: 150px;">Tanggal Upload</th>
-                    <th style="font-size: 0.72rem; padding: 8px 12px; text-align: right; width: 60px; font-weight:700;">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="reportsManageTableBody">
-                  <!-- Dynamically populated -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -1404,7 +1357,6 @@ function openEdit(id){
 
   loadConfigForm(c.config);
   renderTrainingList();
-  renderReportsList();
   showView("edit");
 }
 
@@ -1642,7 +1594,6 @@ function openEditTraining(tid){
   }
 
   notifyIframeTrainingChanged();
-  renderReportsList();
   showView("editTraining");
 }
 
@@ -1809,106 +1760,7 @@ $("hfSaveBtn").addEventListener("click",()=>{
   toast("✓ Tampilan Header & Footer disimpan");
 });
 
-/* ===========================
-   TAB 1C — KELOLA LAPORAN PDF
-   =========================== */
-function getReports() {
-  const idx = clientsDb.findIndex(x=>String(x.id)===String(currentClientId));
-  if (idx === -1) return [];
-  const c = clientsDb[idx];
-  const t = (c.trainings || []).find(x=>String(x.id)===String(currentTrainingId));
-  return t ? (t.reports || []) : [];
-}
 
-function saveReports(reports) {
-  updateTraining({ reports: reports });
-}
-
-function renderReportsList() {
-  const tbody = $("reportsManageTableBody");
-  if (!tbody) return;
-
-  const reports = getReports();
-  if (reports.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:18px; color:var(--n500); font-size:12.5px;">Belum ada laporan PDF khusus untuk sesi ini. Klik tombol di atas untuk menambah.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = reports.map((rep) => {
-    const uploadDate = rep.uploadedAt ? new Date(rep.uploadedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-    return `
-      <tr>
-        <td style="padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--n100);">
-          <a href="${rep.pdfUrl}" target="_blank" style="color: var(--navy); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px;">
-            📄 ${rep.title || 'Laporan'}
-          </a>
-        </td>
-        <td style="padding: 10px 12px; border-bottom: 1px solid var(--n100); font-size: 12px; color: var(--n500);">${uploadDate}</td>
-        <td style="padding: 10px 12px; border-bottom: 1px solid var(--n100); text-align: right;">
-          <button class="del-row-btn" onclick="deleteReport('${rep.id}')" title="Hapus Laporan">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          </button>
-        </td>
-      </tr>
-    `;
-  }).join("");
-}
-
-window.toggleAddReportForm = function(show) {
-  const section = $("addReportFormSection");
-  if (!section) return;
-  if (show === undefined) {
-    section.style.display = section.style.display === "none" ? "block" : "none";
-  } else {
-    section.style.display = show ? "block" : "none";
-  }
-};
-
-$("addReportBtn").addEventListener("click", () => {
-  const titleInput = $("newReportTitle");
-  const urlInput = $("newReportUrl");
-  const title = (titleInput.value || "").trim();
-  const url = (urlInput.value || "").trim();
-
-  if (!title) {
-    toast("⚠ Nama laporan tidak boleh kosong!");
-    titleInput.focus();
-    return;
-  }
-  if (!url) {
-    toast("⚠ URL Link PDF tidak boleh kosong!");
-    urlInput.focus();
-    return;
-  }
-
-  const reports = getReports();
-  const activeClient = clientsDb.find(x=>String(x.id)===String(currentClientId));
-  
-  const report = {
-    id: "rep_" + Date.now(),
-    title: title,
-    pdfUrl: url,
-    uploadedAt: new Date().toISOString(),
-    clientName: activeClient ? activeClient.name : "Client"
-  };
-
-  reports.push(report);
-  saveReports(reports);
-  renderReportsList();
-
-  titleInput.value = "";
-  urlInput.value = "";
-  toggleAddReportForm(false);
-  toast("✓ Laporan PDF ditambahkan & disimpan");
-});
-
-window.deleteReport = function(reportId) {
-  if (!confirm("Hapus laporan PDF ini dari sesi pelatihan?")) return;
-  const reports = getReports().filter(rep => rep.id !== reportId);
-  saveReports(reports);
-  renderReportsList();
-  toast("✓ Laporan PDF dihapus");
-};
 
 async function testSheetConnection(id, csvUrl, sheetName, range) {
   if (csvUrl) {

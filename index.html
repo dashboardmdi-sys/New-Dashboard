@@ -1479,8 +1479,8 @@
 #pane-actionplan .table-scroll tr:hover td, #pane-reports .table-scroll tr:hover td { background: #f8fafc; }
 
 #pane-actionplan .td-num { font-family: monospace; color: var(--mdi-muted); font-weight: 600; }
-#pane-actionplan .td-name { font-weight: 600; color: var(--mdi-ink); white-space: nowrap; }
-#pane-actionplan .dept-tag { background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--mdi-muted); font-weight: 600; white-space: nowrap; }
+#pane-actionplan .td-name { font-weight: 600; color: var(--mdi-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#pane-actionplan .dept-tag { background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--mdi-muted); font-weight: 600; white-space: nowrap; display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
 #pane-actionplan .status-pill { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 #pane-actionplan .s-done { background: rgba(16, 185, 129, 0.1); color: var(--mdi-done); }
 #pane-actionplan .s-prog { background: rgba(245, 158, 11, 0.1); color: var(--mdi-prog); }
@@ -1664,10 +1664,6 @@
       <a href="#pane-dokumentasi" class="nav-pill" id="navPillDoc">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
         Dokumentasi Training
-      </a>
-      <a href="#pane-reports" class="nav-pill" id="navPillReports">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        Laporan PDF
       </a>
     </div>
   </div>
@@ -2020,29 +2016,7 @@
     </section>
   </div>
 
-  <!-- ============ REPORTS ============ -->
-  <div class="dash-pane" id="pane-reports" style="display: none; padding: 20px;">
-    <div class="overline" data-animate id="titleReports"><span class="num">06</span> Evaluasi &amp; Laporan PDF</div>
-    <section id="sectReports" class="card" data-animate style="padding: 24px;">
-      <p class="card-desc" style="color: var(--mdi-muted); margin-bottom: 24px; font-size: 13.5px; line-height: 1.5;">Daftar file laporan pelatihan resmi dan berkas evaluasi akhir untuk perusahaan Anda.</p>
-      <div class="table-card">
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th style="padding: 12px 24px; font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase;">Nama Laporan / File</th>
-                <th style="padding: 12px 24px; font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; width: 25%;">Tanggal Upload</th>
-                <th style="padding: 12px 24px; font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; text-align: right; width: 25%;">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="reportsTableBody">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </div>
+
 </main>
 
 <footer>
@@ -2054,8 +2028,12 @@
 
 <script>
 let animate = () => {}, stagger = () => 0, inView = () => () => {};
-import("https://cdn.jsdelivr.net/npm/motion@12.0.0/+esm")
-  .then(m => { animate = m.animate; stagger = m.stagger; inView = m.inView; })
+window.__motionImportPromise = import("https://cdn.jsdelivr.net/npm/motion@12.0.0/+esm")
+  .then(m => { 
+    animate = m.animate; 
+    stagger = m.stagger; 
+    inView = m.inView; 
+  })
   .catch(() => {
     console.warn("Motion animations unavailable (CDN unreachable)");
     document.documentElement.classList.add("no-motion");
@@ -2433,7 +2411,6 @@ function showDashboard(training) {
     komentarTrainer: training.komentarTrainer || "",
     dokumentasi:   training.dokumentasi   || [],
     actionPlan:    training.actionPlan    || [],
-    reports:       training.reports       || [],
     aiSummary:     training.aiSummary     || null,
     trainerNames:  training.trainerNames  || "",
     dateStart:     training.dateStart     || "",
@@ -2542,7 +2519,6 @@ function showDashboard(training) {
 
   // Apply appearance
   applyAppearance();
-  renderReports();
 
   // Render the cached data immediately if we have it
   if (!firstLoad && participants.length > 0) {
@@ -4036,8 +4012,8 @@ function renderActiveClientSections(){
           return `
             <tr onclick="toggleApRow('${p.no}')" id="ap-row-${p.no}">
               <td class="td-num">${index + 1}</td>
-              <td><div class="td-name">${esc(p.name)}</div></td>
-              <td><span class="dept-tag">${esc(p.dept)}</span></td>
+              <td><div class="td-name" title="${esc(p.name)}">${esc(p.name)}</div></td>
+              <td><span class="dept-tag" title="${esc(p.dept)}">${esc(p.dept)}</span></td>
               <td>
                 <div style="font-size:13px; color:var(--mdi-ink); line-height:1.4;">${firstPlan}</div>
                 ${moreText}
@@ -4143,9 +4119,6 @@ function initNavScroll(){
       const activePane = document.querySelector(targetId);
       if (activePane) {
         activePane.style.display = "block";
-        if (targetId === "#pane-reports") {
-          renderReports();
-        }
         // Force reflow to trigger CSS transitions
         void activePane.offsetWidth;
         activePane.classList.add("active");
@@ -4260,7 +4233,6 @@ function bootDashboard() {
                     CONFIG.dokumentasi     = freshTraining.dokumentasi     || [];
                     CONFIG.actionPlan      = freshTraining.actionPlan      || [];
                     CONFIG.aiSummary       = freshTraining.aiSummary       || null;
-                    CONFIG.reports         = freshTraining.reports         || [];
                   }
                 }
               }
@@ -4274,77 +4246,7 @@ function bootDashboard() {
   })();
 }
 
-let REPORTS_DB = [];
 
-function renderReports() {
-  const tbody = document.getElementById("reportsTableBody");
-  if (!tbody) return;
-
-  if (!loggedClient) {
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 32px; color: var(--mdi-muted);">Silakan login terlebih dahulu.</td></tr>`;
-    return;
-  }
-
-  REPORTS_DB = CONFIG.reports || [];
-
-  if (REPORTS_DB.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 48px; color: var(--mdi-muted);">Belum ada laporan PDF yang diunggah untuk perusahaan Anda.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = REPORTS_DB.map((report, idx) => {
-    const uploadDate = report.uploadedAt ? new Date(report.uploadedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-    return `
-      <tr>
-        <td style="padding: 16px 24px; border-bottom: 1px solid var(--n200);">
-          <div style="font-weight: 600; color: var(--mdi-ink); display: flex; align-items: center; gap: 8px;">
-            📄 ${esc(report.title || 'Laporan Pelatihan')}
-          </div>
-        </td>
-        <td style="padding: 16px 24px; border-bottom: 1px solid var(--n200); color: var(--mdi-muted); font-size: 13px;">${uploadDate}</td>
-        <td style="padding: 16px 24px; border-bottom: 1px solid var(--n200); text-align: right;">
-          <div style="display: inline-flex; gap: 8px; justify-content: flex-end; width: 100%;">
-            <button class="btn-next" style="width: auto; padding: 6px 14px; font-size: 12px; height: 32px; border-radius: 6px;" onclick="reviewReportPdf('${report.id}')">Pratinjau</button>
-            <button class="btn-next" style="width: auto; padding: 6px 14px; font-size: 12px; height: 32px; border-radius: 6px; background: var(--mdi-orange);" onclick="downloadReportPdf('${report.id}')">Unduh</button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join("");
-}
-
-window.downloadReportPdf = function(reportId) {
-  const report = REPORTS_DB.find(r => r.id === reportId);
-  if(!report) return;
-  
-  let url = "";
-  if (report.pdfUrl) {
-    url = report.pdfUrl;
-  } else if (report.pdfData) {
-    url = report.pdfData;
-  }
-  if (!url) return;
-  
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = report.filename || 'Laporan_Training.pdf';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-};
-
-window.reviewReportPdf = function(reportId) {
-  const report = REPORTS_DB.find(r => r.id === reportId);
-  if(!report) return;
-  if(report.pdfUrl) {
-    window.open(report.pdfUrl, '_blank');
-  } else if(report.pdfData) {
-    const win = window.open();
-    if (win) {
-      win.document.write(`<iframe src="${report.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%; position:absolute;" allowfullscreen></iframe>`);
-    }
-  }
-};
 
 async function bootApp() {
   const cached = localStorage.getItem("mdp-clients-db");
@@ -4411,7 +4313,13 @@ async function bootApp() {
       .catch(e => console.warn("Background db sync failed:", e));
   }
 }
-bootApp();
+if (window.__motionImportPromise) {
+  window.__motionImportPromise.finally(() => {
+    bootApp();
+  });
+} else {
+  bootApp();
+}
 </script>
 </body>
 </html>
