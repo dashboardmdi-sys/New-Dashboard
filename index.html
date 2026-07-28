@@ -2562,25 +2562,11 @@ function applyAppearance(){
   const clientTitle = CONFIG.title || "";
   const sessionTitle = CONFIG.sessionTitle || "";
   document.title = sessionTitle ? `${clientTitle} - ${sessionTitle} — Dashboard` : `${clientTitle} — Dashboard`;
-  // Logo (Dual-logo: MDI Logo + Separator + Client Logo)
+  // Logo: Client logo hidden by request — only MDI logo is displayed in header
   const clientLogo = document.getElementById("headerClientLogo");
   const logoSep = document.getElementById("headerLogoSep");
-  if(CONFIG.logoUrl){
-    if(clientLogo) {
-      clientLogo.src = CONFIG.logoUrl;
-      clientLogo.style.display = "block";
-    }
-    if(logoSep) {
-      logoSep.style.display = "block";
-    }
-  } else {
-    if(clientLogo) {
-      clientLogo.style.display = "none";
-    }
-    if(logoSep) {
-      logoSep.style.display = "none";
-    }
-  }
+  if(clientLogo) clientLogo.style.display = "none";
+  if(logoSep) logoSep.style.display = "none";
   // Footer
   const footerSpans = document.querySelectorAll("footer span");
   if(footerSpans[0]) footerSpans[0].textContent = CONFIG.footerLeft;
