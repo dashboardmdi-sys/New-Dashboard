@@ -2344,6 +2344,14 @@ window.showMainMenu = function() {
       }
     }
   }).catch(e => console.warn("Silent background load failed:", e));
+
+  // Reset session title — back to menu shows only client name
+  CONFIG.sessionTitle = "";
+  const h1El = document.querySelector(".title-block h1");
+  if(h1El) h1El.textContent = CONFIG.title || (loggedClient && loggedClient.name) || "";
+  const subtitleReset = document.getElementById("headerSubtitle");
+  if(subtitleReset) subtitleReset.innerHTML = CONFIG.subtitle || "Portal Pelatihan";
+
   // Hide dashboard
   const mainMain = document.getElementById("mainMain");
   mainMain.style.display = "none";
