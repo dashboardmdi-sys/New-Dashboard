@@ -245,9 +245,9 @@
     width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;
     font-family:var(--font-mono);font-weight:700;font-size:.85rem;
   }
-  .medal.m1{background:var(--primary-base);color:var(--navy);box-shadow:0 0 0 3px var(--primary-200)}
-  .medal.m2{background:var(--n200);color:var(--n700);box-shadow:0 0 0 3px var(--n100)}
-  .medal.m3{background:#E8C39E;color:#7C4A1E;box-shadow:0 0 0 3px #F5E3D0}
+  .medal.m1{background:#FFD700;color:#7A5700;box-shadow:0 0 0 3px #FFF0A0}
+  .medal.m2{background:#C8C8C8;color:#4A4A4A;box-shadow:0 0 0 3px #E8E8E8}
+  .medal.m3{background:#CD8B3A;color:#4A2800;box-shadow:0 0 0 3px #F0D0A0}
   .podium-item .p-name{font-weight:600;font-size:.9rem;color:var(--n900);line-height:1.3}
   .podium-item .p-sub{font-size:.7rem;color:var(--n500);margin-top:1px}
   .podium-item .p-score{
@@ -309,7 +309,9 @@
     display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;
     font-family:var(--font-mono);font-size:.72rem;font-weight:700;background:var(--n100);color:var(--n600);
   }
-  .rank-badge.top{background:var(--primary-base);color:var(--navy)}
+  .rank-badge.r1{background:#FFD700;color:#7A5700;box-shadow:0 0 0 2px #FFF0A0}
+  .rank-badge.r2{background:#C8C8C8;color:#4A4A4A;box-shadow:0 0 0 2px #E8E8E8}
+  .rank-badge.r3{background:#CD8B3A;color:#4A2800;box-shadow:0 0 0 2px #F0D0A0}
   .delta{font-family:var(--font-mono);font-weight:700;font-size:.78rem;padding:3px 9px;border-radius:9999px}
   .delta.up{background:#E7F6EC;color:var(--success)}
   .delta.down{background:#FDECEC;color:var(--danger)}
@@ -832,7 +834,6 @@
     margin: 4px 0;
   }
 
-  /* ============ NEW CLIENT SECTIONS ============ */
   /* ============ NEW CLIENT SECTIONS ============ */
   .nav-pills-container {
     max-width: 1280px;
@@ -2051,32 +2052,55 @@
 
 <div class="toast" id="toast">Data diperbarui</div>
 
-<script type="module">
-import { animate, stagger, inView } from "https://cdn.jsdelivr.net/npm/motion@12.0.0/+esm";
+<script>
+let animate = () => {}, stagger = () => 0, inView = () => () => {};
+import("https://cdn.jsdelivr.net/npm/motion@12.0.0/+esm")
+  .then(m => { animate = m.animate; stagger = m.stagger; inView = m.inView; })
+  .catch(() => {
+    console.warn("Motion animations unavailable (CDN unreachable)");
+    document.documentElement.classList.add("no-motion");
+  });
 
-/* ================= GLOBAL STATE & ROUTING ================= */
 /* ================= GLOBAL STATE & ROUTING ================= */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCAAAkpGxp0tq4MwL2xz8Uq9DjYJS-Jlj9GdnEUPx2zXy5RP6q2vLj8NEXa-Bb--tr2g/exec";
 let clientsDb = [];
+let loadClientsActivePromise = null;
 
 async function loadClientsDbAsync() {
   // Coba ambil cache lokal dulu biar instan
   const cached = localStorage.getItem("mdp-clients-db");
   if(cached) {
     try {
-      clientsDb = JSON.parse(cached);
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed)) clientsDb = parsed;
     } catch(e) {}
   }
 
-  try {
-    const res = await fetch(WEB_APP_URL + "?action=getClients");
-    const json = await res.json();
-    if(json.success) {
-      clientsDb = json.data;
-      localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb));
+  // Jika sedang ada fetch yang berjalan, gunakan promise tersebut (debouncing/collapsing)
+  if (loadClientsActivePromise) {
+    await loadClientsActivePromise;
+    return;
+  }
+
+  loadClientsActivePromise = (async () => {
+    try {
+      const res = await fetch(WEB_APP_URL + "?action=getClients");
+      const json = await res.json();
+      if(json && json.success && Array.isArray(json.data)) {
+        clientsDb = json.data;
+        try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
+      }
+    } catch(e) {
+      console.error("Failed to load clients database:", e);
     }
-  } catch(e) {
-    console.error("Failed to load clients database:", e);
+  })();
+
+  window.__loadClientsPromise = loadClientsActivePromise;
+
+  try {
+    await loadClientsActivePromise;
+  } finally {
+    loadClientsActivePromise = null;
   }
 }
 
@@ -2120,40 +2144,49 @@ let CSV_URL = "";
 const POLL_MS = 10000;
 
 function initRouting(){
-  const saved = localStorage.getItem("dashboard-theme");
-  if(saved) document.documentElement.setAttribute("data-theme", saved);
+  try {
+    const saved = localStorage.getItem("dashboard-theme");
+    if(saved) document.documentElement.setAttribute("data-theme", saved);
 
-  // Check login
-  let loggedId = sessionStorage.getItem("mdp-logged-client") || localStorage.getItem("mdp-logged-client");
-  if(loggedId) {
-    loggedClient = clientsDb.find(c => String(c.id).trim() === String(loggedId).trim());
-    if (loggedClient) {
-       if (!sessionStorage.getItem("mdp-logged-client")) {
-         sessionStorage.setItem("mdp-logged-client", String(loggedId));
+    // 🛡️ Pastikan clientsDb selalu bertipe array
+    if (!Array.isArray(clientsDb)) clientsDb = [];
+
+    // Check login
+    let loggedId = sessionStorage.getItem("mdp-logged-client") || localStorage.getItem("mdp-logged-client");
+    if(loggedId) {
+      loggedClient = clientsDb.find(c => String(c.id).trim() === String(loggedId).trim());
+      if (loggedClient) {
+         if (!sessionStorage.getItem("mdp-logged-client")) {
+           sessionStorage.setItem("mdp-logged-client", String(loggedId));
+         }
+         applyClientConfig(loggedClient);
        }
-       applyClientConfig(loggedClient);
     }
-  }
 
-  // If not logged in, show PIN Gate — stop here
-  if(!loggedClient) {
-    hideLoader();
-    showPinGate();
-    return;
-  }
-
-  hideLoader();
-  
-  if(activeTrainingId && loggedClient) {
-    const trainings = loggedClient.trainings || [];
-    const foundTraining = trainings.find(t => String(t.id).trim() === String(activeTrainingId).trim());
-    if(foundTraining) {
-      showDashboard(foundTraining);
+    // If not logged in, show PIN Gate — stop here
+    if(!loggedClient) {
+      hideLoader();
+      showPinGate();
       return;
     }
-  }
 
-  showMainMenu();
+    hideLoader();
+    
+    if(activeTrainingId && loggedClient) {
+      const trainings = loggedClient.trainings || [];
+      const foundTraining = trainings.find(t => String(t.id).trim() === String(activeTrainingId).trim());
+      if(foundTraining) {
+        showDashboard(foundTraining);
+        return;
+      }
+    }
+
+    showMainMenu();
+  } catch (error) {
+    console.error("Critical error during routing, forcing login gate display:", error);
+    hideLoader();
+    showPinGate();
+  }
 }
 
 function hideLoader() {
@@ -2184,7 +2217,9 @@ function showPinGate() {
   companyPinInput.value = "";
   setTimeout(() => nameInput.focus(), 50);
 
-  function attemptLogin() {
+  let isChecking = false;
+  async function attemptLogin() {
+    if (isChecking) return;
     const companyNameVal = (nameInput.value || "").trim();
     const pinInput = (companyPinInput.value || "").trim();
 
@@ -2210,6 +2245,23 @@ function showPinGate() {
       box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
       setTimeout(() => { err.classList.remove("show"); }, 2500);
       return;
+    }
+
+    // Jika database klien sedang dimuat di background, tunggu dulu agar tidak langsung gagal login
+    if (window.__loadClientsPromise) {
+      isChecking = true;
+      btnSubmitLogin.disabled = true;
+      const originalText = btnSubmitLogin.textContent;
+      btnSubmitLogin.textContent = "Memvalidasi...";
+      try {
+        await window.__loadClientsPromise;
+      } catch(e) {
+        console.warn("Failed to load clients database during login validation:", e);
+      } finally {
+        isChecking = false;
+        btnSubmitLogin.disabled = false;
+        btnSubmitLogin.textContent = originalText;
+      }
     }
 
     // Cari client berdasarkan nama perusahaan
@@ -2390,6 +2442,31 @@ function showDashboard(training) {
 
   activeTrainingId = String(training.id);
   sessionStorage.setItem("mdp-active-training", activeTrainingId);
+
+  // 3. Load cached sheet data for this training to make the dashboard render instantly
+  const cachedData = localStorage.getItem("mdp-training-cache-" + activeTrainingId);
+  if (cachedData) {
+    try {
+      const parsed = JSON.parse(cachedData);
+      participants = parsed.participants || [];
+      stats = parsed.stats || null;
+      currentEvalData = parsed.currentEvalData || null;
+      prevSignature = parsed.prevSignature || "";
+      firstLoad = false;
+    } catch(e) {
+      participants = [];
+      stats = null;
+      currentEvalData = null;
+      prevSignature = "";
+      firstLoad = true;
+    }
+  } else {
+    participants = [];
+    stats = null;
+    currentEvalData = null;
+    prevSignature = "";
+    firstLoad = true;
+  }
   
   // Sync the Action Plan iframe with this training id
   const iframe = document.getElementById('apIframeFe');
@@ -2422,24 +2499,32 @@ function showDashboard(training) {
 
   // Restore active tab from sessionStorage if available
   const savedTab = sessionStorage.getItem("mdp-active-tab");
-  if (savedTab) {
-    const targetPill = document.querySelector(`.nav-pill[href="${savedTab}"]`);
-    if (targetPill) {
-      // Deactivate all pills and panes
-      document.querySelectorAll(".nav-pill").forEach(p => p.classList.remove("active"));
-      document.querySelectorAll(".dash-pane").forEach(p => {
-        p.classList.remove("active");
-        p.style.display = "none";
-      });
-      // Activate the saved one
-      targetPill.classList.add("active");
-      const targetPane = document.querySelector(savedTab);
-      if (targetPane) {
-        targetPane.style.display = "block";
-        targetPane.classList.add("active");
+  let tabActivated = false;
+  if (savedTab && /^#[a-zA-Z0-9_-]+$/.test(savedTab)) {
+    try {
+      const targetPill = document.querySelector(`.nav-pill[href="${savedTab}"]`);
+      if (targetPill) {
+        // Deactivate all pills and panes
+        document.querySelectorAll(".nav-pill").forEach(p => p.classList.remove("active"));
+        document.querySelectorAll(".dash-pane").forEach(p => {
+          p.classList.remove("active");
+          p.style.display = "none";
+        });
+        // Activate the saved one
+        targetPill.classList.add("active");
+        const targetPane = document.querySelector(savedTab);
+        if (targetPane) {
+          targetPane.style.display = "block";
+          targetPane.classList.add("active");
+          tabActivated = true;
+        }
       }
+    } catch(e) {
+      console.warn("Failed to restore saved tab:", e);
     }
-  } else {
+  }
+
+  if (!tabActivated) {
     // Default fallback to first tab (Pre/Post Test) if no active tab is saved
     const firstPill = document.querySelector(".nav-pill");
     const prepostPane = document.getElementById("pane-prepost");
@@ -2458,6 +2543,15 @@ function showDashboard(training) {
   // Apply appearance
   applyAppearance();
   renderReports();
+
+  // Render the cached data immediately if we have it
+  if (!firstLoad && participants.length > 0) {
+    try {
+      render(false);
+    } catch(e) {
+      console.warn("Instant cached render failed:", e);
+    }
+  }
   
   // Set subtitle based on active tab
   const activePill = document.querySelector(".nav-pill.active");
@@ -2478,12 +2572,7 @@ function showDashboard(training) {
     }
     bootDashboard();
   } else {
-    // Already booted — just re-fetch with new config
-    firstLoad = true;
-    participants = [];
-    stats = null;
-    currentEvalData = null;
-    prevSignature = "";
+    // Already booted — just refresh in background without clearing variables
     bootDashboard();
   }
 }
@@ -3194,7 +3283,7 @@ function fetchViaJSONP(){
   return new Promise((resolve,reject)=>{
     const cb="_gsheetCb_"+Date.now();
     const script=document.createElement("script");
-    const timer=setTimeout(()=>{ cleanup(); reject(new Error("JSONP timeout")); },12000);
+    const timer=setTimeout(()=>{ cleanup(); reject(new Error("JSONP timeout")); },5000);
     function cleanup(){ clearTimeout(timer); delete window[cb]; script.remove(); }
     window[cb]=function(resp){
       cleanup();
@@ -3237,7 +3326,7 @@ async function fetchSheet2(){
   return new Promise((resolve,reject)=>{
     const cb="_gsheetCb2_"+Date.now();
     const script=document.createElement("script");
-    const timer=setTimeout(()=>{ cleanup(); reject(new Error("Sheet2 timeout")); },12000);
+    const timer=setTimeout(()=>{ cleanup(); reject(new Error("Sheet2 timeout")); },5000);
     function cleanup(){ clearTimeout(timer); delete window[cb]; script.remove(); }
     window[cb]=function(resp){
       cleanup();
@@ -3355,6 +3444,18 @@ async function fetchData(manual=false){
       if(changed && !firstLoad && (mainSuccess || evalSuccess)) {
         showToast("Data diperbarui dari Google Sheets");
       }
+
+      // Save to cache!
+      if (activeTrainingId) {
+        try {
+          localStorage.setItem("mdp-training-cache-" + activeTrainingId, JSON.stringify({
+            participants,
+            stats,
+            currentEvalData,
+            prevSignature
+          }));
+        } catch(e) {}
+      }
     }
     setOnline(mainSuccess || evalSuccess);
   } catch(err) {
@@ -3392,8 +3493,9 @@ function showToast(msg){
 /* countdown ring — only runs when dashboard is active */
 const ringEl = document.getElementById("ringProg");
 const CIRC   = 2 * Math.PI * 17.5;
-ringEl.style.strokeDasharray = CIRC;
+if(ringEl) ringEl.style.strokeDasharray = CIRC;
 function tickRing() {
+  if(!ringEl) return;
   if(window.__WAIT_MAIN_MENU) { requestAnimationFrame(tickRing); return; }
   const p = Math.min((performance.now() - countdownStart) / POLL_MS, 1);
   ringEl.style.strokeDashoffset = CIRC * p;
@@ -3492,10 +3594,10 @@ function renderPodium(tab){
   el.innerHTML = list.map((p,i)=>{
     const cls = isBottom ? "last" : (i===0?"first":"");
     const medalCls = i===0?"m1":i===1?"m2":"m3";
-    const rank = p.sheetRank ?? (i+1);
+    const pos = i + 1; // posisi urutan selalu 1, 2, 3
     const score = p.rankScore!=null ? fmtID(p.rankScore,1) : (p.post!=null ? fmtID(p.post,1) : (p.pre!=null ? fmtID(p.pre,1) : "—"));
     const sub = p.delta!=null ? `Peningkatan: ${p.delta>0?"+":""}${fmtID(p.delta,1)}%` : (p.post!=null ? `Post: ${fmtID(p.post,1)}` : `Pre: ${fmtID(p.pre,1)}`);
-    return `<div class="podium-item ${cls}"><span class="medal ${medalCls}">${rank}</span><div><div class="p-name">${esc(p.name)}</div><div class="p-sub">${sub}</div></div><span class="p-score">${score}</span></div>`;
+    return `<div class="podium-item ${cls}"><span class="medal ${medalCls}">${pos}</span><div><div class="p-name">${esc(p.name)}</div><div class="p-sub">${sub}</div></div><span class="p-score">${score}</span></div>`;
   }).join("");
 }
 
@@ -3615,16 +3717,20 @@ function renderTable(flash){
 
   document.getElementById("rowCount").textContent=`${rows.length} peserta`;
   const tb=document.getElementById("tableBody");
-  tb.innerHTML=rows.map(p=>`
+  tb.innerHTML=rows.map((p,i)=>{
+    const pos = i + 1; // posisi urutan sekuensial 1,2,3,...
+    const badgeCls = pos===1?"r1":pos===2?"r2":pos===3?"r3":"";
+    return `
     <tr data-row>
-      <td><span class="rank-badge ${p.rank<=3?"top":""}">${p.rank}</span></td>
+      <td><span class="rank-badge ${badgeCls}">${pos}</span></td>
       <td style="font-weight:600">${esc(p.name)}</td>
       <td>${p.pre!=null?`<div class="scorebar"><span class="num" style="font-family:var(--font-mono);font-weight:700;color:var(--navy)">${fmtInt(p.pre)}</span><span class="track"><span class="fill" style="width:${p.pre}%"></span></span></div>`:`<span class="muted">—</span>`}</td>
       <td>${p.post!=null?`<div class="scorebar"><span class="num" style="font-family:var(--font-mono);font-weight:700;color:var(--primary-700)">${fmtInt(p.post)}</span><span class="track"><span class="fill post" style="width:${p.post}%"></span></span></div>`:`<span class="muted">—</span>`}</td>
       <td>${p.delta!=null
-        ?`<span class="delta ${p.delta>0?"up":p.delta<0?"down":"zero"}">${p.delta>0?"▲ +":p.delta<0?"▼ ":""}${fmtID(p.delta,1)}%</span>`
+        ?`<span class="delta ${p.delta>0?"up":p.delta<0?"down":"zero"}">${p.delta>0?"▲ +":p.delta<0?"▼ ":""} ${fmtID(p.delta,1)}%</span>`
         :`<span class="delta none">—</span>`}</td>
-    </tr>`).join("");
+    </tr>`;
+  }).join("");
 
   if(firstLoad){
     animate("[data-row]",{opacity:[0,1],y:[10,0]},{delay:stagger(0.025,{startDelay:.15}),duration:.4,ease:EASE_OUT});
@@ -3634,9 +3740,10 @@ function renderTable(flash){
   }
 
   /* footer averages */
-  document.getElementById("fPre").textContent  = stats.avgPre !=null?fmtID(stats.avgPre ,1):"—";
-  document.getElementById("fPost").textContent = stats.avgPost!=null?fmtID(stats.avgPost,1):"—";
-  document.getElementById("fDelta").textContent= stats.avgDelta!=null?`${stats.avgDelta>0?"+":""}${fmtID(stats.avgDelta,1)}%`:"—";
+  const s = stats || { avgPre: null, avgPost: null, avgDelta: null };
+  document.getElementById("fPre").textContent  = s.avgPre !=null?fmtID(s.avgPre ,1):"—";
+  document.getElementById("fPost").textContent = s.avgPost!=null?fmtID(s.avgPost,1):"—";
+  document.getElementById("fDelta").textContent= s.avgDelta!=null?`${s.avgDelta>0?"+":""}${fmtID(s.avgDelta,1)}%`:"—";
 
   /* sort arrows */
   document.querySelectorAll("#pane-prepost thead th[data-sort]").forEach(th=>{
@@ -3829,10 +3936,11 @@ function renderActiveClientSections(){
 
   const ap = Array.isArray(CONFIG.actionPlan) ? CONFIG.actionPlan : [];
   
-  if (ap.length > 0) {
+  if (ap.length > 0 && ap[0]) {
     if (ap[0].extractedPlans !== undefined || ap[0].answers) {
       // Format baru dari dashboard.html (cloud sync)
       apList = ap.map(p => {
+         if (!p) return null;
          let st = (p.status === "done" || p.status === "not_done") ? p.status : "prog";
          if (p.s2Status === "100%") st = "done";
          return {
@@ -3840,7 +3948,7 @@ function renderActiveClientSections(){
            s2Update: (p.answers && p.answers['q_notes']) ? p.answers['q_notes'] : (p.s2Update || ""),
            s2Challenge: p.s2Challenge || ""
          };
-      });
+      }).filter(Boolean);
       apList = apList.filter(p => p.name && p.name.trim() !== "");
       apList.forEach(p => totalPlans += p.plans.length);
     } else {
@@ -4063,10 +4171,16 @@ function initNavScroll(){
 
 /* ================= ENTRANCE + BOOT ================= */
 function bootDashboard() {
-  animate("header [data-animate]",{opacity:[0,1],y:[-14,0]},{delay:stagger(0.04),duration:.25,ease:EASE_OUT});
-  inView("main [data-animate]",(el)=>{
-    animate(el,{opacity:[0,1],y:[22,0]},{duration:.3,ease:EASE_OUT});
-  },{amount:.15});
+  try {
+    animate("header [data-animate]", {opacity:[0,1],y:[-14,0]},{delay:stagger(0.04),duration:.25,ease:EASE_OUT});
+    animate("main [data-animate]", {opacity:[0,1],y:[22,0]},{delay:stagger(0.02),duration:.3,ease:EASE_OUT});
+  } catch(e) {
+    console.warn("Animations failed, applying static fallback:", e);
+    document.querySelectorAll("[data-animate]").forEach(el => {
+      el.style.opacity = "1";
+      el.style.transform = "none";
+    });
+  }
 
   (async function _boot() {
     try { await fetchData(); } catch(e) { console.error("fetchData init error:", e); }
@@ -4075,25 +4189,84 @@ function bootDashboard() {
     if(!window.__pollInterval) {
       window.__pollInterval = setInterval(async () => {
         if(window.__WAIT_MAIN_MENU) return; // pause polling on main menu
-        
-        // Sync CONFIG silently to capture any backend edits
+
+        // ── Ambil data klien TERBARU langsung dari server GAS ──
+        // Ini memastikan perubahan dari backend (dokumentasi, action plan,
+        // laporan PDF, komentar trainer) langsung muncul di frontend
+        // dalam maks 10 detik tanpa perlu refresh manual.
         try {
-          const freshDb = JSON.parse(localStorage.getItem("mdp-clients-db") || "[]");
-          if (typeof loggedClient !== "undefined" && loggedClient && typeof activeTrainingId !== "undefined") {
-            const freshClient = freshDb.find(c => String(c.id) === String(loggedClient.id));
+          // 💡 Optimasi Skala: Jika ada klien yang login, cukup fetch data 1 klien tersebut (bukan seluruh database)
+          const targetUrl = (typeof loggedClient !== "undefined" && loggedClient && loggedClient.id) 
+            ? `${WEB_APP_URL}?action=getClient&clientId=${encodeURIComponent(loggedClient.id)}&_cb=${Date.now()}`
+            : `${WEB_APP_URL}?action=getClients&_cb=${Date.now()}`;
+
+          const res = await fetch(targetUrl, { cache: "no-store" });
+          const json = await res.json();
+          
+          if (json.success) {
+            let freshClient = null;
+            if (Array.isArray(json.data)) {
+              clientsDb = json.data;
+              try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
+              if (typeof loggedClient !== "undefined" && loggedClient) {
+                freshClient = clientsDb.find(c => String(c.id) === String(loggedClient.id));
+              }
+            } else if (json.data && typeof json.data === "object") {
+              freshClient = json.data;
+              const idx = clientsDb.findIndex(c => String(c.id) === String(freshClient.id));
+              if (idx > -1) clientsDb[idx] = freshClient;
+              else clientsDb.push(freshClient);
+              try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
+            }
+
+            // Update loggedClient & CONFIG dari data server terbaru
             if (freshClient) {
-              const freshTraining = (freshClient.trainings || []).find(t => String(t.id) === String(activeTrainingId));
-              if (freshTraining) {
-                CONFIG.evaluasi = freshTraining.evaluasi || "";
-                CONFIG.komentarTrainer = freshTraining.komentarTrainer || "";
-                CONFIG.dokumentasi = freshTraining.dokumentasi || [];
-                CONFIG.actionPlan = freshTraining.actionPlan || [];
-                CONFIG.aiSummary = freshTraining.aiSummary || null;
+                // Deteksi perubahan konfigurasi tema (warna, logo, judul, footer)
+                const cfg = freshClient.config || {};
+                const oldSig = [
+                  loggedClient.colorPrimary   || (loggedClient.config||{}).colorPrimary   || "",
+                  loggedClient.colorSecondary || (loggedClient.config||{}).colorSecondary || "",
+                  loggedClient.colorNavy      || (loggedClient.config||{}).colorNavy      || "",
+                  loggedClient.logoUrl        || (loggedClient.config||{}).logoUrl        || "",
+                  loggedClient.title          || (loggedClient.config||{}).title          || "",
+                  loggedClient.subtitle       || (loggedClient.config||{}).subtitle       || "",
+                  loggedClient.footerLeft     || (loggedClient.config||{}).footerLeft     || "",
+                  loggedClient.footerRight    || (loggedClient.config||{}).footerRight    || "",
+                ].join("|");
+                const newSig = [
+                  freshClient.colorPrimary   || cfg.colorPrimary   || "",
+                  freshClient.colorSecondary || cfg.colorSecondary || "",
+                  freshClient.colorNavy      || cfg.colorNavy      || "",
+                  freshClient.logoUrl        || cfg.logoUrl        || "",
+                  freshClient.title          || cfg.title          || "",
+                  freshClient.subtitle       || cfg.subtitle       || "",
+                  freshClient.footerLeft     || cfg.footerLeft     || "",
+                  freshClient.footerRight    || cfg.footerRight    || "",
+                ].join("|");
+
+                loggedClient = freshClient;
+
+                // Terapkan tema baru jika ada perubahan dari backend
+                if (newSig !== oldSig) {
+                  try { applyClientConfig(freshClient); } catch(e) { console.warn("applyClientConfig poll error:", e); }
+                }
+
+                // Update data training aktif
+                if (typeof activeTrainingId !== "undefined" && activeTrainingId) {
+                  const freshTraining = (freshClient.trainings || []).find(t => String(t.id) === String(activeTrainingId));
+                  if (freshTraining) {
+                    CONFIG.evaluasi        = freshTraining.evaluasi        || "";
+                    CONFIG.komentarTrainer = freshTraining.komentarTrainer || "";
+                    CONFIG.dokumentasi     = freshTraining.dokumentasi     || [];
+                    CONFIG.actionPlan      = freshTraining.actionPlan      || [];
+                    CONFIG.aiSummary       = freshTraining.aiSummary       || null;
+                    CONFIG.reports         = freshTraining.reports         || [];
+                  }
+                }
               }
             }
-          }
-        } catch(e) { console.warn("Sync CONFIG failed", e); }
-        
+        } catch(e) { console.warn("Background client sync gagal:", e); }
+
         try { await fetchData(); } catch(e) { console.error("fetchData poll error:", e); }
         try { renderActiveClientSections(); } catch(e) { console.error("renderActiveClientSections poll error:", e); }
       }, POLL_MS);
@@ -4175,23 +4348,67 @@ window.reviewReportPdf = function(reportId) {
 
 async function bootApp() {
   const cached = localStorage.getItem("mdp-clients-db");
+  let hasCache = false;
   if (cached) {
-    // 1. Jika ada cache, langsung parse dan routing secara instan!
     try {
-      clientsDb = JSON.parse(cached);
-      initRouting();
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed)) {
+        clientsDb = parsed;
+        hasCache = true;
+      }
     } catch(e) {
-      // Fallback jika json rusak
-      await loadClientsDbAsync();
-      initRouting();
-      return;
+      clientsDb = [];
     }
-    // Jalankan sync database di background agar tetap terupdate
-    loadClientsDbAsync().catch(e => console.warn("Background db sync failed:", e));
+  }
+  
+  const loggedId = sessionStorage.getItem("mdp-logged-client") || localStorage.getItem("mdp-logged-client");
+  
+  if (loggedId && !hasCache) {
+    // Tampilkan loader & tunggu fetch server selesai karena ada login session tapi tidak ada cache
+    loadClientsDbAsync()
+      .then(() => {
+        const freshClient = clientsDb.find(c => String(c.id).trim() === String(loggedId).trim());
+        if (freshClient) {
+          loggedClient = freshClient;
+          applyClientConfig(loggedClient);
+        }
+        initRouting();
+      })
+      .catch(e => {
+        console.warn("Background db sync failed:", e);
+        initRouting();
+      });
   } else {
-    // 2. Jika baru pertama kali buka (belum ada cache), terpaksa nunggu fetch pertama
-    await loadClientsDbAsync();
+    // Langsung tampilkan UI secara instan (pakai cache jika ada, atau login gate jika belum login)
     initRouting();
+    
+    // Jalankan fetch server di background secara aman
+    loadClientsDbAsync()
+      .then(() => {
+        if (loggedId) {
+          const freshClient = clientsDb.find(c => String(c.id).trim() === String(loggedId).trim());
+          if (freshClient) {
+            loggedClient = freshClient;
+            applyClientConfig(loggedClient);
+            // Sinkronisasi data ke UI yang sudah terbuka
+            if (activeTrainingId) {
+              const trainings = loggedClient.trainings || [];
+              const foundTraining = trainings.find(t => String(t.id).trim() === String(activeTrainingId).trim());
+              if (foundTraining) {
+                applyClientConfig(loggedClient);
+              }
+            } else {
+              const nameEl = document.getElementById("mmClientName");
+              if (nameEl) nameEl.textContent = loggedClient.name;
+              const trainingsList = loggedClient.trainings || [];
+              const countEl = document.getElementById("mmTotalSessionsCount");
+              if(countEl) countEl.textContent = trainingsList.length + " Sesi";
+              if (typeof renderMainMenu === "function") renderMainMenu(trainingsList);
+            }
+          }
+        }
+      })
+      .catch(e => console.warn("Background db sync failed:", e));
   }
 }
 bootApp();

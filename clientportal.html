@@ -1,0 +1,2213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MDI TACK - Client Viewer Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --mdi-dark:    #0f172a;
+  --mdi-navy:    #1e293b;
+  --mdi-navy-light: #334155;
+  --mdi-orange:  #f97316;
+  --mdi-orange-hover: #ea580c;
+  --mdi-light:   #f8fafc;
+  --mdi-white:   #ffffff;
+  --mdi-border:  #e2e8f0;
+  --mdi-muted:   #475569;
+  --text-muted:  #64748b;
+  --text-secondary: rgba(255, 255, 255, 0.85);
+  --text-tertiary: rgba(255, 255, 255, 0.65);
+  --mdi-ink:     #0f172a;
+  --mdi-danger:  #ef4444;
+  --done:        #10b981;
+  --prog:        #f59e0b;
+  --bg-color:    #f8fafc;
+  --card-bg:     #ffffff;
+}
+.description-text { color: #475569; }
+.muted-label { color: #64748b; }
+
+@keyframes appFadeSlideUp {
+  from { opacity: 0; transform: translateY(25px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Post-Login Staggered Animations */
+.pv-header { animation: appFadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.dark-banner { animation: appFadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.pv-container { animation: appFadeSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+  /* Stagger list items */
+  .ap-item { animation: appFadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .ap-item:nth-child(1) { animation-delay: 0.1s; }
+  .ap-item:nth-child(2) { animation-delay: 0.2s; }
+  .ap-item:nth-child(3) { animation-delay: 0.3s; }
+  .ap-item:nth-child(4) { animation-delay: 0.4s; }
+  .ap-item:nth-child(5) { animation-delay: 0.5s; }
+  .ap-item:nth-child(6) { animation-delay: 0.6s; }
+  .ap-item:nth-child(7) { animation-delay: 0.7s; }
+  .ap-item:nth-child(n+8) { animation-delay: 0.8s; }
+
+/* Dashboard elements */
+.topbar { animation: appFadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.page-header { animation: appFadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.body-wrap { animation: appFadeSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--mdi-ink);
+  line-height: 1.5;
+}
+
+
+/* PROFILE VIEW */
+#profile-view {
+  background: #f8fafc;
+  min-height: 100vh;
+}
+.pv-header {
+  background: #ffffff;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--mdi-border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  position: sticky; top: 0; z-index: 100;
+}
+.pv-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pv-logo {
+  background: var(--mdi-orange);
+  color: white;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+.pv-brand-text {
+  font-weight: 700;
+  color: var(--mdi-ink);
+  font-size: 16px;
+}
+.pv-brand-text span {
+  color: var(--mdi-muted);
+  font-weight: 400;
+}
+.pv-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 32px;
+}
+.profile-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid var(--mdi-border);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+.pc-banner {
+  height: 120px;
+  background: linear-gradient(135deg, #3d3229 0%, #8b6f47 50%, #c8872f 100%);
+}
+.pc-body {
+  padding: 0 40px 40px 40px;
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  position: relative;
+}
+.profile-avatar {
+  width: 140px;
+  height: 140px;
+  background: #ffffff;
+  border: 4px solid #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  margin-top: -70px;
+}
+.profile-info {
+  margin-top: 16px;
+  flex: 1;
+}
+.profile-info h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--mdi-navy);
+  margin-bottom: 8px;
+}
+.profile-info p {
+  color: var(--mdi-muted);
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 600px;
+}
+.pv-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.pv-stats span {
+  background: rgba(249, 115, 22, 0.1);
+  color: var(--mdi-orange);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* DROPDOWN MENU */
+.menu-wrapper { position: relative; display: inline-block; margin-right: 16px; }
+.menu-btn { 
+  background: #f1f5f9; border: 1px solid var(--mdi-border); color: var(--mdi-navy); 
+  padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; 
+  cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
+  font-family: inherit;
+}
+.menu-btn:hover { background: #e2e8f0; }
+  .sidebar-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);
+    z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+  }
+  .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+  .sliding-sidebar {
+    position: fixed; top: 0; left: 0; width: 280px; max-width: 80vw; height: 100vh;
+    background: #fff; z-index: 1000; display: flex; flex-direction: column;
+    transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+  }
+  .sliding-sidebar.open { transform: translateX(0); }
+  .sidebar-header {
+    padding: 24px 20px; border-bottom: 1px solid var(--mdi-border);
+    display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .sidebar-close-btn {
+    background: none; border: none; font-size: 20px; color: var(--mdi-muted);
+    cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    transition: 0.2s;
+  }
+  .sidebar-close-btn:hover { background: #f1f5f9; color: var(--mdi-navy); }
+  .sidebar-links { flex-grow: 1; padding: 12px 0; overflow-y: auto; }
+  .sidebar-footer { padding: 20px; border-top: 1px solid var(--mdi-border); }
+.dd-client-name {
+    font-size: 16px;
+    font-weight: 800;
+    font-style: italic;
+    color: #cc0000;
+    padding: 12px 14px 8px 14px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--mdi-border);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+.dd-item {
+  padding: 12px 14px; border-radius: 8px; color: var(--mdi-navy); text-decoration: none;
+  font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer;
+  transition: 0.2s;
+}
+.dd-item:hover { background: #f8fafc; color: var(--mdi-orange); }
+
+/* DARK BANNER */
+.dark-banner {
+  background: linear-gradient(135deg, #3d3229 0%, #8b6f47 50%, #c8872f 100%);
+  padding: 40px 32px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+}
+.db-inner {
+  max-width: 900px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+@media (max-width: 768px) {
+  .db-inner { flex-direction: column; align-items: center; text-align: center; }
+}
+.db-logo-box {
+  width: 140px;
+  height: 140px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 56px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  animation: appFloatIcon 3s ease-in-out infinite;
+}
+@keyframes appFloatIcon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.db-logo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 16px;
+  background: #fff;
+}
+.db-content {
+  flex-grow: 1;
+}
+.dark-banner::after {
+  content: ''; position: absolute; top: -50%; right: -10%; width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
+}
+.db-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.db-badge { 
+  border: 1px solid rgba(251, 191, 36, 0.5); color: #fbbf24; padding: 4px 12px; 
+  border-radius: 20px; font-size: 11px; font-weight: 800; background: rgba(251, 191, 36, 0.15);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+  backdrop-filter: blur(5px);
+}
+.db-date { 
+  font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; 
+  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px 12px; border-radius: 20px; backdrop-filter: blur(5px);
+}
+.db-title { font-size: 36px; font-weight: 800; line-height: 1; margin-bottom: 16px; letter-spacing: -0.5px; }
+.db-title span { color: #fbbf24; display: block; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.db-desc { font-size: 14px; color: rgba(255,255,255,0.85); max-width: 500px; line-height: 1.6; margin-bottom: 32px; }
+
+.db-stats { margin-top: 16px; }
+.db-stat-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.db-stat-inline span { color: #fbbf24; font-size: 16px; font-weight: 900; }
+
+.ap-list-header {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--mdi-ink);
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ap-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ap-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 20px;
+}
+.ap-item {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.ap-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #c8872f 0%, #d4a574 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.ap-item:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  border-color: #e8e8e8;
+}
+.ap-item:hover::before {
+  opacity: 1;
+}
+.ap-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 16px;
+}
+.ap-item-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--mdi-ink);
+  flex: 1;
+  margin-right: 16px;
+  line-height: 1.4;
+}
+.ap-item-arrow {
+  color: var(--mdi-orange);
+  font-size: 20px;
+  opacity: 0;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+.ap-item:hover .ap-item-arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+.ap-item-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.ap-item-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--mdi-muted);
+  background: #f8fafc;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.ap-item-date-icon {
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #87ceeb 0%, #4a90e2 100%);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: white;
+}
+.ap-item-desc {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+  /* LOGIN */
+
+  .login-header { text-align: center; margin-bottom: 32px; }
+  .login-logo-box {
+    display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px; height: 72px;
+  }
+  .login-logo-box img { max-height: 100%; object-fit: contain; }
+  .login-header-sub { color: #d4af37; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .login-header h2 { color: #f8fafc; font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  .login-header p { color: #94a3b8; font-size: 15px; margin: 0; }
+  
+  .login-card {
+    background: #1e293b; border: 1px solid #334155; padding: 40px;
+    border-radius: 16px; width: 100%; max-width: 420px; text-align: left;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1);
+  }
+  .login-label { display: block; color: #94a3b8; font-size: 12px; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+  .login-input {
+    width: 100%; padding: 14px; margin-bottom: 24px; border-radius: 8px;
+    background: #273549; border: 1px solid #334155;
+    color: #f8fafc; font-family: inherit; font-size: 15px; outline: none; transition: border-color 0.2s; box-sizing: border-box;
+  }
+  .login-input:focus { border-color: #d4af37; }
+  .login-input::placeholder { color: #64748b; }
+  .login-btn {
+    width: 100%; padding: 14px; background: linear-gradient(135deg, #3d3229 0%, #8b6f47 50%, #c8872f 100%); color: #0f172a;
+    border: none; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s;
+  }
+  .login-btn:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2); }
+
+/* TOPBAR */
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 32px; background: var(--card-bg);
+  border-bottom: 1px solid var(--mdi-border);
+  position: sticky; top: 0; z-index: 100;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-logo { background: var(--mdi-orange); padding: 4px 10px; border-radius: 6px; font-weight: 800; color: #fff; font-size: 12px; }
+.brand-name { font-weight: 700; color: var(--mdi-ink); font-size: 14px; }
+.brand-name span { color: var(--mdi-muted); font-weight: 400; margin-left: 6px; }
+.tb-badge { background: rgba(16, 185, 129, 0.1); color: var(--done); border: 1px solid rgba(16, 185, 129, 0.2); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+
+/* HEADER */
+.page-header { padding: 40px 32px; background: linear-gradient(135deg, #3d3229 0%, #8b6f47 50%, #c8872f 100%); color: #fff; border-bottom: none; }
+.header-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+.header-text h1 { font-size: 28px; color: #fff; margin-bottom: 8px; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+.header-text h1 em { color: #fff; font-style: normal; font-weight: 600; font-size: 22px; text-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+.header-text p { color: rgba(255,255,255,0.95); font-size: 14px; margin-top: 8px; font-weight: 500; text-shadow: 0 1px 5px rgba(0,0,0,0.2); line-height: 1.5; }
+.header-meta { display: flex; gap: 32px; }
+.hm { text-align: right; }
+.hm-val { font-size: 24px; font-weight: 800; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.hm-val.highlight { color: #34d399; }
+.hm-lbl { font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 0.5px; text-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+
+/* BODY */
+.body-wrap { max-width: 1200px; margin: 32px auto; padding: 0 32px; }
+.kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 32px; }
+.kpi { background: var(--card-bg); border: 1px solid var(--mdi-border); padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.kpi:hover { background: #f8fafc; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+.kpi.active-filter { border-color: var(--mdi-orange); box-shadow: 0 0 0 1px var(--mdi-orange), 0 4px 15px rgba(0,0,0,0.1); background: #fff5f0; }
+.kpi-lbl { font-size: 12px; font-weight: 700; color: var(--mdi-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-val { font-size: 32px; font-weight: 800; color: var(--mdi-ink); margin-bottom: 4px; }
+.kpi-val.highlight { color: var(--mdi-orange); }
+.kpi-val.done { color: var(--done); }
+.kpi-val.prog { color: var(--prog); }
+
+.kpi-total { border-top: 4px solid var(--mdi-ink); }
+.kpi-total .kpi-val { color: var(--mdi-ink); }
+.kpi-ap { border-top: 4px solid var(--mdi-orange); }
+.kpi-ap .kpi-val { color: var(--mdi-orange); }
+.kpi-done { border-top: 4px solid var(--done); }
+.kpi-done .kpi-val { color: var(--done); }
+.kpi-prog { border-top: 4px solid var(--prog); }
+.kpi-prog .kpi-val { color: var(--prog); }
+.kpi-tracking { border-top: 4px solid var(--mdi-navy-light); }
+.kpi-sub { font-size: 12px; color: var(--mdi-muted); }
+
+.progress-summary { margin-bottom: 32px; background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--mdi-border); }
+.ps-label { font-size: 12px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; margin-bottom: 12px; }
+.ps-bar { height: 16px; border-radius: 8px; background: #f1f5f9; display: flex; overflow: hidden; margin-bottom: 16px; }
+.ps-done-seg { background: var(--done); transition: width 0.5s; }
+.ps-prog-seg { background: var(--prog); transition: width 0.5s; }
+.ps-legend { display: flex; gap: 16px; }
+.ps-leg { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--mdi-muted); font-weight: 600; }
+.ps-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+.viewer-filterbar { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; background: var(--card-bg); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--mdi-border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.dept-dropdown { background: #f1f5f9; border: 1px solid var(--mdi-border); color: var(--mdi-ink); padding: 6px 12px; border-radius: 4px; outline: none; font-weight: 500; }
+.search-wrap input { background: #f1f5f9; border: 1px solid var(--mdi-border); color: var(--mdi-ink); padding: 6px 12px; border-radius: 4px; outline: none; width: 100%; font-weight: 500; }
+.search-wrap input:focus { border-color: var(--mdi-orange); background: #fff; }
+
+.table-card { background: var(--card-bg); border: 1px solid var(--mdi-border); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.table-head { padding: 16px 24px; border-bottom: 1px solid var(--mdi-border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+.th-title { font-weight: 700; color: var(--mdi-ink); display: flex; align-items: center; gap: 8px; }
+.th-dot { width: 8px; height: 8px; background: var(--mdi-orange); border-radius: 50%; }
+.th-count { font-size: 12px; color: var(--mdi-muted); font-weight: 600; }
+
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th { padding: 12px 24px; font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; border-bottom: 1px solid var(--mdi-border); background: #f8fafc; }
+td { padding: 16px 24px; border-bottom: 1px solid var(--mdi-border); vertical-align: top; }
+tr:hover td { background: #f8fafc; }
+
+.td-num { font-family: monospace; color: var(--mdi-muted); font-weight: 600; }
+.td-name { font-weight: 600; color: var(--mdi-ink); }
+.dept-tag { background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--mdi-muted); font-weight: 600; }
+.status-pill { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.s-done { background: rgba(16, 185, 129, 0.1); color: var(--done); }
+.s-prog { background: rgba(245, 158, 11, 0.1); color: var(--prog); }
+.expand-btn { background: none; border: none; color: var(--mdi-muted); font-size: 20px; cursor: pointer; transition: transform 0.2s; }
+.expand-btn.open { transform: rotate(90deg); color: var(--mdi-ink); }
+
+.detail-row { display: none; }
+.detail-row.open { display: table-row; }
+.detail-cell { background: #f8fafc; padding: 0 !important; border-bottom: 1px solid var(--mdi-border) !important; border-left: 3px solid var(--mdi-orange); }
+.detail-inner { padding: 24px; }
+
+.empty { text-align: center; padding: 48px; color: var(--mdi-muted); }
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+
+footer { text-align: center; padding: 24px; color: var(--mdi-muted); font-size: 12px; margin-top: 32px; border-top: 1px solid var(--mdi-border); }
+
+/* Interactive Hover Effects */
+/* Interactive Hover Effects */
+.logout-btn { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 16px; color: var(--mdi-muted); font-weight: 600; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.2s ease; }
+.logout-btn:hover { border-color: var(--mdi-orange); color: var(--mdi-orange); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(249,115,22,0.1); }
+
+.back-btn { transition: all 0.2s ease !important; }
+.back-btn:hover { background: #f8fafc !important; color: var(--mdi-orange) !important; border-color: var(--mdi-orange) !important; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 768px) {
+  /* LOGIN VIEW */
+  .login-card { padding: 24px; border-radius: 12px; }
+  .login-header h2 { font-size: 24px; }
+  .login-header p { font-size: 14px; }
+  
+  /* PROFILE VIEW */
+  .pv-header { padding: 16px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+  .pv-brand { display: contents; }
+  .pv-brand .menu-wrapper { justify-self: start; }
+  .pv-brand img { justify-self: center; }
+  .pv-header > div:last-child { justify-self: end; }
+  .pv-brand-text, #rv-header-brand-name { display: none; } /* Hide extra text to save space */
+  
+  .pv-container { margin: 16px auto; padding: 0 16px; }
+  .pc-body { padding: 0 24px 32px 24px; flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+  .profile-avatar { margin-top: -40px; width: 80px; height: 80px; font-size: 36px; border-width: 3px; }
+  .profile-info { margin-top: 0; }
+  .profile-info h1 { font-size: 20px; }
+  .ap-list { grid-template-columns: 1fr; }
+  .ap-item { padding: 16px; }
+  
+  /* TOPBAR (Dashboard) */
+  .topbar { padding: 12px 16px; flex-direction: row; justify-content: space-between; align-items: center; }
+  .topbar .brand-name span { display: none; } /* Hide | Viewer */
+  .topbar .tb-badge { display: none; } /* Hide Real-Time Sync badge to save space */
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  #batch-selector-container { display: none; } /* Hide batch selector in topbar on mobile if too cramped, but let's keep it stacked below if needed */
+  
+  /* PAGE HEADER */
+  .page-header { padding: 24px 16px; }
+  .header-inner { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .header-text h1 { font-size: 24px; }
+  .header-text h1 em { font-size: 18px; }
+  .header-meta { width: 100%; justify-content: space-between; gap: 12px; background: rgba(0,0,0,0.1); padding: 12px; border-radius: 12px; }
+  .hm { text-align: center; width: 50%; }
+  .hm-val { font-size: 22px; }
+  .hm-lbl { font-size: 10px; }
+  
+  /* BODY WRAP */
+  .body-wrap { padding: 0 12px; margin: 20px auto; }
+  
+  /* KPI ROW */
+  .kpi-row { grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .kpi { padding: 16px; border-radius: 12px; }
+  .kpi-val { font-size: 26px; }
+  .kpi-lbl { font-size: 10px; }
+  
+  /* PROGRESS SUMMARY */
+  .progress-summary { padding: 16px; margin-bottom: 24px; }
+  .ps-legend { flex-direction: column; gap: 8px; }
+  
+  /* FILTER BAR */
+  .viewer-filterbar { flex-direction: column; align-items: stretch; padding: 16px; gap: 12px; border-radius: 12px; }
+  .search-wrap { width: 100% !important; }
+  .dept-dropdown { width: 100%; }
+  
+  /* TABLE SCROLLING */
+  .table-card { border-radius: 12px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+  .table-head { padding: 16px; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+  table { min-width: 700px; }
+  th, td { padding: 12px 16px; }
+  
+  /* DARK BANNER */
+  .dark-banner { padding: 32px 16px; }
+  .db-inner { flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+  .db-header { justify-content: center; margin-bottom: 16px; }
+  .db-logo-box { width: 80px; height: 80px; font-size: 32px; border-radius: 16px; }
+  .db-title { font-size: 24px; margin-bottom: 12px; }
+  .db-desc { font-size: 14px; color: rgba(255,255,255,0.85); line-height: 1.6; margin-bottom: 24px; padding: 0 8px; }
+}
+/* ════════════════════════════════════════════════════ */
+/* RESPONSIVE BREAKPOINTS - TAMBAHAN CSS */
+/* ════════════════════════════════════════════════════ */
+
+/* TABLET (768px) */
+@media (max-width: 1024px) {
+  :root {
+    --padding-lg: 24px;  /* Dari 40px */
+    --padding-md: 16px;
+  }
+  
+  .sidebar {
+    width: 200px;  /* Dari 280px/260px */
+  }
+  
+  .main-content {
+    padding: 24px;  /* Dari 40px */
+  }
+  
+  .dashboard-container {
+    gap: 16px;  /* Dari 24px */
+  }
+  
+  .header-card {
+    padding: 20px;  /* Dari 32px */
+  }
+}
+
+/* MOBILE (768px ke bawah) */
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    max-width: 100%;
+    display: none;
+  }
+  
+  .main-content {
+    padding: 16px;
+    width: 100%;
+    max-height: 100vh;
+  }
+  
+  .dashboard-container {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  .header-card {
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .metrics-grid,
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  table {
+    font-size: 12px;
+  }
+  
+  table th,
+  table td {
+    padding: 8px 12px;
+  }
+  
+  button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 16px;
+  }
+}
+
+/* SMALL MOBILE (480px) */
+@media (max-width: 480px) {
+  .main-content {
+    padding: 12px;
+  }
+  
+  .header-card {
+    padding: 12px;
+  }
+  
+  .pv-header {
+    padding: 12px 16px;
+  }
+  
+  .header-card h1 {
+    font-size: 20px;
+  }
+  
+  .header-card p {
+    font-size: 13px;
+  }
+  
+  table {
+    font-size: 11px;
+  }
+  
+}
+
+/* ULTRA SMALL (< 375px) */
+@media (max-width: 375px) {
+  .main-content {
+    padding: 8px;
+  }
+  
+  .header-card {
+    padding: 8px;
+  }
+}
+
+/* ════════════════════════════════════════════════════ */
+/* TYPOGRAPHY & LAYOUT - TAMBAHAN CSS */
+/* ════════════════════════════════════════════════════ */
+
+.pv-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 32px;
+}
+
+@media (max-width: 768px) {
+  .pv-container {
+    max-width: 100%;
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pv-container {
+    max-width: 100%;
+    margin: 16px auto;
+    padding: 0 12px;
+  }
+}
+
+/* Add standardized type scale */
+h1 { font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
+h2 { font-size: 24px; font-weight: 600; line-height: 1.3; margin-bottom: 12px; }
+h3 { font-size: 20px; font-weight: 600; line-height: 1.4; margin-bottom: 12px; }
+.body-text { font-size: 14px; font-weight: 400; line-height: 1.6; }
+.body-small { font-size: 13px; font-weight: 400; line-height: 1.5; }
+.label { font-size: 12px; font-weight: 500; line-height: 1.4; }
+.caption { font-size: 11px; font-weight: 400; line-height: 1.3; color: #64748b; }
+
+/* EMBEDDED MODE */
+body.is-embedded .topbar { display: none !important; }
+body.is-embedded .page-header { border-radius: 12px; margin-top: 16px; margin-bottom: 16px; }
+body.is-embedded { background: transparent !important; }
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="db-config.js"></script>
+  <script src="db-sync.js"></script>
+</head>
+<body>
+
+  <style>
+    /* ===== PAGE TRANSITION SYSTEM ===== */
+    .page-view {
+      opacity: 1;
+      transition: opacity 0.22s ease-in-out;
+    }
+    .page-view.fading {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Global Tactile Click Animations for Instant Feedback */
+    button, .dd-item, .ap-item, .logout-btn, .menu-btn, .login-form-btn, .back-btn {
+      transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.15s, box-shadow 0.15s, opacity 0.15s !important;
+    }
+    button:active, .dd-item:active, .ap-item:active, .logout-btn:active, .menu-btn:active, .login-form-btn:active, .back-btn:active {
+      transform: scale(0.96) !important;
+    }
+
+    /* ===== LOADING OVERLAY ===== */
+    #page-loading-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #0f172a;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 20px;
+      z-index: 99999;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    #page-loading-overlay.show {
+      opacity: 1; pointer-events: auto;
+    }
+    .loading-logo {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #c8872f, #f97316);
+      display: flex; align-items: center; justify-content: center;
+      animation: loadingPulse 1.5s ease-in-out infinite;
+    }
+    .loading-spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(249,115,22,0.2);
+      border-top-color: #f97316;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .loading-text {
+      color: rgba(255,255,255,0.6);
+      font-size: 13px; font-weight: 500;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes loadingPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
+
+    /* ===== LOGIN PAGE - TRAVEL TEMPLATE REDESIGN ===== */
+    #login-view {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: url('background_gedung.jpg') no-repeat center center;
+      background-size: cover;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10%;
+      box-sizing: border-box;
+      z-index: 9999;
+      overflow: hidden;
+      transition: opacity 0.4s ease;
+    }
+
+    /* Dark overlay tint to make skyline background lower contrast and boost text readability */
+    #login-view::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(11, 22, 38, 0.45);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Left Info Panel */
+    .login-info-panel {
+      position: relative;
+      z-index: 10;
+      max-width: 500px;
+      color: #fff;
+      animation: lf-slidein 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+      text-align: left;
+    }
+    .login-info-logo {
+      height: 80px;
+      object-fit: contain;
+      display: block;
+      margin-bottom: 32px;
+      filter: drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.45));
+    }
+    .login-info-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      color: #fff;
+    }
+    .login-info-desc {
+      font-size: 15px;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+    .login-info-subdesc {
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    /* Right Glassmorphism Card */
+    .login-card-glass {
+      position: relative;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(24px) saturate(120%);
+      -webkit-backdrop-filter: blur(24px) saturate(120%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 28px;
+      padding: 52px 40px;
+      width: 430px;
+      max-width: calc(100vw - 32px);
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.4);
+      box-sizing: border-box;
+      animation: lf-slidein 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+    }
+    @keyframes lf-slidein {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Fields styled as solid white rounded boxes */
+    .lf-field-box {
+      margin-bottom: 22px;
+      text-align: left;
+    }
+    .lf-label-travel {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 8px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: 0.2px;
+    }
+    .lf-input-wrap-travel {
+      position: relative;
+      width: 100%;
+    }
+    .login-form-input-travel {
+      width: 100%;
+      padding: 13px 16px;
+      background: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      outline: none;
+      font-size: 14.5px;
+      color: #1e293b;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      box-sizing: border-box;
+      transition: all 0.2s;
+    }
+    .login-form-input-travel::placeholder {
+      color: #94a3b8;
+    }
+    .login-form-input-travel:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    }
+    
+    .lf-pin-toggle-travel {
+      position: absolute;
+      right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      cursor: pointer; color: #64748b;
+      padding: 4px; display: flex;
+      align-items: center; justify-content: center;
+      transition: color 0.2s;
+    }
+    .lf-pin-toggle-travel:hover {
+      color: #1e293b;
+    }
+
+    /* Remember me */
+    .lf-remember-travel {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: rgba(255, 255, 255, 0.75);
+      cursor: pointer;
+      margin-bottom: 28px;
+      user-select: none;
+    }
+    .lf-remember-travel input {
+      accent-color: #3b82f6;
+      cursor: pointer;
+      width: 15px; height: 15px;
+    }
+
+    /* Bright blue button */
+    .login-form-btn-travel {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #3b82f6;
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .login-form-btn-travel:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(59, 130, 246, 0.45);
+    }
+    .login-form-btn-travel:active {
+      transform: scale(0.96) !important;
+    }
+
+    /* Error */
+    .lf-error {
+      color: #f87171; font-size: 13px;
+      margin-top: 16px; text-align: center;
+      display: none;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px; padding: 10px 14px;
+    }
+
+    /* RIGHT PANEL visual elements */
+    .rp-content {
+      position: relative; z-index: 10;
+      text-align: center;
+      animation: lf-slidein 0.9s cubic-bezier(0.16,1,0.3,1) 0.2s both;
+    }
+    .rp-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(249,115,22,0.15);
+      border: 1px solid rgba(249,115,22,0.3);
+      color: #fb923c;
+      padding: 6px 16px; border-radius: 20px;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 32px;
+    }
+    .rp-title {
+      font-size: 56px; font-weight: 900;
+      color: #f8fafc;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 24px;
+    }
+    .rp-title span {
+      background: linear-gradient(135deg, #f97316, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .rp-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.8;
+      max-width: 420px;
+      margin: 0 auto 40px;
+    }
+    .rp-stats {
+      display: flex; gap: 20px;
+      justify-content: center;
+    }
+    .rp-stat {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 20px 28px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+    .rp-stat-val {
+      font-size: 28px; font-weight: 900;
+      color: #f97316;
+      margin-bottom: 4px;
+    /* Mobile */
+    @media(max-width: 480px) {
+      .login-card-glass {
+        padding: 32px 24px;
+      }
+    }
+
+    /* Mobile */
+    @media(max-width: 899px) {
+      #login-view { flex-direction: column; overflow-y: auto; }
+      .login-split-left {
+        width: 100%; min-height: 100vh;
+        padding: 60px 28px;
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+      }
+      .login-form-box { max-width: 100%; }
+    }
+  </style>
+
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMenu()"></div>
+  <div id="offcanvas-menu" class="sliding-sidebar">
+    <div class="sidebar-header">
+      <div id="sidebar-client-name" class="dd-client-name" style="margin:0; border:none; padding:0;">CLIENT NAME</div>
+      <button class="sidebar-close-btn" onclick="toggleMenu()" aria-label="Tutup Sidebar">✕</button>
+    </div>
+    <div class="sidebar-links">
+      <a class="dd-item" href="#" onclick="showProfileView(); toggleMenu(); return false;">📄 Action Plan</a>
+      <a class="dd-item" href="#" onclick="showReportView(); toggleMenu(); return false;">📊 Evaluasi & Training Report</a>
+    </div>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="handleLogout()" style="width:100%;">Logout</button>
+    </div>
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div id="page-loading-overlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:#0f172a; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:20px; z-index:99999; opacity:0; pointer-events:none; transition:opacity 0.25s ease;">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Memuat data...</div>
+  </div>
+
+  <div id="login-view">
+    <!-- LEFT PANEL: Info & branding -->
+    <div class="login-info-panel">
+      <img src="Asset 8-8.png" alt="MDI Logo" class="login-info-logo">
+      <h1 class="login-info-title">Evaluate<br>Performance.</h1>
+      <p class="login-info-desc">Modern Learning Solution portal to track evaluations, align post-training action plans, and accelerate employee performance.</p>
+      <p class="login-info-subdesc">Elevate organizational competency with seamless digital tracking and real-time development insights.</p>
+    </div>
+
+    <!-- RIGHT PANEL: Glassmorphism Card -->
+    <div class="login-card-glass">
+      <!-- Close icon decorative standard to match reference image -->
+      <div style="position:absolute; top:20px; right:20px; color:rgba(255,255,255,0.4); font-size:18px; cursor:pointer;" onclick="console.log('Close decorative clicked')">✕</div>
+
+      <h2 style="font-family:'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; text-align: left; color: #fff; margin: 0 0 32px; letter-spacing: -0.5px;">Sign In</h2>
+
+      <!-- Username Field -->
+      <div class="lf-field-box">
+        <label class="lf-label-travel">Nama Perusahaan</label>
+        <div class="lf-input-wrap-travel">
+          <input type="text" id="login-username" class="login-form-input-travel" placeholder="contoh: PT Maju Bersama" oninput="document.getElementById('login-error').style.display='none'">
+        </div>
+      </div>
+
+      <!-- PIN Field -->
+      <div class="lf-field-box">
+        <label class="lf-label-travel">PIN Akses</label>
+        <div class="lf-input-wrap-travel">
+          <input type="password" id="login-pin" class="login-form-input-travel" placeholder="Masukkan PIN Akses" maxlength="10" oninput="document.getElementById('login-error').style.display='none'" onkeypress="if(event.key==='Enter') attemptLogin()">
+          <button type="button" class="lf-pin-toggle-travel" onclick="togglePin()">
+            <svg id="eye-icon-show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" style="width:18px;height:18px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+            <svg id="eye-icon-hide" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" style="width:18px;height:18px;display:none;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Remember me -->
+      <label class="lf-remember-travel">
+        <input type="checkbox" id="login-remember"> Remember me
+      </label>
+
+      <!-- Submit button -->
+      <button onclick="attemptLogin()" class="login-form-btn login-form-btn-travel">Masuk ke Portal</button>
+
+      <div id="login-error" class="lf-error">PIN salah atau perusahaan tidak ditemukan.</div>
+    </div>
+  </div>
+  
+  <div id="profile-view" style="display:none;">
+    <div class="pv-header">
+      <div class="pv-brand">
+        <div class="menu-wrapper">
+          <button class="menu-btn" onclick="toggleMenu()"><span>≡</span> Menu</button>
+        </div>
+        <img src="Asset%207-0.png" alt="MDI Logo" style="height: 32px; object-fit: contain;">
+        <div class="pv-brand-text" id="pv-header-brand-name"><span>| Client Portal</span></div>
+      </div>
+      <div>
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+    
+    <!-- FULL WIDTH HERO BANNER -->
+    <div class="dark-banner">
+      <div class="db-inner">
+        <div class="db-logo-box" id="pv-client-logo-box">
+          🏢
+        </div>
+        <div class="db-content">
+          <div class="db-header">
+            <div class="db-badge">Client Portal</div>
+            <div class="db-date" id="db-date-display"></div>
+          </div>
+          <div class="db-title"><span id="pv-greeting" style="color: #fff;">Selamat Siang,</span><br><span id="pv-client-name">(Nama Client)</span></div>
+          <p class="db-desc">Selamat datang di portal pemantauan program Action Plan. Berikut ringkasan progress seluruh program Anda.</p>
+          <div class="db-stats">
+            <div class="db-stat-inline">
+              📅 Total Program: <span id="pv-total-ap-badge">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="pv-container">
+      
+      <div class="ap-list-header">
+        <span>Action Plan</span>
+      </div>
+      <div class="ap-list" id="pv-ap-list">
+        <!-- filled dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORT VIEW -->
+  <div id="report-view" style="display:none;">
+    <div class="pv-header">
+      <div class="pv-brand">
+        <div class="menu-wrapper">
+          <button class="menu-btn" onclick="toggleMenu()"><span>≡</span> Menu</button>
+        </div>
+        <img src="Asset%207-0.png" alt="MDI Logo" style="height: 32px; object-fit: contain;">
+        <span id="rv-header-brand-name"></span>
+      </div>
+      <div class="pv-actions">
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+    
+    <!-- FULL WIDTH HERO BANNER -->
+    <div class="dark-banner">
+      <div class="db-inner">
+        <div class="db-logo-box" id="rv-client-logo-box">
+          🏢
+        </div>
+        <div class="db-content">
+          <div class="db-header">
+            <div class="db-badge">Client Portal</div>
+            <div class="db-date" id="rv-date-display"></div>
+          </div>
+          <div class="db-title"><span id="rv-greeting" style="color: #fff;">Selamat Siang,</span><br><span id="rv-client-name">(Nama Client)</span></div>
+          <p class="db-desc">Selamat datang di modul Laporan Pelatihan. Di sini Anda dapat meninjau seluruh laporan hasil evaluasi dan program training Anda.</p>
+          <div class="db-stats">
+            <div class="db-stat-inline">
+              📊 Total Training Report: <span id="rv-total-reports-badge">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="pv-container">
+      <div class="ap-list-header">
+        <span>Daftar Laporan Pelatihan</span>
+      </div>
+      <div class="ap-list" id="rv-reports-list">
+        <!-- Reports rendered here -->
+      </div>
+    </div>
+  </div>
+
+<div id="dashboard-view" style="display:none;">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="brand">
+        <img src="Asset%207-0.png" alt="MDI Logo" style="height: 28px; object-fit: contain; margin-right: 8px;">
+        <div class="brand-name" id="viewer-brand-name">
+          Client Portal
+        </div>
+      </div>
+      <div class="topbar-right" style="display: flex; align-items: center; gap: 16px;">
+        <button id="back-btn" class="back-btn" onclick="goBackToProfile()" style="display:none; background: #fff; border: 1px solid var(--mdi-border); color: var(--mdi-text); border-radius: 6px; padding: 6px 12px; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; outline: none; align-items: center; justify-content: center; transition: background 0.2s;">&larr; Kembali</button>
+        <div id="batch-selector-container" style="display: none; align-items: center; gap: 8px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; letter-spacing: 0.8px;">Program / Batch:</span>
+          <select id="batch-select" onchange="changeBatch(this.value)" style="background: #fff; border: 1px solid var(--mdi-border); color: #fff; border-radius: 6px; padding: 6px 12px; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; outline: none; transition: border-color 0.2s;">
+            <!-- filled dynamically with forms that have participants for this client -->
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="header-inner">
+        <div class="header-text">
+          <h1 id="gf-view-title">-</h1>
+          <p id="gf-view-desc">-</p>
+          <div id="gf-view-training-date" style="font-size: 13px; margin-top: 10px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 4px; display: inline-block;"></div>
+        </div>
+        <div class="header-meta">
+          <div class="hm">
+            <div class="hm-val" id="hdr-total">-</div>
+            <div class="hm-lbl">Total Participants</div>
+          </div>
+          <div class="hm">
+            <div class="hm-val highlight" id="hdr-done-pct">-%</div>
+            <div class="hm-lbl">Completed</div>
+          </div>
+          <div class="hm">
+            <div class="hm-val" id="hdr-review">30</div>
+            <div class="hm-lbl">Days Review</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="body-wrap">
+      <!-- Executive KPIs -->
+      <div class="kpi-row">
+        <div class="kpi kpi-total active-filter" onclick="filterStatus('ALL')">
+          <div class="kpi-lbl">Total Participants</div>
+          <div class="kpi-val" id="k-total">-</div>
+          <div class="kpi-sub">Participants</div>
+        </div>
+        <div class="kpi kpi-ap">
+          <div class="kpi-lbl">ACTION PLANS</div>
+          <div class="kpi-val" id="k-ap">-</div>
+          <div class="kpi-sub" id="k-ap-avg">3 per participant</div>
+        </div>
+        <div class="kpi kpi-done" onclick="filterStatus('done')">
+          <div class="kpi-lbl">Completed (Selesai)</div>
+          <div class="kpi-val" id="k-done">-</div>
+          <div class="kpi-sub" id="k-done-pct">-% of batch</div>
+        </div>
+        <div class="kpi kpi-prog" onclick="filterStatus('prog')">
+          <div class="kpi-lbl">In Progress</div>
+          <div class="kpi-val" id="k-prog">-</div>
+          <div class="kpi-sub" id="k-prog-pct">-% of batch</div>
+        </div>
+        <div class="kpi kpi-tracking" style="padding:12px;">
+          <div class="kpi-lbl">Tracking</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="flex-shrink:0;">
+              <div id="kpi-donut" style="margin-top:8px; width:48px; height:48px; border-radius:50%; background: conic-gradient(var(--done) 0% 0%, var(--prog) 0% 100%); display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                 <div id="kpi-donut-text" style="width:34px; height:34px; border-radius:50%; background:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; color:var(--mdi-navy);">0%</div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top: 14px;">
+              <div style="display:flex; align-items:flex-start; gap:4px;">
+                <span style="color:var(--prog); font-size:12px; margin-top:-2px;">●</span>
+                <div>
+                  <div style="font-size:10px; color:var(--mdi-muted); font-weight:600; line-height:1;">In Progress</div>
+                  <div id="kpi-prog-lbl" style="font-size:11px; font-weight:700; color:var(--mdi-navy); line-height:1; margin-top:2px;">0 (0%)</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:flex-start; gap:4px;">
+                <span style="color:var(--done); font-size:12px; margin-top:-2px;">●</span>
+                <div>
+                  <div style="font-size:10px; color:var(--mdi-muted); font-weight:600; line-height:1;">Completed</div>
+                  <div id="kpi-done-lbl" style="font-size:11px; font-weight:700; color:var(--mdi-navy); line-height:1; margin-top:2px;">0 (0%)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overall Progress Bar -->
+      <div class="progress-summary">
+        <div class="ps-label">Batch Accomplishment</div>
+        <div class="ps-bar">
+          <div class="ps-seg ps-done-seg" id="bar-done" style="width: 0%"></div>
+          <div class="ps-seg ps-prog-seg" id="bar-prog" style="width: 0%"></div>
+        </div>
+        <div class="ps-legend">
+          <div class="ps-leg">
+            <div class="ps-dot" style="background: var(--done)"></div>
+            <span id="leg-done">-% Completed</span>
+          </div>
+          <div class="ps-leg">
+            <div class="ps-dot" style="background: var(--prog)"></div>
+            <span id="leg-prog">-% In Progress</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter & Search table -->
+      <div class="viewer-filterbar" style="display: flex; align-items: center; gap: 16px;">
+        <div style="font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0;">
+          🔎 Search Participant Records
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; letter-spacing: 1px;">Dept</span>
+          <select id="deptSelect" class="dept-dropdown" onchange="filterDept(this.value)">
+            <option value="ALL">All Departments</option>
+          </select>
+        </div>
+        <div class="search-wrap" style="flex: unset; width: 240px;">
+          <input
+            type="text"
+            placeholder="Type name..."
+            oninput="doSearch(this.value)"
+          />
+        </div>
+      </div>
+
+      <!-- Locked Table -->
+      <div class="table-card">
+        <div class="table-head">
+          <div class="th-title">
+            <span class="th-dot"></span>Executive Participant Tracking Database
+          </div>
+          <div class="th-count" id="table-showing-count">Showing 0 of 0</div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 44px">#</th>
+                <th>Participant Name</th>
+                <th>Department</th>
+                <th>Action Plan (Commitment)</th>
+                <th style="text-align:center;">Status</th>
+                <th>Updates & Notes</th>
+                <th>Challenge</th>
+                <th style="width: 36px"></th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="emptyState" style="display: none">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-text">No matching records found.</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div>
+        <em>MDI TACK Indonesia</em> &nbsp;·&nbsp; Action Plan Executive Viewer Portal
+      </div>
+      <div style="margin-top:4px;">Confidential – Live Data Sync Active</div>
+    </footer>
+
+    <script>
+      // ── STATE VARIABLES ──
+      let formId = null;
+      let loggedInClient = null;
+      let REPORTS_DB = [];
+      let searchTerm = "";
+      let activeStatus = "ALL";
+      let activeDept = "ALL";
+      let PARTICIPANTS = [];
+      let FORM_CONFIG = {};
+      let PARTICIPANTS_STAGE1 = [];
+
+      function toggleMenu() {
+        const menu = document.getElementById("offcanvas-menu");
+        const overlay = document.getElementById("sidebar-overlay");
+        if(menu) menu.classList.toggle('open');
+        if(overlay) overlay.classList.toggle('open');
+      }
+
+      function showProfileView() {
+        document.getElementById("report-view").style.display = "none";
+        document.getElementById("profile-view").style.display = "block";
+        sessionStorage.setItem("mdi_cp_activeView", "profile");
+      }
+      function showReportView() {
+        document.getElementById("profile-view").style.display = "none";
+        document.getElementById("report-view").style.display = "block";
+        renderReportView();
+        sessionStorage.setItem("mdi_cp_activeView", "report");
+      }
+
+      function loadAndMergeParticipants() {
+        const cachedS1 = localStorage.getItem(`mdi_participants_${formId}`);
+        PARTICIPANTS_STAGE1 = cachedS1 ? JSON.parse(cachedS1) : [];
+
+        const merged = [];
+        let index = 1;
+
+        PARTICIPANTS_STAGE1.forEach(p1 => {
+          if (!loggedInClient) return; // Block data if not logged in
+          
+          merged.push({
+            no: index++,
+            name: p1.name,
+            dept: p1.dept,
+            grade: p1.grade,
+            status: p1.status || "none",
+            submitDate: p1.submitDate || "",
+            answers: p1.answers || {},
+            s2Status: p1.s2Status || "",
+            s2Update: (p1.answers && p1.answers['q_notes']) ? p1.answers['q_notes'] : (p1.s2Update || ""),
+            s2Challenge: (p1.answers && p1.answers['q_challenge']) ? p1.answers['q_challenge'] : (p1.s2Challenge || ""),
+            clientCompany: p1.clientCompany || null,
+            picNoStage1: p1.no
+          });
+        });
+
+        PARTICIPANTS = merged;
+      }
+
+      function rebuildDeptFilters() {
+        const depts = [...new Set(PARTICIPANTS.map(p => p.dept))].sort();
+        const select = document.getElementById("deptSelect");
+        if (!select) return;
+        const currentVal = select.value || "ALL";
+        select.innerHTML = '<option value="ALL">All Departments</option>';
+        depts.forEach(d => {
+          if (!d) return;
+          const opt = document.createElement("option");
+          opt.value = d;
+          opt.textContent = d;
+          if (d === currentVal) opt.selected = true;
+          select.appendChild(opt);
+        });
+      }
+
+      function getActualStatus(p) {
+        if (p.status === "done" || (p.s2Status && p.s2Status.toLowerCase().includes("selesai")) || (p.s2Status && p.s2Status.toLowerCase().includes("completed"))) return "done";
+        return "prog";
+      }
+
+      function getActionPlans(p) {
+        if (!p.answers) return [];
+        const plans = [];
+        if (typeof FORM_CONFIG !== 'undefined' && FORM_CONFIG && FORM_CONFIG.fields) {
+          FORM_CONFIG.fields.forEach(f => {
+            if (f.id.startsWith("q_custom_")) {
+              const lbl = f.label.toLowerCase();
+              if (lbl.includes("rencana tindakan") || lbl.includes("action plan") || lbl.includes("commitment action") || lbl.includes("komitmen") || lbl.includes("tindakan")) {
+                if (lbl.includes("kapan") || lbl.includes("waktu") || lbl.includes("tanggal") || lbl.includes("date") || lbl.includes("when") || lbl.includes("status") || lbl.includes("penyelesaian") || lbl.includes("progress")) {
+                  return; // skip this column
+                }
+                const ans = p.answers[f.id];
+                if (ans && String(ans).trim() !== "" && ans !== "-") {
+                  let splitted = String(ans).split(/\n|;|,|\d+[\.\)]\s*|\.|\-\s+/).map(s => s ? s.trim().replace(/^[\-\•\*]\s*/, '') : '').filter(s => s.length > 2 && s.toLowerCase() !== "null");
+                  if (splitted.length > 0) plans.push(...splitted);
+                  else plans.push(ans);
+                }
+              }
+            } else if (f.id.startsWith("q_action")) {
+              const ans = p.answers[f.id];
+              if (ans && String(ans).trim() !== "" && ans !== "-") {
+                let splitted = String(ans).split(/\n|;|,|\d+[\.\)]\s*|\.|\-\s+/).map(s => s ? s.trim().replace(/^[\-\•\*]\s*/, '') : '').filter(s => s.length > 2 && s.toLowerCase() !== "null");
+                if (splitted.length > 0) plans.push(...splitted);
+                else plans.push(ans);
+              }
+            }
+          });
+        }
+        return plans;
+      }
+
+      // ── INIT ──
+      let CLIENTS = [];
+
+      function populateBatchSelector() {
+        const batchSelect = document.getElementById("batch-select");
+        const container = document.getElementById("batch-selector-container");
+        if (!batchSelect || !container) return;
+        
+        batchSelect.innerHTML = "";
+        
+        const cachedForms = localStorage.getItem("mdi_forms");
+        let formsList = [];
+        if (cachedForms) {
+          try { formsList = JSON.parse(cachedForms); } catch (e) { formsList = []; }
+        }
+        
+        const clientForms = formsList.filter(f => f && f.client && f.client.toLowerCase() === loggedInClient.name.toLowerCase());
+        
+        if (clientForms.length > 0) {
+          clientForms.forEach(form => {
+            const opt = document.createElement("option");
+            opt.value = form.id;
+            opt.textContent = form.title;
+            if (form.id === formId) {
+              opt.selected = true;
+            }
+            batchSelect.appendChild(opt);
+          });
+          
+          container.style.display = "flex";
+          
+          const hasCurrentForm = clientForms.some(f => f.id === formId);
+          if (!hasCurrentForm) {
+            formId = clientForms[0].id;
+            FORM_CONFIG = clientForms[0];
+            batchSelect.value = formId;
+          }
+        } else {
+          const opt = document.createElement("option");
+          opt.value = formId;
+          opt.textContent = FORM_CONFIG ? FORM_CONFIG.title : "Default Batch";
+          batchSelect.appendChild(opt);
+          container.style.display = "flex";
+        }
+      }
+
+      function changeBatch(newFormId) {
+        formId = newFormId;
+        const cachedForms = localStorage.getItem("mdi_forms");
+        let formsList = [];
+        if (cachedForms) {
+          try { formsList = JSON.parse(cachedForms); } catch (e) { formsList = []; }
+        }
+        const selectedForm = formsList.find(f => f.id === formId);
+        if (selectedForm) { FORM_CONFIG = selectedForm; }
+        
+        document.getElementById("viewer-brand-name").innerHTML = `<span style="font-weight:700;">${loggedInClient.name}</span>`;
+        
+        loadAndMergeParticipants();
+        rebuildDeptFilters();
+        renderAll();
+      }
+
+      function initLogin() {
+        const c = localStorage.getItem("mdi_clients");
+        CLIENTS = c ? JSON.parse(c) : [];
+      }
+
+      function renderProfile() {
+        document.getElementById("pv-client-name").textContent = loggedInClient.name;
+        document.getElementById("rv-client-name").textContent = loggedInClient.name;
+        document.getElementById("pv-header-brand-name").innerHTML = `<span style="font-weight:700; margin-left: 8px;">| ${loggedInClient.name}</span>`;
+        document.getElementById("rv-header-brand-name").innerHTML = `<span style="font-weight:700; margin-left: 8px;">| ${loggedInClient.name}</span>`;
+        
+        const mcn = document.getElementById("sidebar-client-name");
+        if(mcn) mcn.textContent = loggedInClient.name;
+        
+        // Load reports DB
+        const savedReports = localStorage.getItem("mdi_training_reports");
+        if (savedReports) {
+          try { REPORTS_DB = JSON.parse(savedReports); } catch(e) { REPORTS_DB = []; }
+        }
+        
+        // Render logo
+        const logoBox = document.getElementById("pv-client-logo-box");
+        const rvLogoBox = document.getElementById("rv-client-logo-box");
+        if (loggedInClient.logo && loggedInClient.logo.trim() !== '') {
+          logoBox.innerHTML = `<img src="${loggedInClient.logo}" alt="Logo ${loggedInClient.name}">`;
+          if(rvLogoBox) rvLogoBox.innerHTML = `<img src="${loggedInClient.logo}" alt="Logo ${loggedInClient.name}">`;
+        } else {
+          logoBox.innerHTML = `🏢`;
+          if(rvLogoBox) rvLogoBox.innerHTML = `🏢`;
+        }
+        
+        const cachedForms = localStorage.getItem("mdi_forms");
+        let formsList = [];
+        if (cachedForms) {
+          try { formsList = JSON.parse(cachedForms); } catch (e) { formsList = []; }
+        }
+        
+        const clientForms = formsList.filter(f => f && f.client && f.client.toLowerCase() === loggedInClient.name.toLowerCase());
+        const listContainer = document.getElementById("pv-ap-list");
+        
+        document.getElementById("pv-total-ap-badge").textContent = clientForms.length;
+        
+        // Update date display and greeting
+        const now = new Date();
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById("db-date-display").textContent = now.toLocaleDateString('id-ID', dateOptions);
+        document.getElementById("rv-date-display").textContent = now.toLocaleDateString('id-ID', dateOptions);
+        
+        const hour = now.getHours();
+        let greetingText = "Selamat Pagi,";
+        if (hour >= 11 && hour <= 14) greetingText = "Selamat Siang,";
+        else if (hour > 14 && hour <= 18) greetingText = "Selamat Sore,";
+        else if (hour > 18) greetingText = "Selamat Malam,";
+        
+        document.getElementById("pv-greeting").textContent = greetingText;
+        document.getElementById("rv-greeting").textContent = greetingText;
+        
+        if (clientForms.length === 0) {
+          listContainer.innerHTML = '<div style="padding:32px; text-align:center; background:#fff; border-radius:12px; border:1px solid var(--mdi-border); color:var(--mdi-muted);">Belum ada Action Plan yang ditugaskan untuk perusahaan Anda.</div>';
+          return;
+        }
+        
+        listContainer.innerHTML = clientForms.map(form => `
+          <div class="ap-item" onclick="openDashboard('${form.id}')">
+            <div class="ap-item-header">
+              <div class="ap-item-title">${form.title}</div>
+              <div class="ap-item-arrow">→</div>
+            </div>
+            <div class="ap-item-meta">
+              ${form.trainingDate ? `
+              <div class="ap-item-date">
+                <div class="ap-item-date-icon">📅</div>
+                ${form.trainingDate}
+              </div>` : ''}
+            </div>
+            <div class="ap-item-desc">Klik untuk melihat detail & metrik progress</div>
+          </div>
+        `).join("");
+      }
+
+      function openDashboard(targetFormId) {
+        document.getElementById("profile-view").style.display = "none";
+        document.getElementById("dashboard-view").style.display = "block";
+        document.getElementById("back-btn").style.display = "flex";
+        document.getElementById("batch-selector-container").style.display = "none";
+        
+        sessionStorage.setItem("mdi_cp_activeView", "dashboard");
+        sessionStorage.setItem("mdi_cp_activeFormId", targetFormId);
+        
+        changeBatch(targetFormId);
+        
+        history.pushState({ view: 'dashboard' }, "", "#dashboard");
+      }
+
+      function goBackToProfile() {
+        if (history.state && history.state.view === 'dashboard') {
+          history.back();
+        } else {
+          showProfileView();
+        }
+      }
+      
+      function showProfileView() {
+        document.getElementById("dashboard-view").style.display = "none";
+        document.getElementById("report-view").style.display = "none";
+        document.getElementById("profile-view").style.display = "block";
+        sessionStorage.setItem("mdi_cp_activeView", "profile");
+      }
+      
+      window.addEventListener("popstate", (event) => {
+        if (loggedInClient) {
+          showProfileView();
+        }
+      });
+
+      function attemptLogin() {
+        const clientName = document.getElementById("login-username").value.trim();
+        const pin = document.getElementById("login-pin").value;
+        const rememberMe = document.getElementById("login-remember").checked;
+        const err = document.getElementById("login-error");
+        const btn = document.querySelector('.login-form-btn');
+        
+        if(!clientName || !pin) {
+          err.textContent = "Silakan masukkan Nama Perusahaan dan PIN.";
+          err.style.display = "block";
+          return;
+        }
+        
+        const targetClient = CLIENTS.find(c => c.name.toLowerCase() === clientName.toLowerCase());
+        if(targetClient && targetClient.pin === pin) {
+          if(rememberMe) {
+            localStorage.setItem("mdi_client_saved", JSON.stringify({ name: targetClient.name, pin: targetClient.pin }));
+          } else {
+            localStorage.removeItem("mdi_client_saved");
+          }
+          
+          loggedInClient = targetClient;
+          sessionStorage.setItem("mdi_cp_loggedInClient", loggedInClient.name);
+
+          // Show loading overlay, then fade transition
+          btn.textContent = 'Memuat...';
+          btn.disabled = true;
+          const overlay = document.getElementById('page-loading-overlay');
+          overlay.classList.add('show');
+
+          setTimeout(() => {
+            document.getElementById("login-view").style.display = "none";
+            document.getElementById("profile-view").style.display = "block";
+            sessionStorage.setItem("mdi_cp_activeView", "profile");
+            renderProfile();
+            overlay.classList.remove('show');
+          }, 350);
+
+        } else {
+          err.textContent = "Nama perusahaan tidak ditemukan atau PIN salah. Silakan coba lagi.";
+          err.style.display = "block";
+        }
+      }
+
+      function togglePin() {
+        const pinInput = document.getElementById("login-pin");
+        const iconShow = document.getElementById("eye-icon-show");
+        const iconHide = document.getElementById("eye-icon-hide");
+        if (pinInput.type === "password") {
+          pinInput.type = "text";
+          iconShow.style.display = "none";
+          iconHide.style.display = "block";
+        } else {
+          pinInput.type = "password";
+          iconShow.style.display = "block";
+          iconHide.style.display = "none";
+        }
+      }
+
+      function handleLogout() {
+        sessionStorage.removeItem("mdi_cp_loggedInClient");
+        sessionStorage.removeItem("mdi_cp_activeView");
+        sessionStorage.removeItem("mdi_cp_activeFormId");
+        location.reload();
+      }
+
+      function renderReportView() {
+        if (!loggedInClient) return;
+        sessionStorage.setItem("mdi_cp_activeView", "report");
+        
+        const clientReports = REPORTS_DB.filter(r => r && r.clientName && r.clientName.toLowerCase() === loggedInClient.name.toLowerCase());
+        
+        document.getElementById("rv-total-reports-badge").textContent = clientReports.length;
+        
+        const listContainer = document.getElementById("rv-reports-list");
+        listContainer.innerHTML = "";
+        
+        if (clientReports.length === 0) {
+          listContainer.innerHTML = '<div style="padding:32px; text-align:center; background:#fff; border-radius:12px; border:1px solid var(--mdi-border); color:var(--mdi-muted);">Belum ada Evaluasi & Training Report untuk perusahaan Anda.</div>';
+          return;
+        }
+        
+        clientReports.forEach(report => {
+          const card = document.createElement("div");
+          card.className = "ap-item";
+          card.innerHTML = `
+            <div class="ap-item-header">
+              <div class="ap-item-title">📄 ${report.filename}</div>
+            </div>
+            <div class="ap-item-meta">
+              <div class="ap-item-date">
+                <div class="ap-item-date-icon">📅</div>
+                ${report.date}
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+              <button style="border:1px solid var(--mdi-orange); background:transparent; color:var(--mdi-orange); padding:6px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition: 0.2s;" onclick="reviewReportPdf('${report.id}')" onmouseover="this.style.background='rgba(249,115,22,0.1)'" onmouseout="this.style.background='transparent'">Preview</button>
+              <button style="border:none; background:var(--mdi-orange); color:#fff; padding:6px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition: 0.2s;" onclick="downloadReportPdf('${report.id}')" onmouseover="this.style.background='var(--mdi-orange-hover)'" onmouseout="this.style.background='var(--mdi-orange)'">Download</button>
+            </div>
+          `;
+          listContainer.appendChild(card);
+        });
+      }
+      
+      function downloadReportPdf(reportId) {
+        const report = REPORTS_DB.find(r => r.id === reportId);
+        if(!report) return;
+        
+        let url = report.pdfUrl || report.pdfData;
+        if (!url) return;
+        
+        // Force download behavior using Supabase's built-in download parameter if it's a URL
+        if (url.startsWith('http')) {
+          const sep = url.includes('?') ? '&' : '?';
+          url = url + sep + 'download=';
+        }
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = report.filename || 'Laporan_Training.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      
+      function reviewReportPdf(reportId) {
+        const report = REPORTS_DB.find(r => r.id === reportId);
+        if(!report) return;
+        if(report.pdfUrl) {
+          window.open(report.pdfUrl, '_blank');
+        } else if(report.pdfData) {
+          const win = window.open();
+          win.document.write(`<iframe src="${report.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%; position:absolute;" allowfullscreen></iframe>`);
+        }
+      }
+
+      function init() {
+        const cachedForms = localStorage.getItem("mdi_forms");
+        let forms = [];
+        if (cachedForms && cachedForms !== '[]') {
+          try { forms = JSON.parse(cachedForms); } catch (e) { forms = JSON.parse(cachedForms) || []; }
+        }
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        formId = urlParams.get('formId') || 'form_bayan';
+
+        let currentForm = forms.find(f => f.id === formId);
+        if (!currentForm && forms.length > 0) {
+          currentForm = forms[0];
+          formId = currentForm.id;
+        }
+        FORM_CONFIG = currentForm;
+        
+        document.getElementById("viewer-brand-name").innerHTML = `${FORM_CONFIG ? FORM_CONFIG.title : 'Portal'}`;
+        initLogin();
+
+        // Admin bypass logic
+        const bypass = urlParams.get('bypass');
+        const bypassClient = urlParams.get('client');
+        if (bypass === 'true') {
+          if (bypassClient && bypassClient !== 'null' && bypassClient !== '') {
+            const targetClient = CLIENTS.find(c => c.name.toLowerCase() === bypassClient.toLowerCase());
+            if (targetClient) {
+              loggedInClient = targetClient;
+            }
+          }
+          
+          if (!loggedInClient) {
+            loggedInClient = { name: "Admin (Viewer)", pin: "0000" };
+          }
+
+          document.getElementById("login-view").style.display = "none";
+          document.getElementById("dashboard-view").style.display = "block";
+          document.getElementById("back-btn").style.display = "none"; // No back button for bypass
+          document.getElementById("batch-selector-container").style.display = "flex";
+          
+          document.getElementById("viewer-brand-name").innerHTML = `<span style="font-weight:700;">${loggedInClient.name}</span>`;
+          
+          populateBatchSelector();
+          loadAndMergeParticipants();
+          rebuildDeptFilters();
+          renderAll();
+          return;
+        }
+      }
+
+      function renderAll() {
+        rebuildDeptFilters();
+        
+        if (FORM_CONFIG) {
+          document.getElementById("gf-view-title").innerHTML = FORM_CONFIG.title.replace(" - ", "<br><em>") + "</em>";
+          document.getElementById("viewer-brand-name").innerHTML = `${FORM_CONFIG.title}`;
+          document.getElementById("gf-view-desc").textContent = FORM_CONFIG.desc;
+          const tDateEl = document.getElementById("gf-view-training-date");
+          if (FORM_CONFIG.trainingDate) {
+            tDateEl.innerHTML = `📅 Tanggal Pelatihan: ${FORM_CONFIG.trainingDate}`;
+            tDateEl.style.display = "inline-block";
+          } else {
+            tDateEl.style.display = "none";
+          }
+        } else {
+          document.getElementById("gf-view-title").innerHTML = "Action Plan Dashboard";
+          document.getElementById("viewer-brand-name").innerHTML = `MDI TACK Indonesia`;
+          document.getElementById("gf-view-desc").textContent = "Tidak ada konfigurasi formulir.";
+          document.getElementById("gf-view-training-date").style.display = "none";
+        }
+
+        if (PARTICIPANTS.length === 0) {
+          document.getElementById("hdr-total").textContent = "0";
+          document.getElementById("hdr-done-pct").textContent = "0%";
+          document.getElementById("k-total").textContent = "0";
+          document.getElementById("k-ap").textContent = "0";
+          document.getElementById("k-ap-avg").textContent = "3 per participant";
+          document.getElementById("k-done").textContent = "0";
+          document.getElementById("k-done-pct").textContent = "0% of batch";
+          document.getElementById("k-prog").textContent = "0";
+          document.getElementById("k-prog-pct").textContent = "0% of batch";
+          document.getElementById("bar-done").style.width = "0%";
+          document.getElementById("bar-prog").style.width = "0%";
+          document.getElementById("leg-done").textContent = "0% Completed";
+          document.getElementById("leg-prog").textContent = "0% In Progress";
+          document.getElementById("tableBody").innerHTML = "";
+          document.getElementById("emptyState").style.display = "block";
+          return;
+        }
+
+        const total = PARTICIPANTS.length;
+        const done = PARTICIPANTS.filter(p => getActualStatus(p) === "done").length;
+        const donePctRaw = total > 0 ? Math.round((done / total) * 100) : 0;
+        const prog = PARTICIPANTS.filter(p => getActualStatus(p) === "prog").length;
+        const donePct = ((done / total) * 100).toFixed(0);
+        const progPct = ((prog / total) * 100).toFixed(0);
+
+        document.getElementById("hdr-total").textContent = total;
+        document.getElementById("hdr-done-pct").textContent = donePctRaw + "%";
+        document.getElementById("k-total").textContent = total;
+        document.getElementById("k-done").textContent = done;
+        document.getElementById("k-done-pct").textContent = donePct + "% of batch";
+        document.getElementById("k-prog").textContent = prog;
+        document.getElementById("k-prog-pct").textContent = progPct + "% of batch";
+        document.getElementById("bar-done").style.width = donePct + "%";
+        document.getElementById("bar-prog").style.width = progPct + "%";
+        document.getElementById("leg-done").textContent = donePct + "% Completed";
+        document.getElementById("leg-prog").textContent = progPct + "% In Progress";
+
+        let totalAP = 0;
+        PARTICIPANTS.forEach(p => { totalAP += getActionPlans(p).length; });
+        document.getElementById("k-ap").textContent = totalAP;
+        document.getElementById("k-ap-avg").textContent = "3 per participant";
+        
+        // Update Donut Chart
+        const trackedTotal = done + prog;
+        let cDonePct = 0;
+        let cProgPct = 0;
+        if (trackedTotal > 0) {
+          cDonePct = Math.round((done / trackedTotal) * 100);
+          cProgPct = Math.round((prog / trackedTotal) * 100);
+        }
+        
+        const donut = document.getElementById("kpi-donut");
+        const donutText = document.getElementById("kpi-donut-text");
+        const progLbl = document.getElementById("kpi-prog-lbl");
+        const doneLbl = document.getElementById("kpi-done-lbl");
+        
+        if (donut && donutText) {
+          donut.style.background = `conic-gradient(var(--done) 0% ${cDonePct}%, var(--prog) ${cDonePct}% 100%)`;
+          donutText.textContent = `${cDonePct}%`;
+        }
+        if (progLbl && doneLbl) {
+          progLbl.textContent = `${prog} (${cProgPct}%)`;
+          doneLbl.textContent = `${done} (${cDonePct}%)`;
+        }
+
+        document.querySelectorAll('.kpi-row .kpi').forEach(k => k.classList.remove('active-filter'));
+        if (activeStatus === 'ALL') document.querySelector('.kpi-row .kpi-total').classList.add('active-filter');
+        else if (activeStatus === 'done') document.querySelector('.kpi-row .kpi-done').classList.add('active-filter');
+        else if (activeStatus === 'prog') document.querySelector('.kpi-row .kpi-prog').classList.add('active-filter');
+
+        renderTable();
+      }
+
+      function doSearch(v) { searchTerm = v.toLowerCase(); renderTable(); }
+      function filterDept(d) { activeDept = d; renderTable(); }
+      function filterStatus(status) {
+        activeStatus = status;
+        document.querySelectorAll('.kpi-row .kpi').forEach(k => k.classList.remove('active-filter'));
+        if (status === 'ALL') document.querySelector('.kpi-row .kpi-total').classList.add('active-filter');
+        else if (status === 'done') document.querySelector('.kpi-row .kpi-done').classList.add('active-filter');
+        else if (status === 'prog') document.querySelector('.kpi-row .kpi-prog').classList.add('active-filter');
+        renderTable();
+      }
+
+      function renderTable() {
+        const filtered = PARTICIPANTS.filter(p => {
+          const matchesStatus = (activeStatus === "ALL" || getActualStatus(p) === activeStatus);
+          const matchesDept = (activeDept === "ALL" || p.dept === activeDept);
+          const matchesSearch = (searchTerm === "" || p.name.toLowerCase().includes(searchTerm) || p.dept.toLowerCase().includes(searchTerm));
+          return matchesStatus && matchesDept && matchesSearch;
+        });
+
+        const body = document.getElementById("tableBody");
+        const empty = document.getElementById("emptyState");
+
+        if (filtered.length === 0) {
+          body.innerHTML = "";
+          empty.style.display = "block";
+        } else {
+          empty.style.display = "none";
+          body.innerHTML = filtered.map(p => {
+            const plans = getActionPlans(p);
+            const firstPlan = plans.length > 0 ? plans[0] : "No action plan recorded";
+            const moreText = plans.length > 1 ? `<div style="font-size:11px; color:var(--mdi-orange); margin-top:4px;">+${plans.length - 1} more actions</div>` : "";
+            const activeStatusVal = getActualStatus(p);
+            const statusPillCol = `<td style="text-align:center;">${statusPillHtml(activeStatusVal)}</td>`;
+            const s2UpdateVal = (p.s2Update || "").trim();
+            const s2Update = s2UpdateVal ? s2UpdateVal : `<span style="color:var(--mdi-muted); font-size:12px; font-style: italic;">None</span>`;
+            
+            const s2ChallengeVal = (p.s2Challenge || "").trim();
+            const s2Challenge = s2ChallengeVal ? s2ChallengeVal : `<span style="color:var(--mdi-danger); font-size:12px;">⚠️ None</span>`;
+
+            return `
+            <tr onclick="toggleRow(${p.no})" id="row-${p.no}">
+              <td class="td-num">${p.no}</td>
+              <td><div class="td-name">${p.name}</div></td>
+              <td>${p.dept && p.dept.trim() !== '-' && p.dept.trim() !== '' ? `<span class="dept-tag">${p.dept}</span>` : '<span style="color:var(--mdi-muted);">-</span>'}</td>
+              <td>
+                <div style="font-size:13px; color:var(--mdi-ink); line-height:1.4;">${firstPlan}</div>
+                ${moreText}
+              </td>
+              ${statusPillCol}
+              <td><div style="font-size:12px; color:var(--mdi-muted); line-height:1.4;">${s2Update}</div></td>
+              <td><div style="font-size:12px; color:var(--mdi-muted); line-height:1.4;">${s2Challenge}</div></td>
+              <td><button class="expand-btn" id="btn-${p.no}" onclick="event.stopPropagation();toggleRow(${p.no})">›</button></td>
+            </tr>
+            <tr class="detail-row" id="detail-${p.no}">
+              <td colspan="8" class="detail-cell">
+                <div class="detail-inner">
+                  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+                    <div>
+                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">ALL ${plans.length} ACTION PLANS</div>
+                      <ol style="margin:0; padding-left:16px; font-size:13px; color:var(--mdi-ink); line-height:1.6; font-weight:600;">
+                        ${plans.map(pl => `<li style="margin-bottom:8px;"><span style="color:var(--mdi-ink); font-weight:400;">${pl}</span></li>`).join("")}
+                      </ol>
+                    </div>
+                    <div>
+                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">30-DAY UPDATE</div>
+                      <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${s2UpdateVal ? s2UpdateVal : `<span style="color:var(--mdi-muted); font-style: italic;">None</span>`}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">CHALLENGE / BARRIER</div>
+                      <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${s2ChallengeVal ? s2ChallengeVal : `<span style="color:var(--mdi-danger);">⚠️ None</span>`}</div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            `;
+          }).join("");
+        }
+        document.getElementById("table-showing-count").textContent = `Showing ${filtered.length} of ${PARTICIPANTS.length}`;
+      }
+
+      function toggleRow(no) {
+        const detail = document.getElementById("detail-"+no);
+        const btn    = document.getElementById("btn-"+no);
+        const row    = document.getElementById("row-"+no);
+        const isOpen = detail.classList.contains("open");
+
+        document.querySelectorAll("#tableBody .detail-row").forEach(r => r.classList.remove("open"));
+        document.querySelectorAll("#tableBody .expand-btn").forEach(b => b.classList.remove("open"));
+        document.querySelectorAll("#tableBody tr:not(.detail-row)").forEach(r => r.classList.remove("expanded"));
+
+        if(!isOpen) {
+          detail.classList.add("open");
+          btn.classList.add("open");
+          row.classList.add("expanded");
+        }
+      }
+
+      function statusPillHtml(s) {
+        if (s === "done") return `<span class="status-pill s-done">● Completed</span>`;
+        return `<span class="status-pill s-prog">● In Progress</span>`;
+      }
+
+      window.onload = async function() { 
+        if (typeof FirebaseSync !== 'undefined' && FirebaseSync.init) {
+          try {
+            await FirebaseSync.init(); 
+          } catch(e) {
+            console.warn("FirebaseSync init failed:", e);
+          }
+        }
+        init(); 
+      };
+
+      window.addEventListener('firebaseDataChanged', () => {
+        init();
+        if (typeof loggedInClient !== 'undefined' && loggedInClient) {
+          loadAndMergeParticipants();
+          rebuildDeptFilters();
+          renderProfile();
+          renderAll();
+        }
+      });
+
+      window.addEventListener('storage', (e) => {
+        const s1Key = `mdi_participants_${formId}`;
+        if (e.key === s1Key) {
+          loadAndMergeParticipants();
+          rebuildDeptFilters();
+          renderAll();
+        }
+        if (e.key === 'mdi_forms') {
+          const list = JSON.parse(e.newValue);
+          const item = list.find(f => f.id === formId);
+          if (item) {
+            FORM_CONFIG = item;
+            renderAll();
+          }
+        }
+      });
+      
+      // Pre-fill form if Remember Me was checked previously
+      // Restore session or perform auto-login if Remember Me is checked
+      document.addEventListener("DOMContentLoaded", () => {
+        const savedSessionClientName = sessionStorage.getItem("mdi_cp_loggedInClient");
+        if (savedSessionClientName) {
+          const restoredClient = CLIENTS.find(c => c.name === savedSessionClientName);
+          if (restoredClient) {
+            loggedInClient = restoredClient;
+            document.getElementById("login-view").style.display = "none";
+            
+            const activeView = sessionStorage.getItem("mdi_cp_activeView");
+            if (activeView === "dashboard") {
+              const savedFormId = sessionStorage.getItem("mdi_cp_activeFormId");
+              if (savedFormId) {
+                openDashboard(savedFormId);
+              } else {
+                showProfileView();
+              }
+            } else if (activeView === "report") {
+              showReportView();
+            } else {
+              showProfileView();
+            }
+            renderProfile();
+            return;
+          }
+        }
+
+        // If no active session, auto-login if credentials are saved
+        const savedLogin = localStorage.getItem("mdi_client_saved");
+        if (savedLogin) {
+          try {
+            const saved = JSON.parse(savedLogin);
+            document.getElementById("login-username").value = saved.name;
+            document.getElementById("login-pin").value = saved.pin;
+            document.getElementById("login-remember").checked = true;
+            
+            // Trigger auto-login
+            attemptLogin();
+          } catch(err) {
+            console.error("Failed to parse saved login", err);
+          }
+        }
+      });
+      
+      // Embedded Mode PostMessage Listener
+      if (new URLSearchParams(window.location.search).get('embedded') === 'true') {
+        document.body.classList.add('is-embedded');
+        window.addEventListener('message', (e) => {
+          if (e.data && e.data.type === 'formChanged' && e.data.formId) {
+             changeBatch(e.data.formId);
+          }
+        });
+      }
+    </script>
+  </div>
+</body>
+</html>

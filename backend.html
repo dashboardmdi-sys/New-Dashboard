@@ -522,7 +522,6 @@
     <div class="clients-grid" id="clientsGrid"></div>
   </div>
 
-  <!-- ============ VIEW 3: EDIT KLIEN ============ -->
   <!-- ============ VIEW 3: DETAIL KLIEN & SESI PELATIHAN ============ -->
   <div class="view" id="viewEdit">
     <button class="edit-back" id="backToListBtn">
@@ -552,16 +551,28 @@
         
         <div class="color-row" style="margin-top:14px; margin-bottom:14px;">
           <div class="field color-field">
-            <label for="cfgColorPrimary">Warna Primer</label>
-            <div class="color-input-wrap"><input type="color" id="cfgColorPrimary" value="#ffd204"><code class="color-hex" id="hexPrimary">#ffd204</code></div>
+            <label for="cfgColorPrimary">Warna Aksen Brand <span style="font-weight:400;font-size:10px;color:#888;display:block;margin-top:1px;">Nama klien, highlight, grafik</span></label>
+            <div class="color-input-wrap">
+              <input type="color" id="cfgColorPrimary" value="#ffd204">
+              <input type="text" id="hexPrimary" value="#ffd204" maxlength="7" style="width:76px;font-family:monospace;font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:6px;">
+              <button type="button" onclick="resetColor('cfgColorPrimary','hexPrimary','#ffd204')" title="Reset ke default" style="font-size:10px;padding:3px 7px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;color:#666;">Default</button>
+            </div>
           </div>
           <div class="field color-field">
-            <label for="cfgColorSecondary">Warna Sekunder</label>
-            <div class="color-input-wrap"><input type="color" id="cfgColorSecondary" value="#ee3f34"><code class="color-hex" id="hexSecondary">#ee3f34</code></div>
+            <label for="cfgColorSecondary">Warna Aksen 2 <span style="font-weight:400;font-size:10px;color:#888;display:block;margin-top:1px;">Stripe header &amp; elemen pendukung</span></label>
+            <div class="color-input-wrap">
+              <input type="color" id="cfgColorSecondary" value="#ee3f34">
+              <input type="text" id="hexSecondary" value="#ee3f34" maxlength="7" style="width:76px;font-family:monospace;font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:6px;">
+              <button type="button" onclick="resetColor('cfgColorSecondary','hexSecondary','#ee3f34')" title="Reset ke default" style="font-size:10px;padding:3px 7px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;color:#666;">Default</button>
+            </div>
           </div>
           <div class="field color-field">
-            <label for="cfgColorNavy">Warna Navy</label>
-            <div class="color-input-wrap"><input type="color" id="cfgColorNavy" value="#002c63"><code class="color-hex" id="hexNavy">#002c63</code></div>
+            <label for="cfgColorNavy">Warna Judul &amp; Teks <span style="font-weight:400;font-size:10px;color:#888;display:block;margin-top:1px;">Judul, kartu sesi, teks utama</span></label>
+            <div class="color-input-wrap">
+              <input type="color" id="cfgColorNavy" value="#002c63">
+              <input type="text" id="hexNavy" value="#002c63" maxlength="7" style="width:76px;font-family:monospace;font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:6px;">
+              <button type="button" onclick="resetColor('cfgColorNavy','hexNavy','#002c63')" title="Reset ke default" style="font-size:10px;padding:3px 7px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;color:#666;">Default</button>
+            </div>
           </div>
         </div>
 
@@ -1537,6 +1548,20 @@ function openEditTraining(tid){
   if(!c) return;
   const t = (c.trainings || []).find(x=>String(x.id)===String(tid));
   if(!t) return;
+
+  // ── Reset semua field agar data sesi sebelumnya tidak bocor ke sesi baru ──
+  ["evalTitle","evalText","evalCtaPct",
+   "cfgEvalSheetId","cfgEvalCsvUrl","cfgEvalSheetName","cfgEvalDataRange",
+   "cfgTrainerNames","cfgTrainingTitle","cfgTrainingDateStart","cfgTrainingDateEnd"
+  ].forEach(id=>{ try{ $(id).value=""; }catch(e){} });
+  // Reset AI prompt fields
+  ["aiPromptFeedback","aiPromptTopikBermanfaat","aiPromptTopikSelanjutnya"
+  ].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
+  // Reset komentar trainer & dokumentasi
+  window.ktTrainersData = [];
+  try{ renderKtTrainers(); }catch(e){}
+  try{ renderDayList([]); }catch(e){}
+
   $("editTrainingName").textContent = c.name;
   $("editTrainingMeta").textContent = `${t.title} · ${formatTrainingDate(t)}`;
 
@@ -1729,8 +1754,24 @@ function refreshCfgPreview(){
 }
 $("cfgSheetId").addEventListener("input",refreshCfgPreview);
 [["cfgColorPrimary","hexPrimary"],["cfgColorSecondary","hexSecondary"],["cfgColorNavy","hexNavy"]].forEach(([cId,hId])=>{
-  $(cId).addEventListener("input",()=>{ $(hId).textContent=$(cId).value; });
+  // Color picker → text input
+  $(cId).addEventListener("input",()=>{ $(hId).value=$(cId).value; });
+  // Text input → color picker (validasi format #xxxxxx)
+  $(hId).addEventListener("input",()=>{
+    const v=$(hId).value.trim();
+    if(/^#[0-9a-fA-F]{6}$/.test(v)){ $(cId).value=v; }
+  });
+  $(hId).addEventListener("change",()=>{
+    let v=$(hId).value.trim();
+    if(!v.startsWith("#")) v="#"+v;
+    if(/^#[0-9a-fA-F]{6}$/.test(v)){ $(cId).value=v; $(hId).value=v; }
+    else { $(hId).value=$(cId).value; } // revert if invalid
+  });
 });
+function resetColor(cId, hId, defaultVal){
+  $(cId).value=defaultVal;
+  $(hId).value=defaultVal;
+}
 
 $("cfgSaveBtn").addEventListener("click",()=>{
   const cfg = {
