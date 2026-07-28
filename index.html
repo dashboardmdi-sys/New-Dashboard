@@ -1904,7 +1904,7 @@
       <div class="body-wrap">
         <!-- Executive KPIs -->
         <div class="kpi-row">
-          <div class="kpi kpi-total active-filter">
+          <div class="kpi kpi-total active-filter" onclick="filterApTable('all', this)">
             <div class="kpi-lbl">Total Participants</div>
             <div class="kpi-val" id="kpi-total-val">0</div>
             <div class="kpi-sub">Participants</div>
@@ -1914,12 +1914,12 @@
             <div class="kpi-val" id="kpi-ap-val">0</div>
             <div class="kpi-sub" id="kpi-ap-sub">0 per participant</div>
           </div>
-          <div class="kpi kpi-done">
+          <div class="kpi kpi-done" onclick="filterApTable('done', this)">
             <div class="kpi-lbl">Completed (Selesai)</div>
             <div class="kpi-val" id="kpi-done-val">0</div>
             <div class="kpi-sub" id="kpi-done-sub">0% of batch</div>
           </div>
-          <div class="kpi kpi-prog">
+          <div class="kpi kpi-prog" onclick="filterApTable('prog', this)">
             <div class="kpi-lbl">In Progress</div>
             <div class="kpi-val" id="kpi-prog-val">0</div>
             <div class="kpi-sub" id="kpi-prog-sub">0% of batch</div>
@@ -2444,6 +2444,12 @@ function showDashboard(training) {
     prevSignature = "";
     firstLoad = true;
   }
+  
+  // Reset Action Plan filter
+  window.__apStatusFilter = 'all';
+  document.querySelectorAll("#pane-actionplan .kpi").forEach(el => el.classList.remove("active-filter"));
+  const kpiTotalEl = document.querySelector("#pane-actionplan .kpi-total");
+  if(kpiTotalEl) kpiTotalEl.classList.add("active-filter");
   
   // Sync the Action Plan iframe with this training id
   const iframe = document.getElementById('apIframeFe');
@@ -3785,6 +3791,25 @@ window.addEventListener("resize",()=>{
 });
 
 
+/* ================= ACTION PLAN INTERACTIVE FILTER ================= */
+window.filterApTable = function(status, element) {
+  window.__apStatusFilter = status;
+  
+  document.querySelectorAll("#pane-actionplan .kpi").forEach(el => {
+    el.classList.remove("active-filter");
+  });
+  if (element) {
+    element.classList.add("active-filter");
+  }
+  
+  try {
+    renderActiveClientSections();
+  } catch(e) {
+    console.error("Failed to re-render Action Plan table:", e);
+  }
+};
+
+
 /* ================= CLIENT SECTIONS RENDERING ================= */
 function renderActiveClientSections(){
   // Evaluasi
@@ -3908,6 +3933,7 @@ function renderActiveClientSections(){
 
   // Action Plan
   let apList = [];
+  let filteredApList = [];
   let totalPlans = 0;
 
   const ap = Array.isArray(CONFIG.actionPlan) ? CONFIG.actionPlan : [];
@@ -3945,6 +3971,22 @@ function renderActiveClientSections(){
         }
       });
       apList = Object.values(apMap).map((p, i) => { p.no = i + 1; return p; });
+    }
+
+    // Sort: completed ('done') status to the top
+    apList.sort((a, b) => {
+      if (a.status === 'done' && b.status !== 'done') return -1;
+      if (a.status !== 'done' && b.status === 'done') return 1;
+      return 0;
+    });
+
+    // Filter apList based on active status filter
+    const statusFilter = window.__apStatusFilter || 'all';
+    filteredApList = apList;
+    if (statusFilter === 'done') {
+      filteredApList = apList.filter(p => p.status === 'done');
+    } else if (statusFilter === 'prog') {
+      filteredApList = apList.filter(p => p.status === 'prog');
     }
   }
 
@@ -3991,14 +4033,14 @@ function renderActiveClientSections(){
     if(psProgLeg) psProgLeg.textContent = progPct + "% In Progress";
 
     const tableCount = document.getElementById("table-count-label");
-    if(tableCount) tableCount.textContent = `Showing ${totalParticipants} of ${totalParticipants}`;
+    if(tableCount) tableCount.textContent = `Showing ${filteredApList.length} of ${totalParticipants}`;
 
     const tbody = document.getElementById("apTableBody");
     if (tbody) {
-      if (apList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 48px; color: var(--mdi-muted);">Belum ada action plan</td></tr>`;
+      if (filteredApList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 48px; color: var(--mdi-muted);">Tidak ada action plan untuk status ini</td></tr>`;
       } else {
-      const renderHtml = apList.map((p, index) => {
+      const renderHtml = filteredApList.map((p, index) => {
           const firstPlan = p.plans.length > 0 ? esc(p.plans[0]) : "-";
           const moreText = p.plans.length > 1 ? `<div style="font-size:11px; color:var(--mdi-orange); margin-top:4px;">+${p.plans.length - 1} more actions</div>` : "";
           const statusHtml = p.status === 'done' ? `<span class="status-pill s-done">● Selesai</span>` : `<span class="status-pill s-prog">● In Progress</span>`;
