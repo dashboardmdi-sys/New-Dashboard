@@ -2523,8 +2523,13 @@ function showDashboard(training) {
     }
   }
 
-  // Apply appearance
+  // Apply appearance and render static sections (Action Plan, Comments, Documentation)
   applyAppearance();
+  try {
+    renderActiveClientSections();
+  } catch(e) {
+    console.warn("Failed to render active client sections in showDashboard:", e);
+  }
 
   // Render the cached data immediately if we have it
   if (!firstLoad && participants.length > 0) {
@@ -3411,30 +3416,42 @@ async function fetchData(manual=false){
   }
 
   // 3. Process and Render
-  const sig = JSON.stringify({list, evalData});
-  const changed = sig !== prevSignature;
+  let dataChanged = false;
+  
+  if (mainSuccess) {
+    const listSig = JSON.stringify(list);
+    const cachedListSig = JSON.stringify(participants);
+    if (listSig !== cachedListSig || firstLoad) {
+      participants = list;
+      stats = computeStats(list);
+      dataChanged = true;
+    }
+  }
+  
+  if (evalSuccess || (!hasEvalSheet && firstLoad)) {
+    const evalSig = JSON.stringify(evalData);
+    const cachedEvalSig = JSON.stringify(currentEvalData);
+    if (evalSig !== cachedEvalSig || firstLoad) {
+      currentEvalData = evalData;
+      dataChanged = true;
+    }
+  }
   
   try {
-    if(changed || firstLoad){
-      prevSignature = sig;
-      participants = list;
-      if (mainSuccess) {
-        stats = computeStats(list);
-      }
-      currentEvalData = evalData;
-      render(changed && !firstLoad);
-      if(changed && !firstLoad && (mainSuccess || evalSuccess)) {
+    if (dataChanged || firstLoad) {
+      render(dataChanged && !firstLoad);
+      if (dataChanged && !firstLoad && (mainSuccess || evalSuccess)) {
         showToast("Data diperbarui dari Google Sheets");
       }
-
+      
       // Save to cache!
-      if (activeTrainingId) {
+      if (activeTrainingId && (mainSuccess || evalSuccess)) {
         try {
           localStorage.setItem("mdp-training-cache-" + activeTrainingId, JSON.stringify({
             participants,
             stats,
             currentEvalData,
-            prevSignature
+            prevSignature: JSON.stringify({list: participants, evalData: currentEvalData})
           }));
         } catch(e) {}
       }

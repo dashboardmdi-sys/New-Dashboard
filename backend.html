@@ -1504,7 +1504,8 @@ function openEditTraining(tid){
   // ── Reset semua field agar data sesi sebelumnya tidak bocor ke sesi baru ──
   ["evalTitle","evalText","evalCtaPct",
    "cfgEvalSheetId","cfgEvalCsvUrl","cfgEvalSheetName","cfgEvalDataRange",
-   "cfgTrainerNames","cfgTrainingTitle","cfgTrainingDateStart","cfgTrainingDateEnd"
+   "cfgTrainerNames","cfgTrainingTitle","cfgTrainingDateStart","cfgTrainingDateEnd",
+   "cfgSheetId","cfgCsvUrl","cfgSheet1Name","cfgSheet2Name","cfgPollSec"
   ].forEach(id=>{ try{ $(id).value=""; }catch(e){} });
   // Reset AI prompt fields
   ["aiPromptFeedback","aiPromptTopikBermanfaat","aiPromptTopikSelanjutnya"
@@ -1570,14 +1571,20 @@ function openEditTraining(tid){
   }
   btnWrap.appendChild(aiBtn);
 
-  // ✅ Load prompt dari data training (tersimpan di database Google Sheets)
+  // ✅ Load prompt dari data training (tersimpan di database Google Sheets) atau default
   const savedAiPrompts = t.aiPrompts || {};
   const promptFeedbackEl = document.getElementById('aiPromptFeedback');
   const promptMBEl = document.getElementById('aiPromptTopikBermanfaat');
   const promptTSEl = document.getElementById('aiPromptTopikSelanjutnya');
-  if(promptFeedbackEl && savedAiPrompts.feedback) promptFeedbackEl.value = savedAiPrompts.feedback;
-  if(promptMBEl && savedAiPrompts.topikBermanfaat) promptMBEl.value = savedAiPrompts.topikBermanfaat;
-  if(promptTSEl && savedAiPrompts.topikSelanjutnya) promptTSEl.value = savedAiPrompts.topikSelanjutnya;
+  if(promptFeedbackEl) {
+    promptFeedbackEl.value = savedAiPrompts.feedback || "Baca semua umpan balik berikut. Pilih beberapa poin terbaik dan gabungkan menjadi 1 paragraf ringkasan yang suportif, profesional, dan menunjukkan apresiasi untuk trainer:";
+  }
+  if(promptMBEl) {
+    promptMBEl.value = savedAiPrompts.topikBermanfaat || "Ekstrak keyword utama dari daftar topik ini. Buang duplikasi. Hapus topik yang BUKAN merupakan pelatihan softskill (seperti hal teknis/IT). Balas HANYA dengan kata kunci yang paling banyak diminta, pisahkan dengan koma:";
+  }
+  if(promptTSEl) {
+    promptTSEl.value = savedAiPrompts.topikSelanjutnya || "Ekstrak keyword utama dari daftar topik request ini. Buang duplikasi. Hapus topik yang BUKAN softskill. Balas HANYA dengan kata kunci yang paling banyak diminta, pisahkan dengan koma:";
+  }
 
   // ✅ Tombol Simpan Prompt ke database
   const savePromptsBtn = document.getElementById('saveAiPromptsBtn');
