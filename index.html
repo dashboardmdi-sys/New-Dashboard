@@ -3103,11 +3103,11 @@ function renderDynamicEvaluation(evalData) {
       let fbHtml = "";
       if (CONFIG.aiSummary && CONFIG.aiSummary.feedback) {
         fbHtml = `<div style="margin-bottom:6px;font-weight:600;display:flex;align-items:center;gap:6px;">
-                    Umpan Balik untuk Trainer:
+                    Umpan Balik:
                   </div>` +
                  `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(CONFIG.aiSummary.feedback)}"</div>`;
       } else if (d.trainerFeedback && d.trainerFeedback.length > 0) {
-        fbHtml = `<div style="margin-bottom:6px;"><b>Beberapa umpan balik untuk Trainer:</b></div>` +
+        fbHtml = `<div style="margin-bottom:6px;"><b>Beberapa umpan balik:</b></div>` +
           d.trainerFeedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(w)}"</div>`).join('');
       } else {
         fbHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">Umpan balik trainer akan muncul setelah data evaluasi terhubung.</span>`;
