@@ -3374,9 +3374,7 @@ async function fetchData(manual=false){
   try {
     if (dataChanged || firstLoad) {
       render(dataChanged && !firstLoad);
-      if (dataChanged && !firstLoad && (mainSuccess || evalSuccess)) {
-        showToast("Data laporan berhasil diperbarui");
-      }
+
       
       // Save to cache!
       if (activeTrainingId && (mainSuccess || evalSuccess)) {
