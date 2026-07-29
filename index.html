@@ -3797,102 +3797,115 @@ function renderActiveClientSections(){
   }
   
   const kom = CONFIG.komentarTrainer;
-  // Render Komentar Trainer (Rich Object - User Tailwind Layout)
-  if(kom){
-    let ktArr = kom;
-    if(typeof ktArr === "string"){
-      ktArr = [{ intro: ktArr, name: "", role: "", apresiasi: "", days: [], quote: "" }];
-    } else if (ktArr && !Array.isArray(ktArr)) {
-      ktArr = [ktArr]; // Fallback for previous single object
-    }
-    
-    if (ktArr && ktArr.length > 0) {
-      let allHtml = "";
-      
-      // Jika ada lebih dari 1 trainer, tambahkan label info di atas
-      if(ktArr.length > 1) {
-        allHtml += `
-          <div style="text-align:center; margin-bottom:3.5rem;">
-            <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255, 210, 4, 0.15); color:#002c63; font-family:var(--font-head); font-weight:700; font-size:0.85rem; padding:8px 18px; border-radius:999px; border:1px solid rgba(219, 179, 0, 0.4);">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              Sesi difasilitasi oleh ${ktArr.length} Trainer
-            </div>
-          </div>
-        `;
+  const container = document.getElementById("komentarContainer");
+  if (container) {
+    if (!kom || (Array.isArray(kom) && kom.length === 0)) {
+      if (container.dataset.renderedHash !== "") {
+        container.innerHTML = "";
+        container.dataset.renderedHash = "";
       }
-
-      allHtml += ktArr.map((kt, index) => {
-        const initials = (kt.name || "T").charAt(0).toUpperCase();
-        const apText = kt.apresiasi ? kt.apresiasi : "🎉 KOMENTAR TRAINER 🎉";
-        const daysHtml = (kt.days && kt.days.length > 0) ? kt.days.map((d, i) => `
-          <div class="kt-user-day">
-            <h4 class="kt-user-day-title"><span class="kt-user-day-num">${i+1}</span> ${esc(d.title || `Hari ${i+1}`)}</h4>
-            <p style="white-space:pre-wrap;">${esc(d.text || '')}</p>
-          </div>
-        `).join("") : "";
-
-        return `
-          <div class="kt-user-marquee-box">
-             <div class="kt-user-marquee-content">
-                ${esc(apText)}
-             </div>
-          </div>
-          <div class="kt-user-wrap">
-            <div class="kt-user-glow"></div>
-            <div class="kt-user-card">
-              <div class="kt-user-avatar-wrap">
-                <div class="kt-user-avatar">
-                  ${kt.photoUrl ? `<img src="${esc(formatDriveImageUrl(kt.photoUrl))}" alt="Trainer">` : `<span id="ktAvatarInitials">${initials}</span>`}
-                </div>
-                <div class="kt-user-badge">${esc(kt.role || "Fasilitator")}</div>
-              </div>
-              <div class="kt-user-head">
-                 <h2 class="kt-user-name">${esc(kt.name || "Nama Trainer")}</h2>
-                 <p class="kt-user-role">${esc(kt.role || "MDI Trainer")}</p>
-              </div>
-              <div class="kt-user-body">
-                ${kt.intro ? `<p style="white-space:pre-wrap;">${esc(kt.intro)}</p>` : ""}
-                ${daysHtml}
-                ${kt.quote ? `
-                <div class="kt-user-quote">
-                  <p class="kt-user-quote-text">"${esc(kt.quote)}"</p>
-                </div>` : ""}
+    } else {
+      let ktArr = kom;
+      if(typeof ktArr === "string"){
+        ktArr = [{ intro: ktArr, name: "", role: "", apresiasi: "", days: [], quote: "" }];
+      } else if (ktArr && !Array.isArray(ktArr)) {
+        ktArr = [ktArr];
+      }
+      
+      const currentHash = JSON.stringify(ktArr);
+      if (container.dataset.renderedHash !== currentHash) {
+        let allHtml = "";
+        
+        if(ktArr.length > 1) {
+          allHtml += `
+            <div style="text-align:center; margin-bottom:3.5rem;">
+              <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255, 210, 4, 0.15); color:#002c63; font-family:var(--font-head); font-weight:700; font-size:0.85rem; padding:8px 18px; border-radius:999px; border:1px solid rgba(219, 179, 0, 0.4);">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Sesi difasilitasi oleh ${ktArr.length} Trainer
               </div>
             </div>
-      </div>
-    `;
-      }).join("");
-      
-      const container = document.getElementById("komentarContainer");
-      if(container) container.innerHTML = allHtml;
+          `;
+        }
+
+        allHtml += ktArr.map((kt, index) => {
+          const initials = (kt.name || "T").charAt(0).toUpperCase();
+          const apText = kt.apresiasi ? kt.apresiasi : "🎉 KOMENTAR TRAINER 🎉";
+          const daysHtml = (kt.days && kt.days.length > 0) ? kt.days.map((d, i) => `
+            <div class="kt-user-day">
+              <h4 class="kt-user-day-title"><span class="kt-user-day-num">${i+1}</span> ${esc(d.title || `Hari ${i+1}`)}</h4>
+              <p style="white-space:pre-wrap;">${esc(d.text || '')}</p>
+            </div>
+          `).join("") : "";
+
+          return `
+            <div class="kt-user-marquee-box">
+               <div class="kt-user-marquee-content">
+                  ${esc(apText)}
+               </div>
+            </div>
+            <div class="kt-user-wrap">
+              <div class="kt-user-glow"></div>
+              <div class="kt-user-card">
+                <div class="kt-user-avatar-wrap">
+                  <div class="kt-user-avatar">
+                    ${kt.photoUrl ? `<img src="${esc(formatDriveImageUrl(kt.photoUrl))}" alt="Trainer">` : `<span id="ktAvatarInitials">${initials}</span>`}
+                  </div>
+                  <div class="kt-user-badge">${esc(kt.role || "Fasilitator")}</div>
+                </div>
+                <div class="kt-user-head">
+                   <h2 class="kt-user-name">${esc(kt.name || "Nama Trainer")}</h2>
+                   <p class="kt-user-role">${esc(kt.role || "MDI Trainer")}</p>
+                </div>
+                <div class="kt-user-body">
+                  ${kt.intro ? `<p style="white-space:pre-wrap;">${esc(kt.intro)}</p>` : ""}
+                  ${daysHtml}
+                  ${kt.quote ? `
+                  <div class="kt-user-quote">
+                    <p class="kt-user-quote-text">"${esc(kt.quote)}"</p>
+                  </div>` : ""}
+                </div>
+              </div>
+        </div>
+      `;
+        }).join("");
+
+        container.innerHTML = allHtml;
+        container.dataset.renderedHash = currentHash;
+      }
     }
   }
 
   // Dokumentasi (per day accordion)
   const docs = Array.isArray(CONFIG.dokumentasi) ? CONFIG.dokumentasi : [];
-  if(docs && docs.length > 0){
-    const accordion = document.getElementById("docAccordion");
-    if (accordion) {
-      accordion.innerHTML = docs.map((day, di)=>{
-        const photosHtml = day.photos && day.photos.length > 0
-          ? `<div class="gallery-grid">${day.photos.map(ph=>{
-              const pUrl = formatDriveImageUrl(ph.url);
-              return `<div class="gallery-img-wrap" onclick="window.open('${esc(pUrl)}')">
-                <img src="${esc(pUrl)}" alt="Foto Dokumentasi" onerror="this.parentElement.style.display='none'">
-              </div>`;
-            }).join("")}</div>`
-          : `<div style="text-align:center;padding:12px;color:var(--n500);font-size:.8rem">Tidak ada foto untuk hari ini.</div>`;
+  const accordion = document.getElementById("docAccordion");
+  if (accordion) {
+    const currentDocHash = JSON.stringify(docs);
+    if (accordion.dataset.renderedHash !== currentDocHash) {
+      if (docs && docs.length > 0) {
+        accordion.innerHTML = docs.map((day, di)=>{
+          const photosHtml = day.photos && day.photos.length > 0
+            ? `<div class="gallery-grid">${day.photos.map(ph=>{
+                const pUrl = formatDriveImageUrl(ph.url);
+                return `<div class="gallery-img-wrap" onclick="window.open('${esc(pUrl)}')">
+                  <img src="${esc(pUrl)}" alt="Foto Dokumentasi" onerror="this.parentElement.style.display='none'">
+                </div>`;
+              }).join("")}</div>`
+            : `<div style="text-align:center;padding:12px;color:var(--n500);font-size:.8rem">Tidak ada foto untuk hari ini.</div>`;
 
-        return `<div class="day-acc-item" id="day-acc-${di}">
-          <div class="day-acc-head" onclick="toggleDayAcc(${di})">
-            <span>${esc(day.label || `Hari ${di+1}`)}</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-          </div>
-          <div class="day-acc-body">
-            ${photosHtml}
-          </div>
-        </div>`;
-      }).join("");
+          return `<div class="day-acc-item" id="day-acc-${di}">
+            <div class="day-acc-head" onclick="toggleDayAcc(${di})">
+              <span>${esc(day.label || `Hari ${di+1}`)}</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <div class="day-acc-body">
+              ${photosHtml}
+            </div>
+          </div>`;
+        }).join("");
+      } else {
+        accordion.innerHTML = `<div style="text-align:center;padding:20px;color:var(--n500);font-size:.85rem">Belum ada dokumentasi pelatihan.</div>`;
+      }
+      accordion.dataset.renderedHash = currentDocHash;
     }
   }
 
