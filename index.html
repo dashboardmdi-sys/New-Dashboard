@@ -1995,6 +1995,24 @@ async function loadClientsDbAsync() {
   }
 }
 
+function formatDriveImageUrl(url) {
+  if (!url || typeof url !== "string") return "";
+  let trimmed = url.trim();
+  if (!trimmed) return "";
+  let fileId = null;
+  const matchFileD = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  const matchIdParam = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (matchFileD && matchFileD[1]) {
+    fileId = matchFileD[1];
+  } else if (matchIdParam && matchIdParam[1]) {
+    fileId = matchIdParam[1];
+  }
+  if (fileId) {
+    return `https://lh3.googleusercontent.com/d/${fileId}`;
+  }
+  return trimmed;
+}
+
 let loggedClient = null;
 let activeTrainingId = sessionStorage.getItem("mdp-active-training");
 
@@ -3824,7 +3842,7 @@ function renderActiveClientSections(){
             <div class="kt-user-card">
               <div class="kt-user-avatar-wrap">
                 <div class="kt-user-avatar">
-                  ${kt.photoUrl ? `<img src="${esc(kt.photoUrl)}" alt="Trainer">` : `<span id="ktAvatarInitials">${initials}</span>`}
+                  ${kt.photoUrl ? `<img src="${esc(formatDriveImageUrl(kt.photoUrl))}" alt="Trainer">` : `<span id="ktAvatarInitials">${initials}</span>`}
                 </div>
                 <div class="kt-user-badge">${esc(kt.role || "Fasilitator")}</div>
               </div>
@@ -3857,10 +3875,12 @@ function renderActiveClientSections(){
     if (accordion) {
       accordion.innerHTML = docs.map((day, di)=>{
         const photosHtml = day.photos && day.photos.length > 0
-          ? `<div class="gallery-grid">${day.photos.map(ph=>`
-              <div class="gallery-img-wrap" onclick="window.open('${esc(ph.url)}')">
-                <img src="${esc(ph.url)}" alt="Foto Dokumentasi" onerror="this.parentElement.style.display='none'">
-              </div>`).join("")}</div>`
+          ? `<div class="gallery-grid">${day.photos.map(ph=>{
+              const pUrl = formatDriveImageUrl(ph.url);
+              return `<div class="gallery-img-wrap" onclick="window.open('${esc(pUrl)}')">
+                <img src="${esc(pUrl)}" alt="Foto Dokumentasi" onerror="this.parentElement.style.display='none'">
+              </div>`;
+            }).join("")}</div>`
           : `<div style="text-align:center;padding:12px;color:var(--n500);font-size:.8rem">Tidak ada foto untuk hari ini.</div>`;
 
         return `<div class="day-acc-item" id="day-acc-${di}">
