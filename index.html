@@ -93,34 +93,36 @@
   .logo-mdi{height:36px;object-fit:contain;flex-shrink:0}
   .logo-sep{width:1px;height:32px;background:var(--n200);flex-shrink:0}
   
-  /* Back Button - Sleek circular icon standard */
+  /* Back Button - Fixed Navy Blue */
   .btn-back {
-    background: none;
-    border: 1.5px solid var(--card-border);
+    background: rgba(0, 44, 99, 0.05);
+    border: 1.5px solid rgba(0, 44, 99, 0.2);
     border-radius: 50%;
     width: 36px;
     height: 36px;
     display: none; /* Controlled dynamically */
     align-items: center;
     justify-content: center;
-    color: var(--navy);
+    color: #002c63;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
     flex-shrink: 0;
   }
   .btn-back:hover {
-    background: var(--primary-100);
-    border-color: var(--primary-600);
-    color: var(--primary-700);
+    background: rgba(0, 44, 99, 0.12);
+    border-color: #002c63;
+    color: #002c63;
     transform: translateX(-2px) scale(1.02);
   }
   [data-theme="dark"] .btn-back {
-    color: var(--navy-800);
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.3);
+    background: rgba(56, 189, 248, 0.1);
   }
   [data-theme="dark"] .btn-back:hover {
-    background: rgba(255, 210, 4, 0.08);
-    border-color: var(--primary-base);
-    color: var(--primary-base);
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #38bdf8;
   }
 
   .title-block h1{font-family:var(--font-head);font-size:1.15rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;color:var(--navy)}
@@ -604,7 +606,7 @@
     font-family: var(--font-head);
     font-size: 0.75rem;
     font-weight: 800;
-    color: var(--primary-base);
+    color: #ffd204;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 18px;
@@ -1528,7 +1530,7 @@
       <div style="display: flex; flex-direction: column;">
         <div class="mm-stats-row bordered">
           <span style="font-size: 0.8rem; color: rgba(255,255,255,0.75);">Total Sesi:</span>
-          <span style="font-family: var(--font-mono); font-size: 0.95rem; color: var(--primary-base); font-weight: 700;" id="mmTotalSessionsCount">0 Sesi</span>
+          <span style="font-family: var(--font-mono); font-size: 0.95rem; color: #ffd204; font-weight: 700;" id="mmTotalSessionsCount">0 Sesi</span>
         </div>
         <div class="mm-stats-row">
           <span style="font-size: 0.8rem; color: rgba(255,255,255,0.75);">Status Server:</span>
@@ -2259,7 +2261,10 @@ window.showMainMenu = function() {
   // Reset session title — back to menu shows only client name
   CONFIG.sessionTitle = "";
   const h1El = document.querySelector(".title-block h1");
-  if(h1El) h1El.textContent = CONFIG.title || (loggedClient && loggedClient.name) || "";
+  if(h1El) {
+    const cName = String(CONFIG.title || (loggedClient && loggedClient.name) || "").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    h1El.innerHTML = `<span style="color: var(--primary-base);">${cName}</span>`;
+  }
   const subtitleReset = document.getElementById("headerSubtitle");
   if(subtitleReset) subtitleReset.innerHTML = CONFIG.subtitle || "Portal Pelatihan";
 
@@ -2551,9 +2556,13 @@ function applyAppearance(){
   const h1 = document.querySelector(".title-block h1");
   const sub = document.querySelector(".title-block p");
   if(h1) {
-    const clientName = CONFIG.title || "";
-    const sessionName = CONFIG.sessionTitle || "";
-    h1.textContent = sessionName ? `${clientName} - ${sessionName}` : clientName;
+    const clientName = String(CONFIG.title || "").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const sessionName = String(CONFIG.sessionTitle || "").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if (sessionName) {
+      h1.innerHTML = `<span style="color: var(--primary-base);">${clientName}</span> - ${sessionName}`;
+    } else {
+      h1.innerHTML = `<span style="color: var(--primary-base);">${clientName}</span>`;
+    }
     h1.style.fontWeight = CONFIG.titleWeight || "bold";
     h1.style.fontStyle  = CONFIG.titleStyle  || "normal";
     h1.style.textDecoration = CONFIG.titleDeco || "none";
@@ -3260,7 +3269,7 @@ async function fetchData(manual=false){
     setOnline(false);
     document.getElementById("liveText").textContent = "BELUM DI-SET";
     const nextIn = document.getElementById("nextIn");
-    if(nextIn) nextIn.textContent = "Hubungkan Google Sheet di backend";
+    if(nextIn) nextIn.textContent = "sinkronisasi otomatis tiap 10 dtk";
     firstLoad = false;
     return;
   }
