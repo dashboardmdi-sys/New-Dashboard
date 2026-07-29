@@ -321,8 +321,8 @@
   .delta.none{color:var(--n300);background:transparent;padding-left:0}
   .scorebar{display:flex;align-items:center;gap:10px}
   .scorebar .track{width:72px;height:5px;border-radius:9999px;background:var(--n100);overflow:hidden;flex-shrink:0}
-  .scorebar .fill{display:block;height:100%;border-radius:9999px;background:var(--navy);transition:width .8s cubic-bezier(.22,1,.36,1)}
-  .scorebar .fill.post{background:var(--primary-600)}
+  .scorebar .fill{display:block;height:100%;border-radius:9999px;background:#002c63;transition:width .8s cubic-bezier(.22,1,.36,1)}
+  .scorebar .fill.post{background:#ffd204}
   tfoot td{
     padding:12px;border-top:2px solid var(--n900);font-family:var(--font-mono);
     font-weight:700;color:var(--navy);background:var(--primary-100);
@@ -1648,8 +1648,8 @@
       <div class="card-head">
         <h2>Perbandingan Pre &amp; Post Test</h2>
         <div class="legend">
-          <span><i style="background:var(--navy)"></i>Pre Test</span>
-          <span><i style="background:var(--primary-base)"></i>Post Test</span>
+          <span><i style="background:#002c63"></i>Pre Test</span>
+          <span><i style="background:#ffd204"></i>Post Test</span>
         </div>
       </div>
       <div class="chart-scroll">
@@ -3547,8 +3547,8 @@ function renderCharts(){
     chartCompare=new Chart(document.getElementById("chartCompare"),{
       type:"bar",
       data:{labels,datasets:[
-        {label:"Pre Test",data:pre,backgroundColor:css("--navy"),borderRadius:4,maxBarThickness:14},
-        {label:"Post Test",data:post,backgroundColor:css("--primary-base"),borderRadius:4,maxBarThickness:14},
+        {label:"Pre Test",data:pre,backgroundColor:"#002c63",borderRadius:4,maxBarThickness:14},
+        {label:"Post Test",data:post,backgroundColor:"#ffd204",borderRadius:4,maxBarThickness:14},
       ]},
       options:{
         responsive:true,maintainAspectRatio:false,
@@ -3600,8 +3600,8 @@ function renderCharts(){
     chartDist=new Chart(document.getElementById("chartDist"),{
       type:"bar",
       data:{labels:bins,datasets:[
-        {label:"Pre Test",data:preBins,backgroundColor:css("--navy"),borderRadius:6,maxBarThickness:26},
-        {label:"Post Test",data:postBins,backgroundColor:css("--primary-base"),borderRadius:6,maxBarThickness:26,hidden:!hasPost},
+        {label:"Pre Test",data:preBins,backgroundColor:"#002c63",borderRadius:6,maxBarThickness:26},
+        {label:"Post Test",data:postBins,backgroundColor:"#ffd204",borderRadius:6,maxBarThickness:26,hidden:!hasPost},
       ]},
       options:{
         responsive:true,maintainAspectRatio:false,
@@ -3720,8 +3720,9 @@ function updateChartColors(){
     c.options.scales.y.ticks.color=tickC;
     c.options.scales.x.grid.color=gridC;
     c.options.scales.y.grid.color=gridC;
-    if(c===chartCompare){
-      c.data.datasets[0].backgroundColor=navy;
+    if(c===chartCompare || c===chartDist){
+      c.data.datasets[0].backgroundColor="#002c63";
+      c.data.datasets[1].backgroundColor="#ffd204";
     }
     c.update("none");
   });
