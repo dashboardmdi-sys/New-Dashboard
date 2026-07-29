@@ -3375,7 +3375,7 @@ async function fetchData(manual=false){
     if (dataChanged || firstLoad) {
       render(dataChanged && !firstLoad);
       if (dataChanged && !firstLoad && (mainSuccess || evalSuccess)) {
-        showToast("Data diperbarui dari Google Sheets");
+        showToast("Data laporan berhasil diperbarui");
       }
       
       // Save to cache!
