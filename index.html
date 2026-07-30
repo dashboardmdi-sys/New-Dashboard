@@ -2792,15 +2792,15 @@ function showDashboard(training) {
     dateStart:     training.dateStart     || "",
     dateEnd:       training.dateEnd       || "",
     sessionTitle:  training.title         || "",
-    enableLeadership:     training.enableLeadership     === true,
-    enableWewenang:       training.enableWewenang       === true,
-    enableInterpersonal:  training.enableInterpersonal  === true,
+    leadershipEnabled:      !!training.leadershipEnabled,
     leadershipSheetId:      training.leadershipSheetId      || "",
     leadershipCsvUrl:     training.leadershipCsvUrl     || "",
     leadershipSheetName:  training.leadershipSheetName  || "Sheet2",
+    wewenangEnabled:        !!training.wewenangEnabled,
     wewenangSheetId:        training.wewenangSheetId        || "",
     wewenangCsvUrl:       training.wewenangCsvUrl       || "",
     wewenangSheetName:    training.wewenangSheetName    || "Sheet4",
+    interpersonalEnabled:   !!training.interpersonalEnabled,
     interpersonalSheetId:   training.interpersonalSheetId   || "",
     interpersonalCsvUrl:  training.interpersonalCsvUrl  || "",
     interpersonalSheetName: training.interpersonalSheetName || "Sheet5",
@@ -3797,9 +3797,9 @@ async function fetchData(manual=false){
   if (targetMainId) {
     try {
       const [sheet2Rows, sheet4Rows, sheet5Rows] = await Promise.all([
-        CONFIG.enableLeadership ? fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl, true) : null,
-        CONFIG.enableWewenang ? fetchSheetCsv(CONFIG.wewenangSheetName || "Sheet4", CONFIG.wewenangSheetId, CONFIG.wewenangCsvUrl, true) : null,
-        CONFIG.enableInterpersonal ? fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl, true) : null
+        CONFIG.leadershipEnabled ? fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl, false) : Promise.resolve(null),
+        CONFIG.wewenangEnabled ? fetchSheetCsv(CONFIG.wewenangSheetName || "Sheet4", CONFIG.wewenangSheetId, CONFIG.wewenangCsvUrl, false) : Promise.resolve(null),
+        CONFIG.interpersonalEnabled ? fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl, false) : Promise.resolve(null)
       ]);
 
       if (sheet2Rows && sheet2Rows.length > 1) {
@@ -5650,28 +5650,7 @@ window.filterApTable = function(status, element) {
 
 
 /* ================= CLIENT SECTIONS RENDERING ================= */
-function renderNavPillsVisibility() {
-  const pillLeadership = document.getElementById("navPillLeadership");
-  const pillWewenang = document.getElementById("navPillWewenang");
-  const pillInterpersonal = document.getElementById("navPillInterpersonal");
-
-  const showLeadership = CONFIG.enableLeadership === true;
-  const showWewenang = CONFIG.enableWewenang === true;
-  const showInterpersonal = CONFIG.enableInterpersonal === true;
-
-  if (pillLeadership) pillLeadership.style.display = showLeadership ? "" : "none";
-  if (pillWewenang) pillWewenang.style.display = showWewenang ? "" : "none";
-  if (pillInterpersonal) pillInterpersonal.style.display = showInterpersonal ? "" : "none";
-
-  const activePill = document.querySelector(".nav-pills .nav-pill.active");
-  if (activePill && activePill.style.display === "none") {
-    const defaultPill = document.querySelector('.nav-pills .nav-pill[href="#pane-prepost"]');
-    if (defaultPill) defaultPill.click();
-  }
-}
-
 function renderActiveClientSections(){
-  renderNavPillsVisibility();
   // Evaluasi
   const ev = CONFIG.evaluasi;
   if(ev){
@@ -5968,6 +5947,37 @@ function renderActiveClientSections(){
       }
     }
 
+  // Control visibility of optional analysis tabs (Leadership, Wewenang, Interpersonal)
+  const navLeadership = document.getElementById("navPillLeadership");
+  const paneLeadership = document.getElementById("pane-leadership");
+  const isLeadershipVisible = !!CONFIG.leadershipEnabled;
+  if (navLeadership) navLeadership.style.display = isLeadershipVisible ? "" : "none";
+  if (paneLeadership && !isLeadershipVisible && paneLeadership.classList.contains("active")) {
+    paneLeadership.classList.remove("active");
+    const firstTab = document.querySelector(".nav-pill");
+    if (firstTab) firstTab.click();
+  }
+
+  const navWewenang = document.getElementById("navPillWewenang");
+  const paneWewenang = document.getElementById("pane-wewenang");
+  const isWewenangVisible = !!CONFIG.wewenangEnabled;
+  if (navWewenang) navWewenang.style.display = isWewenangVisible ? "" : "none";
+  if (paneWewenang && !isWewenangVisible && paneWewenang.classList.contains("active")) {
+    paneWewenang.classList.remove("active");
+    const firstTab = document.querySelector(".nav-pill");
+    if (firstTab) firstTab.click();
+  }
+
+  const navInterpersonal = document.getElementById("navPillInterpersonal");
+  const paneInterpersonal = document.getElementById("pane-interpersonal");
+  const isInterpersonalVisible = !!CONFIG.interpersonalEnabled;
+  if (navInterpersonal) navInterpersonal.style.display = isInterpersonalVisible ? "" : "none";
+  if (paneInterpersonal && !isInterpersonalVisible && paneInterpersonal.classList.contains("active")) {
+    paneInterpersonal.classList.remove("active");
+    const firstTab = document.querySelector(".nav-pill");
+    if (firstTab) firstTab.click();
+  }
+
   initNavScroll();
 }
 
@@ -6150,12 +6160,15 @@ function bootDashboard() {
                     CONFIG.dokumentasi     = freshTraining.dokumentasi     || [];
                     CONFIG.actionPlan      = freshTraining.actionPlan      || [];
                     CONFIG.aiSummary       = freshTraining.aiSummary       || null;
+                    CONFIG.leadershipEnabled      = !!freshTraining.leadershipEnabled;
                     CONFIG.leadershipSheetId      = freshTraining.leadershipSheetId      || "";
                     CONFIG.leadershipCsvUrl     = freshTraining.leadershipCsvUrl     || "";
                     CONFIG.leadershipSheetName  = freshTraining.leadershipSheetName  || "Sheet2";
+                    CONFIG.wewenangEnabled        = !!freshTraining.wewenangEnabled;
                     CONFIG.wewenangSheetId        = freshTraining.wewenangSheetId        || "";
                     CONFIG.wewenangCsvUrl       = freshTraining.wewenangCsvUrl       || "";
                     CONFIG.wewenangSheetName    = freshTraining.wewenangSheetName    || "Sheet4";
+                    CONFIG.interpersonalEnabled   = !!freshTraining.interpersonalEnabled;
                     CONFIG.interpersonalSheetId   = freshTraining.interpersonalSheetId   || "";
                     CONFIG.interpersonalCsvUrl  = freshTraining.interpersonalCsvUrl  || "";
                     CONFIG.interpersonalSheetName = freshTraining.interpersonalSheetName || "Sheet5";
@@ -6166,12 +6179,15 @@ function bootDashboard() {
                     CONFIG.dokumentasi     = [];
                     CONFIG.actionPlan      = [];
                     CONFIG.aiSummary       = null;
+                    CONFIG.leadershipEnabled      = false;
                     CONFIG.leadershipSheetId      = "";
                     CONFIG.leadershipCsvUrl     = "";
                     CONFIG.leadershipSheetName  = "Sheet2";
+                    CONFIG.wewenangEnabled        = false;
                     CONFIG.wewenangSheetId        = "";
                     CONFIG.wewenangCsvUrl       = "";
                     CONFIG.wewenangSheetName    = "Sheet4";
+                    CONFIG.interpersonalEnabled   = false;
                     CONFIG.interpersonalSheetId   = "";
                     CONFIG.interpersonalCsvUrl  = "";
                     CONFIG.interpersonalSheetName = "Sheet5";

@@ -254,6 +254,26 @@
     color: var(--n500);
   }
 
+  /* Toggle Switch Styles */
+  .toggle-switch input:checked + .toggle-slider {
+    background-color: #16a34a !important;
+  }
+  .toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+  }
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
   /* Sidebar nav */
   .tab-sidebar{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-lg);
     box-shadow:var(--shadow-sm);padding:8px;position:sticky;top:80px}
@@ -971,16 +991,19 @@
               <h2>🌟 Pengaturan Google Sheet — Gaya Kepemimpinan</h2>
               <span class="badge badge-info" style="margin-left:auto;">Sheet2 (Gaya Kepemimpinan)</span>
             </div>
-            <p class="card-desc">Data Gaya Kepemimpinan diambil dari Google Sheet. Modul ini bersifat opsional. Aktifkan checkbox di bawah untuk menampilkan tab ini pada navigation bar dashboard frontend.</p>
-            
-            <div class="field" style="margin-bottom:16px; background:rgba(255, 210, 4, 0.08); padding:12px 16px; border-radius:10px; border:1px solid rgba(255, 210, 4, 0.3);">
-              <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:700; font-size:0.9rem; color:var(--text);">
-                <input type="checkbox" id="cfgEnableLeadership" style="width:19px; height:19px; cursor:pointer; accent-color:var(--primary);">
-                Tampilkan Tab Modul Gaya Kepemimpinan di Navigation Bar Frontend
-              </label>
-              <span class="field-hint" style="margin-left:29px; margin-top:2px;">Centang untuk menampilkan tab ini kepada pengguna di dashboard utama.</span>
-            </div>
+            <p class="card-desc">Data Gaya Kepemimpinan diambil dari Google Sheet. Masukkan ID/URL Sheet jika berbeda dari Sheet utama, dan sesuaikan nama tab sheet (Default: <b>Sheet2</b>).</p>
 
+            <div class="toggle-field" style="display:flex;align-items:center;gap:12px;margin:16px 0;padding:12px 16px;border-radius:10px;background:var(--bg-alt,#f5f5f5);border:1.5px solid var(--n200,#e0e0e0)">
+              <label class="toggle-switch" style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0">
+                <input type="checkbox" id="cfgLeadershipEnabled" style="opacity:0;width:0;height:0">
+                <span class="toggle-slider" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.3s"></span>
+              </label>
+              <div>
+                <strong style="font-size:.88rem">Tampilkan Tab Gaya Kepemimpinan di Dashboard</strong>
+                <div style="font-size:.76rem;color:var(--n500,#888);margin-top:2px" id="cfgLeadershipEnabledHint">Tab ini saat ini <b>disembunyikan</b> dari dashboard klien</div>
+              </div>
+            </div>
+            
             <div class="field">
               <label for="cfgLeadershipSheetId">ID Google Sheet / URL Spreadsheet (Kosongkan jika menggunakan Sheet Utama)</label>
               <input type="text" id="cfgLeadershipSheetId" placeholder="contoh: 1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY atau tempel link URL Sheet">
@@ -1016,16 +1039,19 @@
               <h2>🛡️ Pengaturan Google Sheet — Analisis Wewenang</h2>
               <span class="badge badge-info" style="margin-left:auto;">Sheet4 (Analisis Wewenang)</span>
             </div>
-            <p class="card-desc">Data Analisis Wewenang diambil dari Google Sheet. Modul ini bersifat opsional. Aktifkan checkbox di bawah untuk menampilkan tab ini pada navigation bar dashboard frontend.</p>
-            
-            <div class="field" style="margin-bottom:16px; background:rgba(255, 210, 4, 0.08); padding:12px 16px; border-radius:10px; border:1px solid rgba(255, 210, 4, 0.3);">
-              <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:700; font-size:0.9rem; color:var(--text);">
-                <input type="checkbox" id="cfgEnableWewenang" style="width:19px; height:19px; cursor:pointer; accent-color:var(--primary);">
-                Tampilkan Tab Modul Analisis Wewenang di Navigation Bar Frontend
-              </label>
-              <span class="field-hint" style="margin-left:29px; margin-top:2px;">Centang untuk menampilkan tab ini kepada pengguna di dashboard utama.</span>
-            </div>
+            <p class="card-desc">Data Analisis Wewenang diambil dari Google Sheet. Masukkan ID/URL Sheet jika berbeda dari Sheet utama, dan sesuaikan nama tab sheet (Default: <b>Sheet4</b>).</p>
 
+            <div class="toggle-field" style="display:flex;align-items:center;gap:12px;margin:16px 0;padding:12px 16px;border-radius:10px;background:var(--bg-alt,#f5f5f5);border:1.5px solid var(--n200,#e0e0e0)">
+              <label class="toggle-switch" style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0">
+                <input type="checkbox" id="cfgWewenangEnabled" style="opacity:0;width:0;height:0">
+                <span class="toggle-slider" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.3s"></span>
+              </label>
+              <div>
+                <strong style="font-size:.88rem">Tampilkan Tab Analisis Wewenang di Dashboard</strong>
+                <div style="font-size:.76rem;color:var(--n500,#888);margin-top:2px" id="cfgWewenangEnabledHint">Tab ini saat ini <b>disembunyikan</b> dari dashboard klien</div>
+              </div>
+            </div>
+            
             <div class="field">
               <label for="cfgWewenangSheetId">ID Google Sheet / URL Spreadsheet (Kosongkan jika menggunakan Sheet Utama)</label>
               <input type="text" id="cfgWewenangSheetId" placeholder="contoh: 1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY atau tempel link URL Sheet">
@@ -1061,16 +1087,19 @@
               <h2>💬 Pengaturan Google Sheet — Gaya Interpersonal</h2>
               <span class="badge badge-info" style="margin-left:auto;">Sheet5 (Gaya Interpersonal)</span>
             </div>
-            <p class="card-desc">Data Gaya Interpersonal diambil dari Google Sheet. Modul ini bersifat opsional. Aktifkan checkbox di bawah untuk menampilkan tab ini pada navigation bar dashboard frontend.</p>
-            
-            <div class="field" style="margin-bottom:16px; background:rgba(255, 210, 4, 0.08); padding:12px 16px; border-radius:10px; border:1px solid rgba(255, 210, 4, 0.3);">
-              <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:700; font-size:0.9rem; color:var(--text);">
-                <input type="checkbox" id="cfgEnableInterpersonal" style="width:19px; height:19px; cursor:pointer; accent-color:var(--primary);">
-                Tampilkan Tab Modul Gaya Interpersonal di Navigation Bar Frontend
-              </label>
-              <span class="field-hint" style="margin-left:29px; margin-top:2px;">Centang untuk menampilkan tab ini kepada pengguna di dashboard utama.</span>
-            </div>
+            <p class="card-desc">Data Gaya Interpersonal diambil dari Google Sheet. Masukkan ID/URL Sheet jika berbeda dari Sheet utama, dan sesuaikan nama tab sheet (Default: <b>Sheet5</b>).</p>
 
+            <div class="toggle-field" style="display:flex;align-items:center;gap:12px;margin:16px 0;padding:12px 16px;border-radius:10px;background:var(--bg-alt,#f5f5f5);border:1.5px solid var(--n200,#e0e0e0)">
+              <label class="toggle-switch" style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0">
+                <input type="checkbox" id="cfgInterpersonalEnabled" style="opacity:0;width:0;height:0">
+                <span class="toggle-slider" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.3s"></span>
+              </label>
+              <div>
+                <strong style="font-size:.88rem">Tampilkan Tab Gaya Interpersonal di Dashboard</strong>
+                <div style="font-size:.76rem;color:var(--n500,#888);margin-top:2px" id="cfgInterpersonalEnabledHint">Tab ini saat ini <b>disembunyikan</b> dari dashboard klien</div>
+              </div>
+            </div>
+            
             <div class="field">
               <label for="cfgInterpersonalSheetId">ID Google Sheet / URL Spreadsheet (Kosongkan jika menggunakan Sheet Utama)</label>
               <input type="text" id="cfgInterpersonalSheetId" placeholder="contoh: 1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY atau tempel link URL Sheet">
@@ -1685,19 +1714,40 @@ function openEditTraining(tid){
   $("cfgTrainerNames").value = t.trainerNames || "";
   refreshEvalCfgPreview();
 
-  if ($("cfgEnableLeadership"))     $("cfgEnableLeadership").checked     = t.enableLeadership === true;
-  if ($("cfgLeadershipSheetId"))    $("cfgLeadershipSheetId").value      = t.leadershipSheetId || "";
-  if ($("cfgLeadershipCsvUrl"))     $("cfgLeadershipCsvUrl").value       = t.leadershipCsvUrl || "";
-  if ($("cfgLeadershipSheetName"))  $("cfgLeadershipSheetName").value    = t.leadershipSheetName || "Sheet2";
+  function updateToggleHint(checkboxId, hintId) {
+    const cb = $(checkboxId);
+    const hint = $(hintId);
+    if (cb && hint) {
+      if (cb.checked) {
+        hint.innerHTML = `<span style="color:#16a34a;font-weight:600">✓ Tab ini DITAMPILKAN di dashboard klien</span>`;
+      } else {
+        hint.innerHTML = `Tab ini saat ini <b>disembunyikan</b> dari dashboard klien`;
+      }
+    }
+  }
 
-  if ($("cfgEnableWewenang"))       $("cfgEnableWewenang").checked       = t.enableWewenang === true;
-  if ($("cfgWewenangSheetId"))      $("cfgWewenangSheetId").value        = t.wewenangSheetId || "";
-  if ($("cfgWewenangCsvUrl"))       $("cfgWewenangCsvUrl").value         = t.wewenangCsvUrl || "";
-  if ($("cfgWewenangSheetName"))    $("cfgWewenangSheetName").value      = t.wewenangSheetName || "Sheet4";
+  if ($("cfgLeadershipEnabled")) {
+    $("cfgLeadershipEnabled").checked = !!t.leadershipEnabled;
+    updateToggleHint("cfgLeadershipEnabled", "cfgLeadershipEnabledHint");
+  }
+  if ($("cfgLeadershipSheetId")) $("cfgLeadershipSheetId").value = t.leadershipSheetId || "";
+  if ($("cfgLeadershipCsvUrl"))  $("cfgLeadershipCsvUrl").value  = t.leadershipCsvUrl || "";
+  if ($("cfgLeadershipSheetName")) $("cfgLeadershipSheetName").value = t.leadershipSheetName || "Sheet2";
 
-  if ($("cfgEnableInterpersonal"))  $("cfgEnableInterpersonal").checked  = t.enableInterpersonal === true;
-  if ($("cfgInterpersonalSheetId")) $("cfgInterpersonalSheetId").value   = t.interpersonalSheetId || "";
-  if ($("cfgInterpersonalCsvUrl"))  $("cfgInterpersonalCsvUrl").value    = t.interpersonalCsvUrl || "";
+  if ($("cfgWewenangEnabled")) {
+    $("cfgWewenangEnabled").checked = !!t.wewenangEnabled;
+    updateToggleHint("cfgWewenangEnabled", "cfgWewenangEnabledHint");
+  }
+  if ($("cfgWewenangSheetId")) $("cfgWewenangSheetId").value = t.wewenangSheetId || "";
+  if ($("cfgWewenangCsvUrl"))  $("cfgWewenangCsvUrl").value  = t.wewenangCsvUrl || "";
+  if ($("cfgWewenangSheetName")) $("cfgWewenangSheetName").value = t.wewenangSheetName || "Sheet4";
+
+  if ($("cfgInterpersonalEnabled")) {
+    $("cfgInterpersonalEnabled").checked = !!t.interpersonalEnabled;
+    updateToggleHint("cfgInterpersonalEnabled", "cfgInterpersonalEnabledHint");
+  }
+  if ($("cfgInterpersonalSheetId")) $("cfgInterpersonalSheetId").value = t.interpersonalSheetId || "";
+  if ($("cfgInterpersonalCsvUrl"))  $("cfgInterpersonalCsvUrl").value  = t.interpersonalCsvUrl || "";
   if ($("cfgInterpersonalSheetName")) $("cfgInterpersonalSheetName").value = t.interpersonalSheetName || "Sheet5";
   
   let kt = t.komentarTrainer;
@@ -2100,40 +2150,56 @@ bindAnalysisTestBtn("testLeadershipBtn", "testLeadershipIcon", "testLeadershipRe
 bindAnalysisTestBtn("testWewenangBtn", "testWewenangIcon", "testWewenangResult", "cfgWewenangSheetId", "cfgWewenangCsvUrl", "cfgWewenangSheetName", "Sheet4");
 bindAnalysisTestBtn("testInterpersonalBtn", "testInterpersonalIcon", "testInterpersonalResult", "cfgInterpersonalSheetId", "cfgInterpersonalCsvUrl", "cfgInterpersonalSheetName", "Sheet5");
 
+function setupToggleListener(checkboxId, hintId) {
+  const cb = $(checkboxId);
+  const hint = $(hintId);
+  if (!cb || !hint) return;
+  cb.addEventListener("change", () => {
+    if (cb.checked) {
+      hint.innerHTML = `<span style="color:#16a34a;font-weight:600">✓ Tab ini DITAMPILKAN di dashboard klien</span>`;
+    } else {
+      hint.innerHTML = `Tab ini saat ini <b>disembunyikan</b> dari dashboard klien`;
+    }
+  });
+}
+setupToggleListener("cfgLeadershipEnabled", "cfgLeadershipEnabledHint");
+setupToggleListener("cfgWewenangEnabled", "cfgWewenangEnabledHint");
+setupToggleListener("cfgInterpersonalEnabled", "cfgInterpersonalEnabledHint");
+
 if ($("saveLeadershipCfgBtn")) {
   $("saveLeadershipCfgBtn").addEventListener("click", () => {
     updateTraining({
-      enableLeadership: $("cfgEnableLeadership")?.checked ?? false,
+      leadershipEnabled: !!$("cfgLeadershipEnabled")?.checked,
       leadershipSheetId: extractSheetId($("cfgLeadershipSheetId")?.value),
       leadershipCsvUrl: $("cfgLeadershipCsvUrl")?.value.trim(),
       leadershipSheetName: $("cfgLeadershipSheetName")?.value.trim() || "Sheet2"
     });
     activateTraining(currentTrainingId);
-    toast("✓ Konfigurasi Gaya Kepemimpinan tersimpan & disinkronkan");
+    toast("✓ Konfigurasi Sheet2 (Gaya Kepemimpinan) tersimpan & disinkronkan");
   });
 }
 if ($("saveWewenangCfgBtn")) {
   $("saveWewenangCfgBtn").addEventListener("click", () => {
     updateTraining({
-      enableWewenang: $("cfgEnableWewenang")?.checked ?? false,
+      wewenangEnabled: !!$("cfgWewenangEnabled")?.checked,
       wewenangSheetId: extractSheetId($("cfgWewenangSheetId")?.value),
       wewenangCsvUrl: $("cfgWewenangCsvUrl")?.value.trim(),
       wewenangSheetName: $("cfgWewenangSheetName")?.value.trim() || "Sheet4"
     });
     activateTraining(currentTrainingId);
-    toast("✓ Konfigurasi Analisis Wewenang tersimpan & disinkronkan");
+    toast("✓ Konfigurasi Sheet4 (Analisis Wewenang) tersimpan & disinkronkan");
   });
 }
 if ($("saveInterpersonalCfgBtn")) {
   $("saveInterpersonalCfgBtn").addEventListener("click", () => {
     updateTraining({
-      enableInterpersonal: $("cfgEnableInterpersonal")?.checked ?? false,
+      interpersonalEnabled: !!$("cfgInterpersonalEnabled")?.checked,
       interpersonalSheetId: extractSheetId($("cfgInterpersonalSheetId")?.value),
       interpersonalCsvUrl: $("cfgInterpersonalCsvUrl")?.value.trim(),
       interpersonalSheetName: $("cfgInterpersonalSheetName")?.value.trim() || "Sheet5"
     });
     activateTraining(currentTrainingId);
-    toast("✓ Konfigurasi Gaya Interpersonal tersimpan & disinkronkan");
+    toast("✓ Konfigurasi Sheet5 (Gaya Interpersonal) tersimpan & disinkronkan");
   });
 }
 
