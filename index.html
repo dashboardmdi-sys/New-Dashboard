@@ -2792,6 +2792,9 @@ function showDashboard(training) {
     dateStart:     training.dateStart     || "",
     dateEnd:       training.dateEnd       || "",
     sessionTitle:  training.title         || "",
+    enableLeadership:     training.enableLeadership     === true,
+    enableWewenang:       training.enableWewenang       === true,
+    enableInterpersonal:  training.enableInterpersonal  === true,
     leadershipSheetId:      training.leadershipSheetId      || "",
     leadershipCsvUrl:     training.leadershipCsvUrl     || "",
     leadershipSheetName:  training.leadershipSheetName  || "Sheet2",
@@ -3794,9 +3797,9 @@ async function fetchData(manual=false){
   if (targetMainId) {
     try {
       const [sheet2Rows, sheet4Rows, sheet5Rows] = await Promise.all([
-        fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl, true),
-        fetchSheetCsv(CONFIG.wewenangSheetName || "Sheet4", CONFIG.wewenangSheetId, CONFIG.wewenangCsvUrl, true),
-        fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl, true)
+        CONFIG.enableLeadership ? fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl, true) : null,
+        CONFIG.enableWewenang ? fetchSheetCsv(CONFIG.wewenangSheetName || "Sheet4", CONFIG.wewenangSheetId, CONFIG.wewenangCsvUrl, true) : null,
+        CONFIG.enableInterpersonal ? fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl, true) : null
       ]);
 
       if (sheet2Rows && sheet2Rows.length > 1) {
@@ -5647,7 +5650,28 @@ window.filterApTable = function(status, element) {
 
 
 /* ================= CLIENT SECTIONS RENDERING ================= */
+function renderNavPillsVisibility() {
+  const pillLeadership = document.getElementById("navPillLeadership");
+  const pillWewenang = document.getElementById("navPillWewenang");
+  const pillInterpersonal = document.getElementById("navPillInterpersonal");
+
+  const showLeadership = CONFIG.enableLeadership === true;
+  const showWewenang = CONFIG.enableWewenang === true;
+  const showInterpersonal = CONFIG.enableInterpersonal === true;
+
+  if (pillLeadership) pillLeadership.style.display = showLeadership ? "" : "none";
+  if (pillWewenang) pillWewenang.style.display = showWewenang ? "" : "none";
+  if (pillInterpersonal) pillInterpersonal.style.display = showInterpersonal ? "" : "none";
+
+  const activePill = document.querySelector(".nav-pills .nav-pill.active");
+  if (activePill && activePill.style.display === "none") {
+    const defaultPill = document.querySelector('.nav-pills .nav-pill[href="#pane-prepost"]');
+    if (defaultPill) defaultPill.click();
+  }
+}
+
 function renderActiveClientSections(){
+  renderNavPillsVisibility();
   // Evaluasi
   const ev = CONFIG.evaluasi;
   if(ev){
