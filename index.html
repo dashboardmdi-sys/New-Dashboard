@@ -3785,33 +3785,60 @@ async function fetchData(manual=false){
   if (targetMainId) {
     try {
       const [sheet2Rows, sheet4Rows, sheet5Rows] = await Promise.all([
-        fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl),
-        fetchSheetCsv(CONFIG.wewenangSheetName || "Sheet4", CONFIG.wewenangSheetId, CONFIG.wewenangCsvUrl),
-        fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl)
+        fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl, true),
+        fetchSheetCsv(CONFIG.wewenangSheetName || "Sheet4", CONFIG.wewenangSheetId, CONFIG.wewenangCsvUrl, true),
+        fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl, true)
       ]);
-      if (sheet2Rows) {
+
+      if (sheet2Rows && sheet2Rows.length > 1) {
         const lList = extractLeadership(sheet2Rows);
         if (lList && lList.length > 0) {
           leadership = lList;
           lStats = computeLeadershipStats(lList);
           renderLeadership();
+        } else {
+          leadership = [];
+          lStats = null;
+          renderLeadership();
         }
+      } else {
+        leadership = [];
+        lStats = null;
+        renderLeadership();
       }
-      if (sheet4Rows) {
+
+      if (sheet4Rows && sheet4Rows.length > 1) {
         const wList = extractWewenang(sheet4Rows);
         if (wList && wList.length > 0) {
           wewenang = wList;
           wStats = computeWewenangStats(wList);
           renderWewenang();
+        } else {
+          wewenang = [];
+          wStats = null;
+          renderWewenang();
         }
+      } else {
+        wewenang = [];
+        wStats = null;
+        renderWewenang();
       }
-      if (sheet5Rows) {
+
+      if (sheet5Rows && sheet5Rows.length > 1) {
         const iList = extractInterpersonal(sheet5Rows);
         if (iList && iList.length > 0) {
           interpersonal = iList;
           iStats = computeInterpersonalStats(iList);
           renderInterpersonal();
+        } else {
+          interpersonal = [];
+          iStats = null;
+          renderInterpersonal();
         }
+      } else {
+        interpersonal = [];
+        iStats = null;
+        renderInterpersonal();
       }
     } catch(e) {
       console.warn("Gagal memuat Sheet Analisis (Sheet2/4/5):", e);
@@ -4310,7 +4337,10 @@ function iBadgeFullHTML(code){
   return `<span class="style-badge ${m.cls}"><span class="dot"></span>${m.code} · ${m.label}</span>`;
 }
 
-async function fetchSheetCsv(sheetName, customSheetId = null, customCsvUrl = null){
+async function fetchSheetCsv(sheetName, customSheetId = null, customCsvUrl = null, requireExplicit = false){
+  if (requireExplicit && !customSheetId && !customCsvUrl) {
+    return null;
+  }
   if (customCsvUrl) {
     let finalUrl = customCsvUrl;
     if (finalUrl.endsWith("/pubhtml")) finalUrl = finalUrl.replace("/pubhtml", "/pub?output=csv");
@@ -4497,8 +4527,28 @@ function computeInterpersonalStats(list){
 /* ================= RENDER LEADERSHIP ================= */
 function renderLeadership(){
   if(!lStats){
-    const lTot = document.getElementById("lTotal");
-    if(lTot) lTot.textContent="—";
+    const lTot = document.getElementById("lTotal"); if(lTot) lTot.textContent="—";
+    const lDom = document.getElementById("lDomStyle"); if(lDom) lDom.textContent="—";
+    const lDomSub = document.getElementById("lDomSub"); if(lDomSub) lDomSub.textContent="peserta dengan gaya ini";
+    const lAvg = document.getElementById("lAvgEff"); if(lAvg) lAvg.textContent="—";
+    const lTop = document.getElementById("lTopEffName"); if(lTop) lTop.textContent="—";
+    const lTopSub = document.getElementById("lTopEffSub"); if(lTopSub) lTopSub.textContent="—";
+
+    const podList = document.getElementById("lPodiumList");
+    if(podList) podList.innerHTML = `<div style="text-align:center;padding:30px;color:var(--n500);font-size:.82rem">Belum ada link/ID Google Sheet yang dimasukkan di Backend.</div>`;
+
+    const tbody = document.getElementById("lTbody");
+    if(tbody) {
+      tbody.innerHTML = `<tr style="display:grid;grid-template-columns:1fr">
+        <td style="padding:0;border-bottom:none">${emptyStateHTML(
+          "Data Belum Dimasukkan",
+          "Silakan masukkan ID Google Sheet atau URL CSV untuk Gaya Kepemimpinan di menu Backend",
+          "ltable"
+        )}</td>
+      </tr>`;
+    }
+    const countEl = document.getElementById("lRowCount");
+    if(countEl) countEl.textContent = `0 peserta`;
     return;
   }
   document.getElementById("lTotal").textContent = lStats.total;
@@ -4814,8 +4864,28 @@ function drawLeadershipDetailChart(canvas, p){
 /* ================= RENDER WEWENANG ================= */
 function renderWewenang(){
   if(!wStats){
-    const wTot = document.getElementById("wTotal");
-    if(wTot) wTot.textContent="—";
+    const wTot = document.getElementById("wTotal"); if(wTot) wTot.textContent="—";
+    const wDom = document.getElementById("wDomStyle"); if(wDom) wDom.textContent="—";
+    const wDomSub = document.getElementById("wDomSub"); if(wDomSub) wDomSub.textContent="peserta dengan tipe ini";
+    const wAvg = document.getElementById("wAvgEff"); if(wAvg) wAvg.textContent="—";
+    const wTop = document.getElementById("wTopEffName"); if(wTop) wTop.textContent="—";
+    const wTopSub = document.getElementById("wTopEffSub"); if(wTopSub) wTopSub.textContent="—";
+
+    const podList = document.getElementById("wPodiumList");
+    if(podList) podList.innerHTML = `<div style="text-align:center;padding:30px;color:var(--n500);font-size:.85rem">Belum ada link/ID Google Sheet yang dimasukkan di Backend.</div>`;
+
+    const tbody = document.getElementById("wTbody");
+    if(tbody) {
+      tbody.innerHTML = `<tr style="display:grid;grid-template-columns:1fr">
+        <td style="padding:0;border-bottom:none">${emptyStateHTML(
+          "Data Belum Dimasukkan",
+          "Silakan masukkan ID Google Sheet atau URL CSV untuk Analisis Wewenang di menu Backend",
+          "wtable"
+        )}</td>
+      </tr>`;
+    }
+    const countEl = document.getElementById("wRowCount");
+    if(countEl) countEl.textContent = `0 peserta`;
     return;
   }
   document.getElementById("wTotal").textContent = wStats.total;
@@ -5131,8 +5201,25 @@ function drawWewenangDetailChart(canvas, p){
 /* ================= RENDER INTERPERSONAL ================= */
 function renderInterpersonal(){
   if(!iStats){
-    const iTot = document.getElementById("iTotal");
-    if(iTot) iTot.textContent="—";
+    const iTot = document.getElementById("iTotal"); if(iTot) iTot.textContent="—";
+    const iDom = document.getElementById("iDomStyle"); if(iDom) iDom.textContent="—";
+    const iDomSub = document.getElementById("iDomSub"); if(iDomSub) iDomSub.textContent="peserta dengan gaya ini";
+    const iAvg = document.getElementById("iAvgDom"); if(iAvg) iAvg.textContent="—";
+    const iTop = document.getElementById("iTopDomName"); if(iTop) iTop.textContent="—";
+    const iTopSub = document.getElementById("iTopDomSub"); if(iTopSub) iTopSub.textContent="—";
+
+    const tbody = document.getElementById("iTbody");
+    if(tbody) {
+      tbody.innerHTML = `<tr style="display:grid;grid-template-columns:1fr">
+        <td style="padding:0;border-bottom:none">${emptyStateHTML(
+          "Data Belum Dimasukkan",
+          "Silakan masukkan ID Google Sheet atau URL CSV untuk Gaya Interpersonal di menu Backend",
+          "itable"
+        )}</td>
+      </tr>`;
+    }
+    const countEl = document.getElementById("iRowCount");
+    if(countEl) countEl.textContent = `0 peserta`;
     return;
   }
   document.getElementById("iTotal").textContent = iStats.total;
