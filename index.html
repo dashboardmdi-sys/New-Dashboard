@@ -2792,6 +2792,15 @@ function showDashboard(training) {
     dateStart:     training.dateStart     || "",
     dateEnd:       training.dateEnd       || "",
     sessionTitle:  training.title         || "",
+    leadershipSheetId:      training.leadershipSheetId      || "",
+    leadershipCsvUrl:     training.leadershipCsvUrl     || "",
+    leadershipSheetName:  training.leadershipSheetName  || "Sheet2",
+    wewenangSheetId:        training.wewenangSheetId        || "",
+    wewenangCsvUrl:       training.wewenangCsvUrl       || "",
+    wewenangSheetName:    training.wewenangSheetName    || "Sheet4",
+    interpersonalSheetId:   training.interpersonalSheetId   || "",
+    interpersonalCsvUrl:  training.interpersonalCsvUrl  || "",
+    interpersonalSheetName: training.interpersonalSheetName || "Sheet5",
   });
 
   activeTrainingId = String(training.id);
@@ -6117,6 +6126,15 @@ function bootDashboard() {
                     CONFIG.dokumentasi     = freshTraining.dokumentasi     || [];
                     CONFIG.actionPlan      = freshTraining.actionPlan      || [];
                     CONFIG.aiSummary       = freshTraining.aiSummary       || null;
+                    CONFIG.leadershipSheetId      = freshTraining.leadershipSheetId      || "";
+                    CONFIG.leadershipCsvUrl     = freshTraining.leadershipCsvUrl     || "";
+                    CONFIG.leadershipSheetName  = freshTraining.leadershipSheetName  || "Sheet2";
+                    CONFIG.wewenangSheetId        = freshTraining.wewenangSheetId        || "";
+                    CONFIG.wewenangCsvUrl       = freshTraining.wewenangCsvUrl       || "";
+                    CONFIG.wewenangSheetName    = freshTraining.wewenangSheetName    || "Sheet4";
+                    CONFIG.interpersonalSheetId   = freshTraining.interpersonalSheetId   || "";
+                    CONFIG.interpersonalCsvUrl  = freshTraining.interpersonalCsvUrl  || "";
+                    CONFIG.interpersonalSheetName = freshTraining.interpersonalSheetName || "Sheet5";
                   } else {
                     // Sesi aktif tidak ditemukan di data fresh — kosongkan agar tidak bocor
                     CONFIG.evaluasi        = "";
@@ -6124,6 +6142,15 @@ function bootDashboard() {
                     CONFIG.dokumentasi     = [];
                     CONFIG.actionPlan      = [];
                     CONFIG.aiSummary       = null;
+                    CONFIG.leadershipSheetId      = "";
+                    CONFIG.leadershipCsvUrl     = "";
+                    CONFIG.leadershipSheetName  = "Sheet2";
+                    CONFIG.wewenangSheetId        = "";
+                    CONFIG.wewenangCsvUrl       = "";
+                    CONFIG.wewenangSheetName    = "Sheet4";
+                    CONFIG.interpersonalSheetId   = "";
+                    CONFIG.interpersonalCsvUrl  = "";
+                    CONFIG.interpersonalSheetName = "Sheet5";
                   }
                 }
               }
