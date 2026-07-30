@@ -3785,9 +3785,9 @@ async function fetchData(manual=false){
   if (targetMainId) {
     try {
       const [sheet2Rows, sheet4Rows, sheet5Rows] = await Promise.all([
-        fetchSheetCsv("Sheet2"),
-        fetchSheetCsv("Sheet4"),
-        fetchSheetCsv("Sheet5")
+        fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl),
+        fetchSheetCsv(CONFIG.wewenangSheetName || "Sheet4", CONFIG.wewenangSheetId, CONFIG.wewenangCsvUrl),
+        fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl)
       ]);
       if (sheet2Rows) {
         const lList = extractLeadership(sheet2Rows);
@@ -4310,8 +4310,20 @@ function iBadgeFullHTML(code){
   return `<span class="style-badge ${m.cls}"><span class="dot"></span>${m.code} · ${m.label}</span>`;
 }
 
-async function fetchSheetCsv(sheetName){
-  const targetSheetId = CONFIG.sheetId || SHEET_ID || "1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY";
+async function fetchSheetCsv(sheetName, customSheetId = null, customCsvUrl = null){
+  if (customCsvUrl) {
+    let finalUrl = customCsvUrl;
+    if (finalUrl.endsWith("/pubhtml")) finalUrl = finalUrl.replace("/pubhtml", "/pub?output=csv");
+    const sep = finalUrl.includes("?") ? "&" : "?";
+    try {
+      const res = await fetch(`${finalUrl}${sep}_cb=${Date.now()}`, { cache: "no-store" });
+      if (res.ok) {
+        const text = await res.text();
+        if (!text.trimStart().startsWith("<")) return parseCSV(text);
+      }
+    } catch(e) {}
+  }
+  const targetSheetId = customSheetId || CONFIG.sheetId || SHEET_ID || "1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY";
   const csvUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
   try{
     const res = await fetch(`${csvUrl}&_cb=${Date.now()}`,{cache:"no-store"});

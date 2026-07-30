@@ -721,6 +721,18 @@
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 12 2 2 4-4"/></svg>
           Action Plan
         </button>
+        <button class="tab-btn" data-tab="leadership">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
+          Gaya Kepemimpinan
+        </button>
+        <button class="tab-btn" data-tab="wewenang">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Analisis Wewenang
+        </button>
+        <button class="tab-btn" data-tab="interpersonal">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          Gaya Interpersonal
+        </button>
       </div>
 
       <!-- Tab Content -->
@@ -952,6 +964,116 @@
           
         </div>
 
+        <!-- TAB: GAYA KEPEMIMPINAN -->
+        <div class="tab-pane" id="pane-leadership">
+          <div class="card">
+            <div class="card-head">
+              <h2>🌟 Pengaturan Google Sheet — Gaya Kepemimpinan</h2>
+              <span class="badge badge-info" style="margin-left:auto;">Sheet2 (Gaya Kepemimpinan)</span>
+            </div>
+            <p class="card-desc">Data Gaya Kepemimpinan diambil dari Google Sheet. Masukkan ID/URL Sheet jika berbeda dari Sheet utama, dan sesuaikan nama tab sheet (Default: <b>Sheet2</b>).</p>
+            
+            <div class="field">
+              <label for="cfgLeadershipSheetId">ID Google Sheet / URL Spreadsheet (Kosongkan jika menggunakan Sheet Utama)</label>
+              <input type="text" id="cfgLeadershipSheetId" placeholder="contoh: 1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY atau tempel link URL Sheet">
+              <span class="field-hint">ID Sheet terdeteksi: <strong id="cfgLeadershipIdEcho">—</strong></span>
+            </div>
+            <div class="field">
+              <label for="cfgLeadershipCsvUrl">URL CSV Dipublikasikan (Opsional — jika menggunakan Publish to Web CSV)</label>
+              <input type="text" id="cfgLeadershipCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
+            </div>
+            <div class="field">
+              <label for="cfgLeadershipSheetName">Nama Tab Google Sheet (Default: Sheet2)</label>
+              <input type="text" id="cfgLeadershipSheetName" value="Sheet2" placeholder="Sheet2">
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:16px;">
+              <button class="btn btn-primary" id="saveLeadershipCfgBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Simpan Konfigurasi Sheet2
+              </button>
+              <button class="btn btn-secondary" id="testLeadershipBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="testLeadershipIcon"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Uji &amp; Preview Sheet2
+              </button>
+            </div>
+            <div class="test-result" id="testLeadershipResult"></div>
+          </div>
+        </div>
+
+        <!-- TAB: ANALISIS WEWENANG -->
+        <div class="tab-pane" id="pane-wewenang">
+          <div class="card">
+            <div class="card-head">
+              <h2>🛡️ Pengaturan Google Sheet — Analisis Wewenang</h2>
+              <span class="badge badge-info" style="margin-left:auto;">Sheet4 (Analisis Wewenang)</span>
+            </div>
+            <p class="card-desc">Data Analisis Wewenang diambil dari Google Sheet. Masukkan ID/URL Sheet jika berbeda dari Sheet utama, dan sesuaikan nama tab sheet (Default: <b>Sheet4</b>).</p>
+            
+            <div class="field">
+              <label for="cfgWewenangSheetId">ID Google Sheet / URL Spreadsheet (Kosongkan jika menggunakan Sheet Utama)</label>
+              <input type="text" id="cfgWewenangSheetId" placeholder="contoh: 1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY atau tempel link URL Sheet">
+              <span class="field-hint">ID Sheet terdeteksi: <strong id="cfgWewenangIdEcho">—</strong></span>
+            </div>
+            <div class="field">
+              <label for="cfgWewenangCsvUrl">URL CSV Dipublikasikan (Opsional — jika menggunakan Publish to Web CSV)</label>
+              <input type="text" id="cfgWewenangCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
+            </div>
+            <div class="field">
+              <label for="cfgWewenangSheetName">Nama Tab Google Sheet (Default: Sheet4)</label>
+              <input type="text" id="cfgWewenangSheetName" value="Sheet4" placeholder="Sheet4">
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:16px;">
+              <button class="btn btn-primary" id="saveWewenangCfgBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Simpan Konfigurasi Sheet4
+              </button>
+              <button class="btn btn-secondary" id="testWewenangBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="testWewenangIcon"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Uji &amp; Preview Sheet4
+              </button>
+            </div>
+            <div class="test-result" id="testWewenangResult"></div>
+          </div>
+        </div>
+
+        <!-- TAB: GAYA INTERPERSONAL -->
+        <div class="tab-pane" id="pane-interpersonal">
+          <div class="card">
+            <div class="card-head">
+              <h2>💬 Pengaturan Google Sheet — Gaya Interpersonal</h2>
+              <span class="badge badge-info" style="margin-left:auto;">Sheet5 (Gaya Interpersonal)</span>
+            </div>
+            <p class="card-desc">Data Gaya Interpersonal diambil dari Google Sheet. Masukkan ID/URL Sheet jika berbeda dari Sheet utama, dan sesuaikan nama tab sheet (Default: <b>Sheet5</b>).</p>
+            
+            <div class="field">
+              <label for="cfgInterpersonalSheetId">ID Google Sheet / URL Spreadsheet (Kosongkan jika menggunakan Sheet Utama)</label>
+              <input type="text" id="cfgInterpersonalSheetId" placeholder="contoh: 1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY atau tempel link URL Sheet">
+              <span class="field-hint">ID Sheet terdeteksi: <strong id="cfgInterpersonalIdEcho">—</strong></span>
+            </div>
+            <div class="field">
+              <label for="cfgInterpersonalCsvUrl">URL CSV Dipublikasikan (Opsional — jika menggunakan Publish to Web CSV)</label>
+              <input type="text" id="cfgInterpersonalCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
+            </div>
+            <div class="field">
+              <label for="cfgInterpersonalSheetName">Nama Tab Google Sheet (Default: Sheet5)</label>
+              <input type="text" id="cfgInterpersonalSheetName" value="Sheet5" placeholder="Sheet5">
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:16px;">
+              <button class="btn btn-primary" id="saveInterpersonalCfgBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Simpan Konfigurasi Sheet5
+              </button>
+              <button class="btn btn-secondary" id="testInterpersonalBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="testInterpersonalIcon"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Uji &amp; Preview Sheet5
+              </button>
+            </div>
+            <div class="test-result" id="testInterpersonalResult"></div>
+          </div>
+        </div>
 
       </div>
     </div>
@@ -1538,6 +1660,18 @@ function openEditTraining(tid){
   $("cfgEvalDataRange").value = t.evalDataRange || "";
   $("cfgTrainerNames").value = t.trainerNames || "";
   refreshEvalCfgPreview();
+
+  if ($("cfgLeadershipSheetId")) $("cfgLeadershipSheetId").value = t.leadershipSheetId || "";
+  if ($("cfgLeadershipCsvUrl"))  $("cfgLeadershipCsvUrl").value  = t.leadershipCsvUrl || "";
+  if ($("cfgLeadershipSheetName")) $("cfgLeadershipSheetName").value = t.leadershipSheetName || "Sheet2";
+
+  if ($("cfgWewenangSheetId")) $("cfgWewenangSheetId").value = t.wewenangSheetId || "";
+  if ($("cfgWewenangCsvUrl"))  $("cfgWewenangCsvUrl").value  = t.wewenangCsvUrl || "";
+  if ($("cfgWewenangSheetName")) $("cfgWewenangSheetName").value = t.wewenangSheetName || "Sheet4";
+
+  if ($("cfgInterpersonalSheetId")) $("cfgInterpersonalSheetId").value = t.interpersonalSheetId || "";
+  if ($("cfgInterpersonalCsvUrl"))  $("cfgInterpersonalCsvUrl").value  = t.interpersonalCsvUrl || "";
+  if ($("cfgInterpersonalSheetName")) $("cfgInterpersonalSheetName").value = t.interpersonalSheetName || "Sheet5";
   
   let kt = t.komentarTrainer;
   if(typeof kt === "string"){
@@ -1882,6 +2016,96 @@ $("cfgEvalTestBtn").addEventListener("click", async()=>{
   }
   icon.classList.remove("spin");
 });
+
+/* ===========================
+   ANALYSIS TABS BACKEND (Leadership, Wewenang, Interpersonal)
+   =========================== */
+function setupSheetIdEcho(inputId, echoId) {
+  const inp = $(inputId);
+  const echo = $(echoId);
+  if (!inp || !echo) return;
+  inp.addEventListener("input", () => {
+    const raw = inp.value.trim();
+    const id = extractSheetId(raw);
+    if (raw && /\/spreadsheets\/d\/e\//.test(raw)) {
+      echo.textContent = "⚠ Ini URL publish, bukan URL sheet.";
+      echo.style.color = "var(--danger)";
+    } else {
+      echo.textContent = id || "Menggunakan Sheet Utama";
+      echo.style.color = "";
+    }
+  });
+}
+setupSheetIdEcho("cfgLeadershipSheetId", "cfgLeadershipIdEcho");
+setupSheetIdEcho("cfgWewenangSheetId", "cfgWewenangIdEcho");
+setupSheetIdEcho("cfgInterpersonalSheetId", "cfgInterpersonalIdEcho");
+
+function bindAnalysisTestBtn(btnId, iconId, resultId, customSheetIdInput, csvInputId, nameInputId, defaultSheetName) {
+  const btn = $(btnId);
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    const box = $(resultId);
+    if (!box) return;
+    box.classList.add("show");
+    const customIdRaw = $(customSheetIdInput)?.value.trim() || "";
+    const id = extractSheetId(customIdRaw) || extractSheetId($("cfgSheetId")?.value) || "1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY";
+    const csvUrl = $(csvInputId)?.value.trim() || "";
+    const icon = $(iconId);
+    if (icon) icon.classList.add("spin");
+    box.innerHTML = `<div class="test-status warn"><span class="dot"></span>Menguji koneksi…</div>`;
+    try {
+      const sheetName = $(nameInputId)?.value.trim() || defaultSheetName;
+      const result = await testSheetConnection(id, csvUrl, sheetName, "");
+      const rows = result.rows;
+      const cols = rows.reduce((m, r) => Math.max(m, r.length), 0);
+      const th = rows[0].map(c => `<th>${esc(c)}</th>`).join("");
+      const tb = rows.slice(1, 6).map(r => `<tr>${rows[0].map((_, i) => `<td>${esc(r[i] ?? "")}</td>`).join("")}</tr>`).join("");
+      box.innerHTML = `<div class="test-status ok"><span class="dot"></span>Koneksi OK (${result.source}) · ${rows.length} baris × ${cols} kolom</div>
+        <div class="preview-table"><table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>`;
+    } catch (err) {
+      box.innerHTML = `<div class="test-status err"><span class="dot"></span>Gagal: ${esc(err.message)}</div>`;
+    }
+    if (icon) icon.classList.remove("spin");
+  });
+}
+
+bindAnalysisTestBtn("testLeadershipBtn", "testLeadershipIcon", "testLeadershipResult", "cfgLeadershipSheetId", "cfgLeadershipCsvUrl", "cfgLeadershipSheetName", "Sheet2");
+bindAnalysisTestBtn("testWewenangBtn", "testWewenangIcon", "testWewenangResult", "cfgWewenangSheetId", "cfgWewenangCsvUrl", "cfgWewenangSheetName", "Sheet4");
+bindAnalysisTestBtn("testInterpersonalBtn", "testInterpersonalIcon", "testInterpersonalResult", "cfgInterpersonalSheetId", "cfgInterpersonalCsvUrl", "cfgInterpersonalSheetName", "Sheet5");
+
+if ($("saveLeadershipCfgBtn")) {
+  $("saveLeadershipCfgBtn").addEventListener("click", () => {
+    updateTraining({
+      leadershipSheetId: extractSheetId($("cfgLeadershipSheetId")?.value),
+      leadershipCsvUrl: $("cfgLeadershipCsvUrl")?.value.trim(),
+      leadershipSheetName: $("cfgLeadershipSheetName")?.value.trim() || "Sheet2"
+    });
+    activateTraining(currentTrainingId);
+    toast("✓ Konfigurasi Sheet2 (Gaya Kepemimpinan) tersimpan & disinkronkan");
+  });
+}
+if ($("saveWewenangCfgBtn")) {
+  $("saveWewenangCfgBtn").addEventListener("click", () => {
+    updateTraining({
+      wewenangSheetId: extractSheetId($("cfgWewenangSheetId")?.value),
+      wewenangCsvUrl: $("cfgWewenangCsvUrl")?.value.trim(),
+      wewenangSheetName: $("cfgWewenangSheetName")?.value.trim() || "Sheet4"
+    });
+    activateTraining(currentTrainingId);
+    toast("✓ Konfigurasi Sheet4 (Analisis Wewenang) tersimpan & disinkronkan");
+  });
+}
+if ($("saveInterpersonalCfgBtn")) {
+  $("saveInterpersonalCfgBtn").addEventListener("click", () => {
+    updateTraining({
+      interpersonalSheetId: extractSheetId($("cfgInterpersonalSheetId")?.value),
+      interpersonalCsvUrl: $("cfgInterpersonalCsvUrl")?.value.trim(),
+      interpersonalSheetName: $("cfgInterpersonalSheetName")?.value.trim() || "Sheet5"
+    });
+    activateTraining(currentTrainingId);
+    toast("✓ Konfigurasi Sheet5 (Gaya Interpersonal) tersimpan & disinkronkan");
+  });
+}
 
 $("evalSaveBtn").addEventListener("click",()=>{
   updateTraining({evaluasi: { title: $("evalTitle").value.trim(), text: $("evalText").value.trim(), ctaPct: $("evalCtaPct").value.trim() }});
