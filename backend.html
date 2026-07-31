@@ -1863,6 +1863,14 @@ function updateTraining(patch){
   return t;
 }
 
+/* ----- Helper: set active training (syncs to server & tells dashboard which training to load) ----- */
+function activateTraining(tid){
+  const cIdx = clientsDb.findIndex(x=>String(x.id)===String(currentClientId));
+  if(cIdx===-1) return;
+  clientsDb[cIdx].activeTrainingId = tid;
+  apiUpdateClient(clientsDb[cIdx]);
+}
+
 /* ===========================
    TAB 1 — CONFIG (PRE & POST)
    =========================== */

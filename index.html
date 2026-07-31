@@ -2489,6 +2489,27 @@ let SHEET_ID = "";
 let CSV_URL = "";
 const POLL_MS = 10000;
 
+/* --- Standalone: show/hide optional analysis tabs based on CONFIG flags --- */
+function updateAnalysisTabVisibility() {
+  const tabs = [
+    { navId: "navPillLeadership",    paneId: "pane-leadership",    flag: "leadershipEnabled"    },
+    { navId: "navPillWewenang",      paneId: "pane-wewenang",      flag: "wewenangEnabled"      },
+    { navId: "navPillInterpersonal", paneId: "pane-interpersonal", flag: "interpersonalEnabled" },
+  ];
+  tabs.forEach(({ navId, paneId, flag }) => {
+    const nav  = document.getElementById(navId);
+    const pane = document.getElementById(paneId);
+    const isVisible = !!(CONFIG && CONFIG[flag]);
+    console.log("[AnalysisTabs]", flag, "=", CONFIG && CONFIG[flag], "→ visible:", isVisible);
+    if (nav)  nav.style.display = isVisible ? "" : "none";
+    if (pane && !isVisible && pane.classList.contains("active")) {
+      pane.classList.remove("active");
+      const firstVisible = document.querySelector(".nav-pill:not([style*='display: none']):not([style*='display:none'])");
+      if (firstVisible) firstVisible.click();
+    }
+  });
+}
+
 function initRouting(){
   try {
     const saved = localStorage.getItem("dashboard-theme");
@@ -2914,6 +2935,8 @@ function showDashboard(training) {
 
   // Apply appearance and render static sections (Action Plan, Comments, Documentation)
   applyAppearance();
+  // Apply analysis tab visibility IMMEDIATELY before general render
+  updateAnalysisTabVisibility();
   try {
     renderActiveClientSections();
   } catch(e) {
@@ -5948,35 +5971,7 @@ function renderActiveClientSections(){
     }
 
   // Control visibility of optional analysis tabs (Leadership, Wewenang, Interpersonal)
-  const navLeadership = document.getElementById("navPillLeadership");
-  const paneLeadership = document.getElementById("pane-leadership");
-  const isLeadershipVisible = !!CONFIG.leadershipEnabled;
-  if (navLeadership) navLeadership.style.display = isLeadershipVisible ? "" : "none";
-  if (paneLeadership && !isLeadershipVisible && paneLeadership.classList.contains("active")) {
-    paneLeadership.classList.remove("active");
-    const firstTab = document.querySelector(".nav-pill");
-    if (firstTab) firstTab.click();
-  }
-
-  const navWewenang = document.getElementById("navPillWewenang");
-  const paneWewenang = document.getElementById("pane-wewenang");
-  const isWewenangVisible = !!CONFIG.wewenangEnabled;
-  if (navWewenang) navWewenang.style.display = isWewenangVisible ? "" : "none";
-  if (paneWewenang && !isWewenangVisible && paneWewenang.classList.contains("active")) {
-    paneWewenang.classList.remove("active");
-    const firstTab = document.querySelector(".nav-pill");
-    if (firstTab) firstTab.click();
-  }
-
-  const navInterpersonal = document.getElementById("navPillInterpersonal");
-  const paneInterpersonal = document.getElementById("pane-interpersonal");
-  const isInterpersonalVisible = !!CONFIG.interpersonalEnabled;
-  if (navInterpersonal) navInterpersonal.style.display = isInterpersonalVisible ? "" : "none";
-  if (paneInterpersonal && !isInterpersonalVisible && paneInterpersonal.classList.contains("active")) {
-    paneInterpersonal.classList.remove("active");
-    const firstTab = document.querySelector(".nav-pill");
-    if (firstTab) firstTab.click();
-  }
+  updateAnalysisTabVisibility();
 
   initNavScroll();
 }
@@ -6198,6 +6193,7 @@ function bootDashboard() {
         } catch(e) { console.warn("Background client sync gagal:", e); }
 
         try { await fetchData(); } catch(e) { console.error("fetchData poll error:", e); }
+        try { updateAnalysisTabVisibility(); } catch(e) { console.error("updateAnalysisTabVisibility poll error:", e); }
         try { renderActiveClientSections(); } catch(e) { console.error("renderActiveClientSections poll error:", e); }
       }, POLL_MS);
     }
