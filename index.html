@@ -2489,27 +2489,6 @@ let SHEET_ID = "";
 let CSV_URL = "";
 const POLL_MS = 10000;
 
-/* --- Standalone: show/hide optional analysis tabs based on CONFIG flags --- */
-function updateAnalysisTabVisibility() {
-  const tabs = [
-    { navId: "navPillLeadership",    paneId: "pane-leadership",    flag: "leadershipEnabled"    },
-    { navId: "navPillWewenang",      paneId: "pane-wewenang",      flag: "wewenangEnabled"      },
-    { navId: "navPillInterpersonal", paneId: "pane-interpersonal", flag: "interpersonalEnabled" },
-  ];
-  tabs.forEach(({ navId, paneId, flag }) => {
-    const nav  = document.getElementById(navId);
-    const pane = document.getElementById(paneId);
-    const isVisible = !!(CONFIG && CONFIG[flag]);
-    console.log("[AnalysisTabs]", flag, "=", CONFIG && CONFIG[flag], "→ visible:", isVisible);
-    if (nav)  nav.style.display = isVisible ? "" : "none";
-    if (pane && !isVisible && pane.classList.contains("active")) {
-      pane.classList.remove("active");
-      const firstVisible = document.querySelector(".nav-pill:not([style*='display: none']):not([style*='display:none'])");
-      if (firstVisible) firstVisible.click();
-    }
-  });
-}
-
 function initRouting(){
   try {
     const saved = localStorage.getItem("dashboard-theme");
@@ -2935,8 +2914,6 @@ function showDashboard(training) {
 
   // Apply appearance and render static sections (Action Plan, Comments, Documentation)
   applyAppearance();
-  // Apply analysis tab visibility IMMEDIATELY before general render
-  updateAnalysisTabVisibility();
   try {
     renderActiveClientSections();
   } catch(e) {
@@ -3819,10 +3796,14 @@ async function fetchData(manual=false){
   // 2.5 Fetch Analysis Sheets (Sheet2: Leadership, Sheet4: Wewenang, Sheet5: Interpersonal)
   if (targetMainId) {
     try {
+      const isLeadershipActive    = !!(CONFIG.leadershipEnabled || CONFIG.leadershipSheetId || CONFIG.leadershipCsvUrl);
+      const isWewenangActive      = !!(CONFIG.wewenangEnabled || CONFIG.wewenangSheetId || CONFIG.wewenangCsvUrl);
+      const isInterpersonalActive = !!(CONFIG.interpersonalEnabled || CONFIG.interpersonalSheetId || CONFIG.interpersonalCsvUrl);
+
       const [sheet2Rows, sheet4Rows, sheet5Rows] = await Promise.all([
-        CONFIG.leadershipEnabled ? fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl, false) : Promise.resolve(null),
-        CONFIG.wewenangEnabled ? fetchSheetCsv(CONFIG.wewenangSheetName || "Sheet4", CONFIG.wewenangSheetId, CONFIG.wewenangCsvUrl, false) : Promise.resolve(null),
-        CONFIG.interpersonalEnabled ? fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl, false) : Promise.resolve(null)
+        isLeadershipActive ? fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl) : Promise.resolve(null),
+        isWewenangActive ? fetchSheetCsv(CONFIG.wewenangSheetName || "Sheet4", CONFIG.wewenangSheetId, CONFIG.wewenangCsvUrl) : Promise.resolve(null),
+        isInterpersonalActive ? fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl) : Promise.resolve(null)
       ]);
 
       if (sheet2Rows && sheet2Rows.length > 1) {
@@ -4372,10 +4353,7 @@ function iBadgeFullHTML(code){
   return `<span class="style-badge ${m.cls}"><span class="dot"></span>${m.code} · ${m.label}</span>`;
 }
 
-async function fetchSheetCsv(sheetName, customSheetId = null, customCsvUrl = null, requireExplicit = false){
-  if (requireExplicit && !customSheetId && !customCsvUrl) {
-    return null;
-  }
+async function fetchSheetCsv(sheetName, customSheetId = null, customCsvUrl = null){
   if (customCsvUrl) {
     let finalUrl = customCsvUrl;
     if (finalUrl.endsWith("/pubhtml")) finalUrl = finalUrl.replace("/pubhtml", "/pub?output=csv");
@@ -4389,35 +4367,44 @@ async function fetchSheetCsv(sheetName, customSheetId = null, customCsvUrl = nul
     } catch(e) {}
   }
   const targetSheetId = customSheetId || CONFIG.sheetId || SHEET_ID || "1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY";
+  if (!targetSheetId) return null;
+
   const csvUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
   try{
     const res = await fetch(`${csvUrl}&_cb=${Date.now()}`,{cache:"no-store"});
-    if(!res.ok) return null;
-    const text = await res.text();
-    if(text.trimStart().startsWith("<")) return null;
-    return parseCSV(text);
-  }catch(err){
-    if(location.protocol!=="file:") return null;
-    return await new Promise((resolve)=>{
-      const cb=`_gsheetCb_${sheetName.replace(/[^a-zA-Z0-9]/g,"")}_${Date.now()}`;
-      const script=document.createElement("script");
-      const timer=setTimeout(()=>{cleanup();resolve(null)},12000);
-      function cleanup(){clearTimeout(timer);delete window[cb];script.remove()}
-      window[cb]=function(resp){
-        cleanup();
-        try{
-          if(!resp||!resp.table){resolve(null);return}
-          const cols=resp.table.cols, dataRows=resp.table.rows;
-          const rows=[cols.map(c=>c.label||"")];
-          for(const dr of dataRows) rows.push(dr.c.map(cell=>cell?String(cell.v??""):""));
-          resolve(rows);
-        }catch(e){resolve(null)}
-      };
-      script.src=`https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}&_cb=${Date.now()}`;
-      script.onerror=()=>{cleanup();resolve(null)};
-      document.head.appendChild(script);
-    });
-  }
+    if(res.ok) {
+      const text = await res.text();
+      if(!text.trimStart().startsWith("<")) return parseCSV(text);
+    }
+  }catch(err){}
+
+  return await new Promise((resolve)=>{
+    const cb=`_gsheetCb_${sheetName.replace(/[^a-zA-Z0-9]/g,"")}_${Date.now()}`;
+    const script=document.createElement("script");
+    const timer=setTimeout(()=>{cleanup();resolve(null)},10000);
+    function cleanup(){clearTimeout(timer);delete window[cb];script.remove()}
+    window[cb]=function(resp){
+      cleanup();
+      try{
+        if(!resp||!resp.table){resolve(null);return}
+        const cols=resp.table.cols, dataRows=resp.table.rows;
+        const rows=[cols.map(c=>c?String(c.label||""):"")];
+        for(const dr of dataRows) {
+          if (!dr || !dr.c) continue;
+          rows.push(dr.c.map(cell=>{
+            if(!cell) return "";
+            if(cell.f !== undefined && cell.f !== null) return String(cell.f);
+            if(cell.v !== undefined && cell.v !== null) return String(cell.v);
+            return "";
+          }));
+        }
+        resolve(rows.filter(r => r.some(c => (c || "").trim() !== "")));
+      }catch(e){resolve(null)}
+    };
+    script.src=`https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}&_cb=${Date.now()}`;
+    script.onerror=()=>{cleanup();resolve(null)};
+    document.head.appendChild(script);
+  });
 }
 
 function extractLeadership(rows){
@@ -5971,7 +5958,36 @@ function renderActiveClientSections(){
     }
 
   // Control visibility of optional analysis tabs (Leadership, Wewenang, Interpersonal)
-  updateAnalysisTabVisibility();
+  const isLeadershipVisible    = !!(CONFIG.leadershipEnabled || CONFIG.leadershipSheetId || CONFIG.leadershipCsvUrl);
+  const isWewenangVisible      = !!(CONFIG.wewenangEnabled || CONFIG.wewenangSheetId || CONFIG.wewenangCsvUrl);
+  const isInterpersonalVisible = !!(CONFIG.interpersonalEnabled || CONFIG.interpersonalSheetId || CONFIG.interpersonalCsvUrl);
+
+  const navLeadership = document.getElementById("navPillLeadership");
+  const paneLeadership = document.getElementById("pane-leadership");
+  if (navLeadership) navLeadership.style.display = isLeadershipVisible ? "" : "none";
+  if (paneLeadership && !isLeadershipVisible && paneLeadership.classList.contains("active")) {
+    paneLeadership.classList.remove("active");
+    const firstTab = document.querySelector(".nav-pill");
+    if (firstTab) firstTab.click();
+  }
+
+  const navWewenang = document.getElementById("navPillWewenang");
+  const paneWewenang = document.getElementById("pane-wewenang");
+  if (navWewenang) navWewenang.style.display = isWewenangVisible ? "" : "none";
+  if (paneWewenang && !isWewenangVisible && paneWewenang.classList.contains("active")) {
+    paneWewenang.classList.remove("active");
+    const firstTab = document.querySelector(".nav-pill");
+    if (firstTab) firstTab.click();
+  }
+
+  const navInterpersonal = document.getElementById("navPillInterpersonal");
+  const paneInterpersonal = document.getElementById("pane-interpersonal");
+  if (navInterpersonal) navInterpersonal.style.display = isInterpersonalVisible ? "" : "none";
+  if (paneInterpersonal && !isInterpersonalVisible && paneInterpersonal.classList.contains("active")) {
+    paneInterpersonal.classList.remove("active");
+    const firstTab = document.querySelector(".nav-pill");
+    if (firstTab) firstTab.click();
+  }
 
   initNavScroll();
 }
@@ -6193,7 +6209,6 @@ function bootDashboard() {
         } catch(e) { console.warn("Background client sync gagal:", e); }
 
         try { await fetchData(); } catch(e) { console.error("fetchData poll error:", e); }
-        try { updateAnalysisTabVisibility(); } catch(e) { console.error("updateAnalysisTabVisibility poll error:", e); }
         try { renderActiveClientSections(); } catch(e) { console.error("renderActiveClientSections poll error:", e); }
       }, POLL_MS);
     }

@@ -1863,14 +1863,6 @@ function updateTraining(patch){
   return t;
 }
 
-/* ----- Helper: set active training (syncs to server & tells dashboard which training to load) ----- */
-function activateTraining(tid){
-  const cIdx = clientsDb.findIndex(x=>String(x.id)===String(currentClientId));
-  if(cIdx===-1) return;
-  clientsDb[cIdx].activeTrainingId = tid;
-  apiUpdateClient(clientsDb[cIdx]);
-}
-
 /* ===========================
    TAB 1 — CONFIG (PRE & POST)
    =========================== */
@@ -2176,10 +2168,13 @@ setupToggleListener("cfgInterpersonalEnabled", "cfgInterpersonalEnabledHint");
 
 if ($("saveLeadershipCfgBtn")) {
   $("saveLeadershipCfgBtn").addEventListener("click", () => {
+    const idVal = extractSheetId($("cfgLeadershipSheetId")?.value);
+    const csvVal = $("cfgLeadershipCsvUrl")?.value.trim();
+    const isChecked = !!$("cfgLeadershipEnabled")?.checked;
     updateTraining({
-      leadershipEnabled: !!$("cfgLeadershipEnabled")?.checked,
-      leadershipSheetId: extractSheetId($("cfgLeadershipSheetId")?.value),
-      leadershipCsvUrl: $("cfgLeadershipCsvUrl")?.value.trim(),
+      leadershipEnabled: isChecked || !!idVal || !!csvVal,
+      leadershipSheetId: idVal,
+      leadershipCsvUrl: csvVal,
       leadershipSheetName: $("cfgLeadershipSheetName")?.value.trim() || "Sheet2"
     });
     activateTraining(currentTrainingId);
@@ -2188,10 +2183,13 @@ if ($("saveLeadershipCfgBtn")) {
 }
 if ($("saveWewenangCfgBtn")) {
   $("saveWewenangCfgBtn").addEventListener("click", () => {
+    const idVal = extractSheetId($("cfgWewenangSheetId")?.value);
+    const csvVal = $("cfgWewenangCsvUrl")?.value.trim();
+    const isChecked = !!$("cfgWewenangEnabled")?.checked;
     updateTraining({
-      wewenangEnabled: !!$("cfgWewenangEnabled")?.checked,
-      wewenangSheetId: extractSheetId($("cfgWewenangSheetId")?.value),
-      wewenangCsvUrl: $("cfgWewenangCsvUrl")?.value.trim(),
+      wewenangEnabled: isChecked || !!idVal || !!csvVal,
+      wewenangSheetId: idVal,
+      wewenangCsvUrl: csvVal,
       wewenangSheetName: $("cfgWewenangSheetName")?.value.trim() || "Sheet4"
     });
     activateTraining(currentTrainingId);
@@ -2200,10 +2198,13 @@ if ($("saveWewenangCfgBtn")) {
 }
 if ($("saveInterpersonalCfgBtn")) {
   $("saveInterpersonalCfgBtn").addEventListener("click", () => {
+    const idVal = extractSheetId($("cfgInterpersonalSheetId")?.value);
+    const csvVal = $("cfgInterpersonalCsvUrl")?.value.trim();
+    const isChecked = !!$("cfgInterpersonalEnabled")?.checked;
     updateTraining({
-      interpersonalEnabled: !!$("cfgInterpersonalEnabled")?.checked,
-      interpersonalSheetId: extractSheetId($("cfgInterpersonalSheetId")?.value),
-      interpersonalCsvUrl: $("cfgInterpersonalCsvUrl")?.value.trim(),
+      interpersonalEnabled: isChecked || !!idVal || !!csvVal,
+      interpersonalSheetId: idVal,
+      interpersonalCsvUrl: csvVal,
       interpersonalSheetName: $("cfgInterpersonalSheetName")?.value.trim() || "Sheet5"
     });
     activateTraining(currentTrainingId);
