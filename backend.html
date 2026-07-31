@@ -2125,8 +2125,14 @@ function bindAnalysisTestBtn(btnId, iconId, resultId, customSheetIdInput, csvInp
     if (!box) return;
     box.classList.add("show");
     const customIdRaw = $(customSheetIdInput)?.value.trim() || "";
-    const id = extractSheetId(customIdRaw) || extractSheetId($("cfgSheetId")?.value) || "1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY";
     const csvUrl = $(csvInputId)?.value.trim() || "";
+    const id = extractSheetId(customIdRaw);
+
+    if (!id && !csvUrl) {
+      box.innerHTML = `<div class="test-status err"><span class="dot"></span>Gagal: Link atau ID Google Sheet belum diisi. Harap masukkan ID/URL Spreadsheet terlebih dahulu.</div>`;
+      return;
+    }
+
     const icon = $(iconId);
     if (icon) icon.classList.add("spin");
     box.innerHTML = `<div class="test-status warn"><span class="dot"></span>Menguji koneksi…</div>`;
@@ -2134,11 +2140,15 @@ function bindAnalysisTestBtn(btnId, iconId, resultId, customSheetIdInput, csvInp
       const sheetName = $(nameInputId)?.value.trim() || defaultSheetName;
       const result = await testSheetConnection(id, csvUrl, sheetName, "");
       const rows = result.rows;
-      const cols = rows.reduce((m, r) => Math.max(m, r.length), 0);
-      const th = rows[0].map(c => `<th>${esc(c)}</th>`).join("");
-      const tb = rows.slice(1, 6).map(r => `<tr>${rows[0].map((_, i) => `<td>${esc(r[i] ?? "")}</td>`).join("")}</tr>`).join("");
-      box.innerHTML = `<div class="test-status ok"><span class="dot"></span>Koneksi OK (${result.source}) · ${rows.length} baris × ${cols} kolom</div>
-        <div class="preview-table"><table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>`;
+      if (!rows || rows.length === 0) {
+        box.innerHTML = `<div class="test-status warn"><span class="dot"></span>Sheet kosong atau tidak ada data</div>`;
+      } else {
+        const cols = rows.reduce((m, r) => Math.max(m, r.length), 0);
+        const th = rows[0].map(c => `<th>${esc(c)}</th>`).join("");
+        const tb = rows.slice(1, 6).map(r => `<tr>${rows[0].map((_, i) => `<td>${esc(r[i] ?? "")}</td>`).join("")}</tr>`).join("");
+        box.innerHTML = `<div class="test-status ok"><span class="dot"></span>Koneksi OK (${result.source}) · ${rows.length} baris × ${cols} kolom</div>
+          <div class="preview-table"><table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>`;
+      }
     } catch (err) {
       box.innerHTML = `<div class="test-status err"><span class="dot"></span>Gagal: ${esc(err.message)}</div>`;
     }
