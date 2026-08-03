@@ -885,6 +885,11 @@
               <input type="text" id="cfgTrainerNames" placeholder="contoh: Arif Hidayat, Atik Fauzia">
               <div class="help">Pisahkan nama trainer dengan koma. Digunakan untuk mencari kolom penilaian & kesan trainer di sheet evaluasi.</div>
             </div>
+            <div class="field">
+              <label for="cfgTrainerPhotos">URL Link Foto Trainer (Opsional — untuk kartu nilai trainer)</label>
+              <input type="text" id="cfgTrainerPhotos" placeholder="contoh: https://drive.google.com/file/d/.../view, https://...">
+              <div class="help">Pisahkan URL link foto dengan koma sesuai urutan Nama Trainer di atas (atau tempel link foto Google Drive / Web).</div>
+            </div>
 
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
               <button class="btn btn-primary" id="cfgEvalSaveBtn">
@@ -1710,7 +1715,7 @@ function openEditTraining(tid){
   // ── Reset semua field agar data sesi sebelumnya tidak bocor ke sesi baru ──
   ["evalTitle","evalText","evalCtaPct",
    "cfgEvalSheetId","cfgEvalCsvUrl","cfgEvalSheetName","cfgEvalDataRange",
-   "cfgTrainerNames","cfgTrainingTitle","cfgTrainingDateStart","cfgTrainingDateEnd",
+   "cfgTrainerNames","cfgTrainerPhotos","cfgTrainingTitle","cfgTrainingDateStart","cfgTrainingDateEnd",
    "cfgSheetId","cfgCsvUrl","cfgSheet1Name","cfgSheet2Name","cfgPollSec"
   ].forEach(id=>{ try{ $(id).value=""; }catch(e){} });
   // Reset AI prompt fields
@@ -1743,6 +1748,7 @@ function openEditTraining(tid){
   $("cfgEvalSheetName").value = t.evalSheetName || "Sheet2";
   $("cfgEvalDataRange").value = t.evalDataRange || "";
   $("cfgTrainerNames").value = t.trainerNames || "";
+  if ($("cfgTrainerPhotos")) $("cfgTrainerPhotos").value = t.trainerPhotos || "";
   refreshEvalCfgPreview();
 
   function updateToggleHint(checkboxId, hintId) {
@@ -2093,6 +2099,7 @@ $("cfgEvalSaveBtn").addEventListener("click",()=>{
     evalSheetName: $("cfgEvalSheetName").value.trim(),
     evalDataRange: $("cfgEvalDataRange").value.trim(),
     trainerNames: $("cfgTrainerNames").value.trim(),
+    trainerPhotos: $("cfgTrainerPhotos") ? $("cfgTrainerPhotos").value.trim() : "",
   };
   updateTraining(cfg);
   

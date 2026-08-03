@@ -3068,6 +3068,7 @@ function showDashboard(training) {
     actionPlan:    training.actionPlan    || [],
     aiSummary:     training.aiSummary     || null,
     trainerNames:  training.trainerNames  || "",
+    trainerPhotos: training.trainerPhotos || "",
     dateStart:     training.dateStart     || "",
     dateEnd:       training.dateEnd       || "",
     sessionTitle:  training.title         || "",
@@ -3950,16 +3951,19 @@ function renderDynamicEvaluation(evalData) {
     // 3. Trainers
     const evalTrainersEl = document.getElementById("evalTrainers");
     if(evalTrainersEl) {
-      // Cross-reference trainer photos already configured for "Komentar Trainer" (by name)
+      // Cross-reference trainer photos configured in Evaluasi (trainerPhotos) or "Komentar Trainer" (by name)
       let ktByName = {};
       let ktSource = CONFIG.komentarTrainer;
       if (ktSource && typeof ktSource !== "string") {
         const ktList = Array.isArray(ktSource) ? ktSource : [ktSource];
         ktList.forEach(kt => { if (kt && kt.name) ktByName[kt.name.trim().toLowerCase()] = kt; });
       }
+      const evalPhotosList = (CONFIG.trainerPhotos || "").split(",").map(s => s.trim()).filter(Boolean);
+
       evalTrainersEl.innerHTML = trainers.map((t, i) => {
         const ktMatch = ktByName[(t.name || "").trim().toLowerCase()];
-        const photoUrl = ktMatch && ktMatch.photoUrl ? formatDriveImageUrl(ktMatch.photoUrl) : "";
+        const rawPhoto = evalPhotosList[i] || (ktMatch && ktMatch.photoUrl ? ktMatch.photoUrl : "");
+        const photoUrl = rawPhoto ? formatDriveImageUrl(rawPhoto) : "";
         const bgStyle = photoUrl ? ` style="background-image:url('${esc(photoUrl)}')"` : "";
         return `
         <div class="trainer${i === 0 ? " active" : ""}${photoUrl ? "" : " trainer--nophoto"}" aria-hidden="${i === 0 ? "false" : "true"}"${bgStyle}>
@@ -6744,6 +6748,7 @@ function bootDashboard() {
                     CONFIG.dokumentasi     = freshTraining.dokumentasi     || [];
                     CONFIG.actionPlan      = freshTraining.actionPlan      || [];
                     CONFIG.aiSummary       = freshTraining.aiSummary       || null;
+                    CONFIG.trainerPhotos   = freshTraining.trainerPhotos   || "";
                     CONFIG.leadershipEnabled      = !!freshTraining.leadershipEnabled;
                     CONFIG.leadershipSheetId      = freshTraining.leadershipSheetId      || "";
                     CONFIG.leadershipCsvUrl     = freshTraining.leadershipCsvUrl     || "";
