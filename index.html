@@ -84,8 +84,6 @@
     position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);
     backdrop-filter:blur(10px);border-bottom:1px solid var(--card-border);
   }
-  header::before{content:"";display:block;height:4px;
-    background:linear-gradient(90deg,var(--primary-base) 0%,var(--primary-base) 55%,var(--secondary-base) 55%,var(--secondary-base) 72%,var(--navy) 72%);}
   .header-inner{
     max-width:1280px;margin:0 auto;padding:14px 24px;
     display:flex;align-items:center;gap:16px;
@@ -410,9 +408,6 @@
   [data-theme="dark"] header{
     background:rgba(17,17,19,.92);
   }
-  [data-theme="dark"] header::before{
-    background:linear-gradient(90deg,var(--primary-base) 0%,var(--primary-base) 55%,var(--secondary-base) 55%,var(--secondary-base) 72%,#7eb3f0 72%);
-  }
   [data-theme="dark"] .refresh-btn{
     background:var(--card-bg);
   }
@@ -675,11 +670,32 @@
   .mm-stats-row.bordered {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
+  .mm-stats-rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Warning badge: session card's fallback when no trainer is assigned yet */
+  .mm-trainer-missing {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(217, 119, 6, 0.14);
+    border: 1px solid rgba(217, 119, 6, 0.35);
+    color: #92400e;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  [data-theme="dark"] .mm-trainer-missing {
+    color: #fbbf24;
+  }
 
   /* Session Cards Layout */
   .mm-card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
     gap: 24px;
   }
   .mm-card-item {
@@ -697,6 +713,37 @@
     transform: translateY(-8px);
     box-shadow: 0 20px 40px rgba(0, 44, 99, 0.15), 0 0 0 1px var(--primary-base);
     border-color: var(--primary-base);
+  }
+  .mm-card-item:focus-visible {
+    outline: 2px solid var(--primary-base);
+    outline-offset: 2px;
+  }
+  .mm-card-item:active,
+  .mm-card-item.is-activating {
+    transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s ease;
+    transform: scale(0.97);
+    box-shadow: 0 8px 16px rgba(0, 44, 99, 0.12), 0 0 0 1px var(--primary-base);
+  }
+
+  /* First-arrival reveal: hero settles, then session cards deal in behind it */
+  @keyframes mmRevealIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .mm-hero-card.animate-in {
+    animation: mmRevealIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .mm-card-item.animate-in {
+    opacity: 0;
+    animation: mmRevealIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mm-hero-card.animate-in,
+    .mm-card-item.animate-in {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
   }
   .mm-card-banner {
     background: linear-gradient(135deg, var(--navy) 0%, #032b5c 100%);
@@ -760,6 +807,18 @@
     height: 1px;
     background: var(--n100);
     margin: 4px 0;
+  }
+
+  @media (max-width: 640px) {
+    .mm-hero-card { padding: 26px 22px; }
+    .mm-hero-badge { margin-bottom: 12px; }
+    .mm-hero-title { font-size: 1.6rem; }
+    .mm-hero-desc { font-size: 0.88rem; margin-top: 10px; }
+    .mm-hero-stats { min-width: 0; width: 100%; padding: 14px 16px; margin-left: 0; }
+    .mm-stats-label { margin-bottom: 8px; }
+    .mm-stats-rows { flex-direction: row; flex-wrap: wrap; gap: 10px 20px; }
+    .mm-stats-row { padding: 0; flex: 1 1 auto; }
+    .mm-stats-row.bordered { border-bottom: none; }
   }
 
   /* ============ NEW CLIENT SECTIONS ============ */
@@ -1462,36 +1521,45 @@
     border: 1px solid var(--navy-300);
   }
   .chip.big { background: var(--navy-800); color: #fff; font-size: 13.5px; padding: 8px 16px; border: none; }
-  .quote-slider-wrap {
+  .quote-marquee-wrap {
     position: relative;
     margin-bottom: 24px;
-  }
-  .quote-slider {
     overflow: hidden;
-    border-radius: 14px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
   }
-  .quote-grid {
+  .quote-marquee-track {
     display: flex;
-    transition: transform 0.5s cubic-bezier(.16,1,.3,1);
+    width: max-content;
+    gap: 14px;
+    animation-name: quoteMarquee;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+  @keyframes quoteMarquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .quote-marquee-wrap:hover .quote-marquee-track,
+  .quote-marquee-wrap:focus-within .quote-marquee-track {
+    animation-play-state: paused;
   }
   @media (prefers-reduced-motion: reduce) {
-    .quote-grid { transition: none; }
-  }
-  .quote-slide {
-    flex: 0 0 100%;
-    min-width: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
+    .quote-marquee-track { animation: none; }
   }
   .quote {
-    min-width: 0;
+    flex: 0 0 300px;
+    width: 300px;
     background: var(--card-bg);
     border-radius: 14px;
     padding: 20px;
     border: 1px solid var(--card-border);
     box-shadow: var(--shadow-sm);
     position: relative;
+  }
+  .quote:focus-visible {
+    outline: 2px solid var(--primary-base);
+    outline-offset: 2px;
   }
   .quote .mark {
     font-size: 34px;
@@ -1505,6 +1573,10 @@
     line-height: 1.55;
     margin: 6px 0 12px;
     font-style: italic;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .quote .who {
     font-size: 11.5px;
@@ -1513,52 +1585,12 @@
     border-top: 1px dashed var(--card-border);
     padding-top: 8px;
   }
-  .quote-slider-dots {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    margin-top: 12px;
-  }
-  .quote-slider-dot {
-    width: 7px; height: 7px;
-    border-radius: 4px;
-    background: var(--n300);
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .quote-slider-dot.active { background: var(--primary-base); width: 18px; }
-  .quote-slider-dot:focus-visible { outline: 2px solid var(--primary-base); outline-offset: 2px; }
-  .quote-slider-nav {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    background: transparent;
-    border: none;
-    padding: 0;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--n500);
-    cursor: pointer;
-  }
-  .quote-slider-nav:hover { color: var(--primary-base); }
-  .quote-slider-nav:focus-visible { outline: 2px solid var(--primary-base); outline-offset: 2px; }
-  .quote-slider-nav svg { width: 15px; height: 15px; }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .animate-card {
-    opacity: 0;
-    animation: fadeUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  }
   @media (max-width: 900px) {
     .eval-kpi-row { flex-direction: column; }
     .eval-kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .eval-kpi-trainer { flex-basis: auto; }
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .cols { grid-template-columns: 1fr; }
-    .quote-slide { grid-template-columns: 1fr; }
     .trainer-card-body { flex-direction: column; }
     .trainer-carousel-wrap { flex-basis: auto; width: 100%; }
   }
@@ -1586,31 +1618,50 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
   width: 100%; padding: 24px; color: var(--mdi-ink);
 }
-#pane-actionplan .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 32px; }
-#pane-actionplan .kpi { background: var(--mdi-card-bg); border: 1px solid var(--mdi-border); padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-#pane-actionplan .kpi:hover { background: #f8fafc; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-#pane-actionplan .kpi.active-filter { border-color: var(--mdi-orange); box-shadow: 0 0 0 1px var(--mdi-orange), 0 4px 15px rgba(0,0,0,0.1); background: #fff5f0; }
-#pane-actionplan .kpi-lbl { font-size: 12px; font-weight: 700; color: var(--mdi-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-#pane-actionplan .kpi-val { font-size: 32px; font-weight: 800; color: var(--mdi-ink); margin-bottom: 4px; }
-#pane-actionplan .kpi-total { border-top: 4px solid var(--mdi-ink); }
-#pane-actionplan .kpi-total .kpi-val { color: var(--mdi-ink); }
-#pane-actionplan .kpi-ap { border-top: 4px solid var(--mdi-orange); }
-#pane-actionplan .kpi-ap .kpi-val { color: var(--mdi-orange); }
-#pane-actionplan .kpi-done { border-top: 4px solid var(--mdi-done); }
-#pane-actionplan .kpi-done .kpi-val { color: var(--mdi-done); }
-#pane-actionplan .kpi-prog { border-top: 4px solid var(--mdi-prog); }
-#pane-actionplan .kpi-prog .kpi-val { color: var(--mdi-prog); }
-#pane-actionplan .kpi-tracking { border-top: 4px solid var(--mdi-navy-light); }
-#pane-actionplan .kpi-sub { font-size: 12px; color: var(--mdi-muted); }
-
-#pane-actionplan .progress-summary { margin-bottom: 32px; background: var(--mdi-card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--mdi-border); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-#pane-actionplan .ps-label { font-size: 12px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; margin-bottom: 12px; }
-#pane-actionplan .ps-bar { height: 16px; border-radius: 8px; background: #f1f5f9; display: flex; overflow: hidden; margin-bottom: 16px; }
-#pane-actionplan .ps-done-seg { background: var(--mdi-done); transition: width 0.5s; }
-#pane-actionplan .ps-prog-seg { background: var(--mdi-prog); transition: width 0.5s; }
-#pane-actionplan .ps-legend { display: flex; gap: 16px; }
-#pane-actionplan .ps-leg { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--mdi-muted); font-weight: 600; }
-#pane-actionplan .ps-dot { width: 10px; height: 10px; border-radius: 50%; }
+/* Activity card: two concentric animated rings (Completed / In Progress) + supporting stats */
+#pane-actionplan .activity-card {
+  display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap;
+  background: var(--mdi-card-bg); border: 1px solid var(--mdi-border); border-radius: 16px;
+  padding: 28px 32px; margin-bottom: 32px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+#pane-actionplan .activity-rings-wrap { position: relative; width: 176px; height: 176px; flex-shrink: 0; }
+#pane-actionplan .activity-rings { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+#pane-actionplan .ring-track { fill: none; stroke: #f1f5f9; }
+#pane-actionplan .ring-fill {
+  fill: none; stroke-linecap: round; opacity: 0;
+  transform-box: fill-box; transform-origin: 50% 50%; transform: scale(0.8);
+}
+#pane-actionplan .ring-fill.ring-in { animation: ringPop 0.8s cubic-bezier(0.16,1,0.3,1) forwards; }
+#pane-actionplan .ring-fill.ring-prog { stroke: var(--mdi-prog); }
+#pane-actionplan .ring-fill.ring-done { stroke: var(--mdi-done); animation-delay: 0.2s; }
+#pane-actionplan .ring-fill.fill-animate { transition: stroke-dashoffset 1.8s cubic-bezier(0.65,0,0.35,1); }
+@keyframes ringPop { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+#pane-actionplan .activity-rings-center {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 96px; height: 96px; clip-path: circle(50%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; border-radius: 50%; cursor: pointer;
+}
+#pane-actionplan .activity-rings-center:focus-visible { outline: 2px solid var(--mdi-orange); outline-offset: 3px; }
+#pane-actionplan .activity-rings-center-val { font-size: 30px; font-weight: 800; color: var(--mdi-ink); line-height: 1; transition: color 0.15s ease; }
+#pane-actionplan .activity-rings-center-lbl { font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+#pane-actionplan .activity-stats { display: flex; flex-direction: column; gap: 4px; width: 260px; flex-shrink: 0; opacity: 0; animation: statsSlideIn 0.5s cubic-bezier(0.16,1,0.3,1) 0.5s forwards; }
+@keyframes statsSlideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+#pane-actionplan .activity-stat { padding: 10px 12px; border-radius: 10px; }
+#pane-actionplan .activity-stat[onclick] { cursor: pointer; transition: background 0.2s; }
+#pane-actionplan .activity-stat[onclick]:hover { background: #f8fafc; }
+#pane-actionplan .activity-stat.active-filter { background: #fff5f0; box-shadow: 0 0 0 1px var(--mdi-orange); }
+#pane-actionplan .activity-stat:focus-visible { outline: 2px solid var(--mdi-orange); outline-offset: 2px; }
+#pane-actionplan .activity-stat-lbl { font-size: 12px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+#pane-actionplan .activity-stat-val { font-size: 22px; font-weight: 800; color: var(--mdi-ink); line-height: 1.3; }
+#pane-actionplan .kpi-prog .activity-stat-val,
+#pane-actionplan .kpi-done .activity-stat-val { color: var(--stat-color); }
+#pane-actionplan .activity-stat-sub { font-size: 12px; color: var(--mdi-muted); }
+@media (prefers-reduced-motion: reduce) {
+  #pane-actionplan .ring-fill.ring-in { animation: none; opacity: 1; transform: scale(1); }
+  #pane-actionplan .ring-fill.fill-animate { transition: none; }
+  #pane-actionplan .activity-stats { animation: none; opacity: 1; transform: none; }
+}
 
 #pane-actionplan .viewer-filterbar { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; background: var(--mdi-card-bg); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--mdi-border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
 #pane-actionplan .dept-dropdown { background: #f1f5f9; border: 1px solid var(--mdi-border); color: var(--mdi-ink); padding: 6px 12px; border-radius: 4px; outline: none; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif;}
@@ -1857,7 +1908,7 @@
 
 <main id="mainMenu" style="display:none; max-width:1280px; margin: 0 auto; padding: 40px 24px 80px; min-height:80vh;">
   <!-- Premium Hero Banner -->
-  <div class="mm-hero-card">
+  <div class="mm-hero-card" onanimationend="this.classList.remove('animate-in')">
     <!-- Slow Floating ambient glow shapes -->
     <div class="mm-hero-orb mm-hero-orb-1"></div>
     <div class="mm-hero-orb mm-hero-orb-2"></div>
@@ -1878,7 +1929,7 @@
     <!-- Client Quick Stats Card -->
     <div class="mm-hero-stats">
       <div class="mm-stats-label">Ringkasan Client</div>
-      <div style="display: flex; flex-direction: column;">
+      <div class="mm-stats-rows">
         <div class="mm-stats-row bordered">
           <span style="font-size: 0.8rem; color: rgba(255,255,255,0.75);">Total Sesi:</span>
           <span style="font-family: var(--font-mono); font-size: 0.95rem; color: #ffd204; font-weight: 700;" id="mmTotalSessionsCount">0 Sesi</span>
@@ -2139,12 +2190,9 @@
       <!-- In Their Own Words Title -->
       <h2 class="section-title">Kutipan Peserta</h2>
 
-      <!-- Testimonials Quote Slider -->
-      <div class="quote-slider-wrap">
-        <div class="quote-slider">
-          <div class="quote-grid" id="evalQuotes"></div>
-        </div>
-        <div class="quote-slider-dots" id="evalQuotesDots"></div>
+      <!-- Testimonials Marquee -->
+      <div class="quote-marquee-wrap">
+        <div class="quote-marquee-track" id="evalQuotes"></div>
       </div>
 
       <!-- CTA Card -->
@@ -2498,70 +2546,41 @@
     <section id="sectAp" class="card" data-animate style="padding: 0; overflow: hidden; background: #fafcff;">
       
       <div class="body-wrap">
-        <!-- Executive KPIs -->
-        <div class="kpi-row">
-          <div class="kpi kpi-total active-filter" onclick="filterApTable('all', this)">
-            <div class="kpi-lbl">Total Participants</div>
-            <div class="kpi-val" id="kpi-total-val">0</div>
-            <div class="kpi-sub">Participants</div>
-          </div>
-          <div class="kpi kpi-ap">
-            <div class="kpi-lbl">ACTION PLANS</div>
-            <div class="kpi-val" id="kpi-ap-val">0</div>
-            <div class="kpi-sub" id="kpi-ap-sub">0 per participant</div>
-          </div>
-          <div class="kpi kpi-done" onclick="filterApTable('done', this)">
-            <div class="kpi-lbl">Completed (Selesai)</div>
-            <div class="kpi-val" id="kpi-done-val">0</div>
-            <div class="kpi-sub" id="kpi-done-sub">0% of batch</div>
-          </div>
-          <div class="kpi kpi-prog" onclick="filterApTable('prog', this)">
-            <div class="kpi-lbl">In Progress</div>
-            <div class="kpi-val" id="kpi-prog-val">0</div>
-            <div class="kpi-sub" id="kpi-prog-sub">0% of batch</div>
-          </div>
-          <div class="kpi kpi-tracking" style="padding:12px;">
-            <div class="kpi-lbl">Tracking</div>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <div style="flex-shrink:0;">
-                <div id="kpi-donut-bg" style="margin-top:8px; width:48px; height:48px; border-radius:50%; background: conic-gradient(var(--mdi-done) 0% 27%, var(--mdi-prog) 27% 100%); display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                   <div id="kpi-donut-pct" style="width:34px; height:34px; border-radius:50%; background:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; color:var(--mdi-navy);">27%</div>
-                </div>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:8px; margin-top: 14px;">
-                <div style="display:flex; align-items:flex-start; gap:4px;">
-                  <span style="color:var(--mdi-prog); font-size:12px; margin-top:-2px;">●</span>
-                  <div>
-                    <div style="font-size:10px; color:var(--mdi-muted); font-weight:600; line-height:1;">In Progress</div>
-                    <div id="kpi-donut-prog" style="font-size:11px; font-weight:700; color:var(--mdi-navy); line-height:1; margin-top:2px;">22 (73%)</div>
-                  </div>
-                </div>
-                <div style="display:flex; align-items:flex-start; gap:4px;">
-                  <span style="color:var(--mdi-done); font-size:12px; margin-top:-2px;">●</span>
-                  <div>
-                    <div style="font-size:10px; color:var(--mdi-muted); font-weight:600; line-height:1;">Completed</div>
-                    <div id="kpi-donut-done" style="font-size:11px; font-weight:700; color:var(--mdi-navy); line-height:1; margin-top:2px;">8 (27%)</div>
-                  </div>
-                </div>
-              </div>
+        <!-- Activity Card: animated rings (Completed / In Progress) + supporting stats -->
+        <div class="activity-card">
+          <div class="activity-rings-wrap">
+            <svg class="activity-rings" viewBox="0 0 176 176" role="img" aria-label="Ringkasan progres batch">
+              <circle class="ring-track" cx="88" cy="88" r="80" stroke-width="14" onmouseenter="showApRingDetail('prog')" onmouseleave="showApRingDetail(null)"></circle>
+              <circle class="ring-track" cx="88" cy="88" r="58" stroke-width="14" onmouseenter="showApRingDetail('done')" onmouseleave="showApRingDetail(null)"></circle>
+              <circle id="ring-prog" class="ring-fill ring-prog" cx="88" cy="88" r="80" stroke-width="14" onmouseenter="showApRingDetail('prog')" onmouseleave="showApRingDetail(null)"></circle>
+              <circle id="ring-done" class="ring-fill ring-done" cx="88" cy="88" r="58" stroke-width="14" onmouseenter="showApRingDetail('done')" onmouseleave="showApRingDetail(null)"></circle>
+            </svg>
+            <div class="activity-rings-center kpi kpi-total active-filter" tabindex="0" role="button" aria-label="Tampilkan semua peserta" onclick="filterApTable('all', this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterApTable('all', this)}">
+              <div class="activity-rings-center-val" id="kpi-total-val">0</div>
+              <div class="activity-rings-center-lbl" id="activity-center-lbl">Participants</div>
             </div>
           </div>
-        </div>
-
-        <div class="progress-summary">
-          <div class="ps-label">Batch Accomplishment</div>
-          <div class="ps-bar">
-            <div id="ps-done-bar" class="ps-seg ps-done-seg" style="width: 27%"></div>
-            <div id="ps-prog-bar" class="ps-seg ps-prog-seg" style="width: 73%"></div>
-          </div>
-          <div class="ps-legend">
-            <div class="ps-leg">
-              <div class="ps-dot" style="background: var(--mdi-done)"></div>
-              <span id="ps-done-leg">27% Completed</span>
+          <div class="activity-stats">
+            <div class="activity-stat kpi kpi-prog" style="--stat-color: var(--mdi-prog)" tabindex="0" role="button" aria-label="Filter: In Progress" onclick="filterApTable('prog', this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterApTable('prog', this)}" onmouseenter="showApRingDetail('prog')" onmouseleave="showApRingDetail(null)">
+              <div>
+                <div class="activity-stat-lbl">In Progress</div>
+                <div class="activity-stat-val" id="kpi-prog-val">0</div>
+                <div class="activity-stat-sub" id="kpi-prog-sub">0% of batch</div>
+              </div>
             </div>
-            <div class="ps-leg">
-              <div class="ps-dot" style="background: var(--mdi-prog)"></div>
-              <span id="ps-prog-leg">73% In Progress</span>
+            <div class="activity-stat kpi kpi-done" style="--stat-color: var(--mdi-done)" tabindex="0" role="button" aria-label="Filter: Completed" onclick="filterApTable('done', this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterApTable('done', this)}" onmouseenter="showApRingDetail('done')" onmouseleave="showApRingDetail(null)">
+              <div>
+                <div class="activity-stat-lbl">Completed (Selesai)</div>
+                <div class="activity-stat-val" id="kpi-done-val">0</div>
+                <div class="activity-stat-sub" id="kpi-done-sub">0% of batch</div>
+              </div>
+            </div>
+            <div class="activity-stat" style="--stat-color: var(--mdi-orange)">
+              <div>
+                <div class="activity-stat-lbl">Action Plans</div>
+                <div class="activity-stat-val" id="kpi-ap-val">0</div>
+                <div class="activity-stat-sub" id="kpi-ap-sub">0 per participant</div>
+              </div>
             </div>
           </div>
         </div>
@@ -2918,14 +2937,23 @@ function applyClientConfig(client) {
   applyAppearance();
 }
 
+let mainMenuEntranceShown = false;
 window.showMainMenu = function() {
+  // First arrival only: hero settles in, then session cards deal in behind it.
+  // Repeat visits (e.g. clicking back-to-menu mid-debrief) render instantly.
+  // Captured once per call so both the instant render below and the async
+  // background refresh stay consistent instead of the refresh stomping a
+  // mid-flight entrance with an unanimated re-render.
+  const isFirstArrival = !mainMenuEntranceShown;
+  mainMenuEntranceShown = true;
+
   // 1. Tampilkan Menu Utama INSTAN dulu pakai data lokal yang sudah ada
   const mm = document.getElementById("mainMenu");
   if(mm && loggedClient) {
     mm.style.display = "block";
     mm.style.visibility = "visible";
     document.getElementById("mmClientName").textContent = loggedClient.name;
-    
+
     // Update real-time date in badge (try-catch wrapped for safety)
     try {
       const now = new Date();
@@ -2941,7 +2969,11 @@ window.showMainMenu = function() {
     const trainingsList = loggedClient.trainings || [];
     const countEl = document.getElementById("mmTotalSessionsCount");
     if(countEl) countEl.textContent = trainingsList.length + " Sesi";
-    renderMainMenu(trainingsList);
+    if (isFirstArrival) {
+      const hero = mm.querySelector(".mm-hero-card");
+      if (hero) hero.classList.add("animate-in");
+    }
+    renderMainMenu(trainingsList, isFirstArrival);
   }
 
   // 2. Fetch data terbaru di background secara silent tanpa bikin loading beku
@@ -2954,7 +2986,7 @@ window.showMainMenu = function() {
         const trainingsList = loggedClient.trainings || [];
         const countEl = document.getElementById("mmTotalSessionsCount");
         if(countEl) countEl.textContent = trainingsList.length + " Sesi";
-        renderMainMenu(trainingsList);
+        renderMainMenu(trainingsList, isFirstArrival);
       }
     }
   }).catch(e => console.warn("Silent background load failed:", e));
@@ -3136,6 +3168,8 @@ function showDashboard(training) {
           targetPane.style.display = "block";
           targetPane.classList.add("active");
           tabActivated = true;
+          // Force the activity rings to replay their entrance on this fresh view
+          if (savedTab === "#pane-actionplan") __apRingLastState = null;
         }
       }
     } catch(e) {
@@ -3199,8 +3233,16 @@ function showDashboard(training) {
 }
 
 
-function renderMainMenu(trainings) {
+let mainMenuLastRenderedKey = null;
+function renderMainMenu(trainings, animateEntrance) {
   const grid = document.getElementById("mmTrainingsGrid");
+  // Silent background refreshes (boot sync, 10s poll) call this with the same
+  // data far more often than it actually changes; skip the destructive
+  // innerHTML rebuild when nothing changed so a mid-flight entrance animation
+  // isn't stomped and existing focus/scroll state isn't lost for no reason.
+  const renderKey = JSON.stringify(trainings);
+  if (renderKey === mainMenuLastRenderedKey) return;
+  mainMenuLastRenderedKey = renderKey;
   if(trainings.length === 0) {
     grid.innerHTML = `<div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--n500); background:var(--card-bg); border-radius:var(--radius-lg); border:1px solid var(--card-border);">Belum ada sesi pelatihan untuk perusahaan ini.</div>`;
     return;
@@ -3216,8 +3258,10 @@ function renderMainMenu(trainings) {
   };
 
   grid.innerHTML = trainings.map((t, idx) => {
+    const entranceClass = animateEntrance ? " animate-in" : "";
+    const entranceStyle = animateEntrance ? ` style="animation-delay:${180 + Math.min(idx, 5) * 70}ms"` : "";
     return `
-    <div class="mm-card-item" onclick="openTraining('${t.id}')">
+    <div class="mm-card-item${entranceClass}"${entranceStyle} tabindex="0" role="button" aria-label="Buka sesi: ${esc(t.title)}" onclick="openTraining('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.add('is-activating');setTimeout(()=>openTraining('${t.id}'),100)}" onanimationend="this.classList.remove('animate-in')">
       <div class="mm-card-banner">
         <div class="mm-card-title">${t.title}</div>
       </div>
@@ -3229,7 +3273,9 @@ function renderMainMenu(trainings) {
         <div class="mm-card-divider"></div>
         <div class="mm-card-meta">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span>${t.trainerNames || '<i style="color:var(--n400)">Trainer belum diatur</i>'}</span>
+          ${t.trainerNames
+            ? `<span>${esc(t.trainerNames)}</span>`
+            : `<span class="mm-trainer-missing"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Trainer belum diatur</span>`}
         </div>
       </div>
     </div>`;
@@ -3689,29 +3735,13 @@ function startTrainerAutoplay() {
   trainerCarousel.timer = setInterval(() => setActiveTrainer(trainerCarousel.index + 1), 5000);
 }
 
-// Quote slider: one testimonial per row, sliding horizontally + autoplay
-const quoteSlider = { index: 0, count: 0, timer: null };
-function layoutQuoteSlide() {
+// Quote marquee: continuous infinite horizontal scroll (speed matched to reference video)
+const QUOTE_MARQUEE_SPEED_PX_S = 55;
+function layoutQuoteMarquee() {
   const track = document.getElementById("evalQuotes");
   if (!track) return;
-  track.style.transform = `translateX(-${quoteSlider.index * 100}%)`;
-  document.querySelectorAll("#evalQuotesDots .quote-slider-dot").forEach((d, i) => {
-    d.classList.toggle("active", i === quoteSlider.index);
-  });
-}
-function setActiveQuote(idx) {
-  if (!quoteSlider.count) return;
-  quoteSlider.index = ((idx % quoteSlider.count) + quoteSlider.count) % quoteSlider.count;
-  layoutQuoteSlide();
-}
-function stopQuoteAutoplay() {
-  if (quoteSlider.timer) { clearInterval(quoteSlider.timer); quoteSlider.timer = null; }
-}
-function startQuoteAutoplay() {
-  stopQuoteAutoplay();
-  if (quoteSlider.count <= 1) return;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  quoteSlider.timer = setInterval(() => setActiveQuote(quoteSlider.index + 1), 10000);
+  const halfWidth = track.scrollWidth / 2;
+  if (halfWidth > 0) track.style.animationDuration = (halfWidth / QUOTE_MARQUEE_SPEED_PX_S) + "s";
 }
 
 let __evalGaugeObserver = null;
@@ -4010,45 +4040,28 @@ function renderDynamicEvaluation(evalData) {
       }
     }
 
-    // 5. Quotes
+    // 5. Quotes (continuous marquee, content duplicated for a seamless loop)
     const quotes = (d.comments && d.comments.length > 0) ? d.comments : [];
     const evalQuotesEl = document.getElementById("evalQuotes");
     if(evalQuotesEl) {
-      const QUOTES_PER_SLIDE = 3;
-      const quoteSlides = [];
-      for (let i = 0; i < quotes.length; i += QUOTES_PER_SLIDE) quoteSlides.push(quotes.slice(i, i + QUOTES_PER_SLIDE));
-
-      evalQuotesEl.innerHTML = quoteSlides.length
-        ? quoteSlides.map(slide => `
-          <div class="quote-slide">
-            ${slide.map(q => `
-              <div class="quote">
-                <div class="mark">&ldquo;</div>
-                <p>${esc(q.text)}</p>
-                <div class="who">${esc(q.who)}</div>
-              </div>
-            `).join("")}
+      if (quotes.length === 0) {
+        evalQuotesEl.style.animation = "none";
+        evalQuotesEl.innerHTML = `<div class="quote" style="display:flex;align-items:center;justify-content:center;text-align:center;color:var(--n500,var(--muted));font-size:13px;">Kutipan peserta akan muncul setelah data evaluasi terhubung.</div>`;
+      } else {
+        evalQuotesEl.style.animation = "";
+        const repeatCount = quotes.length >= 4 ? 2 : quotes.length >= 2 ? 4 : 6;
+        const cardHtml = (q) => `
+          <div class="quote">
+            <div class="mark">&ldquo;</div>
+            <p>${esc(q.text)}</p>
+            <div class="who">${esc(q.who)}</div>
           </div>
-        `).join("")
-        : `<div class="quote-slide"><div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--n500,var(--muted));font-size:13px;">Kutipan peserta akan muncul setelah data evaluasi terhubung.</div></div>`;
-
-      const dotsEl = document.getElementById("evalQuotesDots");
-      if (dotsEl) {
-        dotsEl.innerHTML = quoteSlides.length > 1
-          ? `<button type="button" class="quote-slider-nav prev" aria-label="Halaman kutipan sebelumnya">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-             </button>` +
-            quoteSlides.map((_, i) => `<button type="button" class="quote-slider-dot${i === 0 ? " active" : ""}" data-quote-dot-index="${i}" aria-label="Ke halaman kutipan ${i + 1} dari ${quoteSlides.length}"></button>`).join("") +
-            `<button type="button" class="quote-slider-nav next" aria-label="Halaman kutipan berikutnya">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-             </button>`
-          : "";
+        `;
+        let track = "";
+        for (let r = 0; r < repeatCount; r++) track += quotes.map(cardHtml).join("");
+        evalQuotesEl.innerHTML = track;
+        layoutQuoteMarquee();
       }
-
-      quoteSlider.count = quoteSlides.length;
-      quoteSlider.index = 0;
-      layoutQuoteSlide();
-      startQuoteAutoplay();
     }
 
     // 6. CTA Stats
@@ -4104,18 +4117,6 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  const quoteNavBtn = e.target.closest(".quote-slider-nav");
-  if (quoteNavBtn) {
-    setActiveQuote(quoteSlider.index + (quoteNavBtn.classList.contains("next") ? 1 : -1));
-    startQuoteAutoplay();
-    return;
-  }
-
-  const quoteDot = e.target.closest(".quote-slider-dot");
-  if (quoteDot) {
-    setActiveQuote(parseInt(quoteDot.dataset.quoteDotIndex, 10));
-    startQuoteAutoplay();
-  }
 });
 
 // Pause trainer carousel autoplay while the user is looking at or interacting with it
@@ -4126,16 +4127,6 @@ document.addEventListener("click", (e) => {
   wrap.addEventListener("mouseleave", startTrainerAutoplay);
   wrap.addEventListener("focusin", stopTrainerAutoplay);
   wrap.addEventListener("focusout", startTrainerAutoplay);
-})();
-
-// Pause quote slider autoplay while the user is looking at or interacting with it
-(function(){
-  const wrap = document.querySelector(".quote-slider-wrap");
-  if (!wrap) return;
-  wrap.addEventListener("mouseenter", stopQuoteAutoplay);
-  wrap.addEventListener("mouseleave", startQuoteAutoplay);
-  wrap.addEventListener("focusin", stopQuoteAutoplay);
-  wrap.addEventListener("focusout", startQuoteAutoplay);
 })();
 
 function buildGvizUrl(id, {out="csv", name="", range="", cb=""}={}){
@@ -4732,10 +4723,16 @@ document.getElementById("refreshBtn").addEventListener("click",()=>fetchData(tru
   const root=document.documentElement;
   const saved=localStorage.getItem("dashboard-theme");
   if(saved) root.setAttribute("data-theme",saved);
+  const logoEl=document.querySelector(".logo-mdi");
+  function updateLogo(){
+    if(logoEl) logoEl.src = root.getAttribute("data-theme")==="dark" ? "Asset 8-8.png" : "Asset 7-8 (1).png";
+  }
+  updateLogo();
   document.getElementById("themeToggle").addEventListener("click",()=>{
     const next=root.getAttribute("data-theme")==="dark"?"light":"dark";
     root.setAttribute("data-theme",next);
     localStorage.setItem("dashboard-theme",next);
+    updateLogo();
     if(typeof chartCompare!=="undefined"&&chartCompare) updateChartColors();
     if(typeof chartDist!=="undefined"&&chartDist) updateChartColors();
   });
@@ -6147,6 +6144,81 @@ document.addEventListener("DOMContentLoaded", ()=>{
 });
 
 
+/* ================= ACTION PLAN ACTIVITY RINGS ================= */
+// Animate only when the underlying percentages actually change (skip on
+// unchanged background polls so the rings don't replay every ~10s).
+let __apRingLastState = null;
+const __apActivitySnapshot = { total: 0, prog: 0, progPct: 0, done: 0, donePct: 0 };
+// Tracks which ring (if any) is currently previewed, so a background re-render
+// (poll) reasserts the same preview instead of desyncing value from label.
+let __apHoveredRing = null;
+// Hover a ring (or its stat row) to preview that metric in the center; leave to restore the total.
+window.showApRingDetail = function(kind) {
+  __apHoveredRing = kind;
+  const centerVal = document.getElementById("kpi-total-val");
+  const centerLbl = document.getElementById("activity-center-lbl");
+  if (!centerVal || !centerLbl) return;
+  const s = __apActivitySnapshot;
+  if (kind === "prog") {
+    centerVal.textContent = s.prog;
+    centerVal.style.color = "var(--mdi-prog)";
+    centerLbl.textContent = `In Progress · ${s.progPct}%`;
+  } else if (kind === "done") {
+    centerVal.textContent = s.done;
+    centerVal.style.color = "var(--mdi-done)";
+    centerLbl.textContent = `Completed · ${s.donePct}%`;
+  } else {
+    centerVal.textContent = s.total;
+    centerVal.style.color = "";
+    centerLbl.textContent = "Participants";
+  }
+};
+function fillActivityRing(id, radius, pct) {
+  const circle = document.getElementById(id);
+  if (!circle) return;
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.max(0, Math.min(100, pct));
+  const targetOffset = circumference * (1 - clamped / 100);
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (reduceMotion) {
+    circle.style.strokeDasharray = circumference;
+    circle.style.strokeDashoffset = targetOffset;
+    circle.classList.remove("fill-animate");
+    circle.classList.add("ring-in");
+    return;
+  }
+
+  circle.classList.remove("ring-in", "fill-animate");
+  circle.style.transition = "none";
+  circle.style.strokeDasharray = circumference;
+  circle.style.strokeDashoffset = circumference;
+  void circle.getBoundingClientRect();
+  circle.style.transition = "";
+  circle.classList.add("ring-in");
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      circle.classList.add("fill-animate");
+      circle.style.strokeDashoffset = targetOffset;
+    });
+  });
+}
+function setActivityRings(progPct, donePct) {
+  const key = progPct + "|" + donePct;
+  if (key === __apRingLastState) return;
+  __apRingLastState = key;
+  fillActivityRing("ring-prog", 80, progPct);
+  fillActivityRing("ring-done", 58, donePct);
+}
+// Replays the fill animation from the current data, regardless of whether the
+// percentages changed. Call this whenever the Action Plan tab becomes visible
+// (as opposed to setActivityRings, which only fires on an actual data change
+// so a silent background poll doesn't replay it while the user is looking at it).
+window.playApRingsEntrance = function() {
+  fillActivityRing("ring-prog", 80, __apActivitySnapshot.progPct);
+  fillActivityRing("ring-done", 58, __apActivitySnapshot.donePct);
+};
+
 /* ================= ACTION PLAN INTERACTIVE FILTER ================= */
 window.filterApTable = function(status, element) {
   window.__apStatusFilter = status;
@@ -6366,10 +6438,15 @@ function renderActiveClientSections(){
     const inProgress = totalParticipants - completed;
     const donePct = totalParticipants > 0 ? Math.round((completed / totalParticipants) * 100) : 0;
     const progPct = totalParticipants > 0 ? 100 - donePct : 0;
-    
-    const elKpiTotal = document.getElementById("kpi-total-val");
-    if(elKpiTotal) elKpiTotal.textContent = totalParticipants;
-    
+
+    __apActivitySnapshot.total = totalParticipants;
+    __apActivitySnapshot.prog = inProgress;
+    __apActivitySnapshot.progPct = progPct;
+    __apActivitySnapshot.done = completed;
+    __apActivitySnapshot.donePct = donePct;
+
+    showApRingDetail(__apHoveredRing);
+
     const elKpiAp = document.getElementById("kpi-ap-val");
     if(elKpiAp) elKpiAp.textContent = totalPlans;
     const elKpiApSub = document.getElementById("kpi-ap-sub");
@@ -6385,23 +6462,7 @@ function renderActiveClientSections(){
     const elKpiProgSub = document.getElementById("kpi-prog-sub");
     if(elKpiProgSub) elKpiProgSub.textContent = progPct + "% of batch";
 
-    const donutBg = document.getElementById("kpi-donut-bg");
-    if(donutBg) donutBg.style.background = `conic-gradient(var(--mdi-done) 0% ${donePct}%, var(--mdi-prog) ${donePct}% 100%)`;
-    const donutPct = document.getElementById("kpi-donut-pct");
-    if(donutPct) donutPct.textContent = donePct + "%";
-    const donutProg = document.getElementById("kpi-donut-prog");
-    if(donutProg) donutProg.textContent = `${inProgress} (${progPct}%)`;
-    const donutDone = document.getElementById("kpi-donut-done");
-    if(donutDone) donutDone.textContent = `${completed} (${donePct}%)`;
-
-    const psDoneBar = document.getElementById("ps-done-bar");
-    if(psDoneBar) psDoneBar.style.width = donePct + "%";
-    const psProgBar = document.getElementById("ps-prog-bar");
-    if(psProgBar) psProgBar.style.width = progPct + "%";
-    const psDoneLeg = document.getElementById("ps-done-leg");
-    if(psDoneLeg) psDoneLeg.textContent = donePct + "% Completed";
-    const psProgLeg = document.getElementById("ps-prog-leg");
-    if(psProgLeg) psProgLeg.textContent = progPct + "% In Progress";
+    setActivityRings(progPct, donePct);
 
     const tableCount = document.getElementById("table-count-label");
     if(tableCount) tableCount.textContent = `Showing ${filteredApList.length} of ${totalParticipants}`;
@@ -6567,7 +6628,12 @@ function initNavScroll(){
         // Force reflow to trigger CSS transitions
         void activePane.offsetWidth;
         activePane.classList.add("active");
-        
+
+        // Replay the activity rings' entrance every time this tab is switched to
+        if (targetId === "#pane-actionplan" && typeof playApRingsEntrance === "function") {
+          playApRingsEntrance();
+        }
+
         // Dynamically update header subtitle to match current tab name
         const subtitleEl = document.getElementById("headerSubtitle");
         if (subtitleEl) {
@@ -6781,7 +6847,7 @@ async function bootApp() {
               const trainingsList = loggedClient.trainings || [];
               const countEl = document.getElementById("mmTotalSessionsCount");
               if(countEl) countEl.textContent = trainingsList.length + " Sesi";
-              if (typeof renderMainMenu === "function") renderMainMenu(trainingsList);
+              if (typeof renderMainMenu === "function") renderMainMenu(trainingsList, true);
             }
           }
         }
