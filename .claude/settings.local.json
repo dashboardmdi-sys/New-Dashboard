@@ -1,7 +1,62 @@
 {
   "permissions": {
     "allow": [
-      "Bash(taskkill //F //IM python.exe)"
+      "Bash(taskkill //F //IM python.exe)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh auth *)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(npx impeccable *)",
+      "Bash(node \"C:\\\\Users\\\\adm\\\\new dashboard mdi\\\\.claude\\\\skills\\\\impeccable\\\\scripts\\\\detect-csp.mjs\")",
+      "Bash(node .claude/skills/impeccable/scripts/critique-storage.mjs slug \"index.html#eval-kpi\")",
+      "Bash(node \".claude/skills/impeccable/scripts/detect.mjs\" --json \"index.html\")",
+      "Bash(echo \"EXITCODE:$?\")",
+      "Bash(node -e \"console.log\\(require\\('fs'\\).existsSync\\('.claude/skills/impeccable/scripts/live-server.mjs'\\)\\)\")",
+      "Bash(node \".claude/skills/impeccable/scripts/live-server.mjs\" stop)",
+      "Bash(IMPECCABLE_CRITIQUE_META='{\"target\":\"eval-kpi cards \\(index.html, Evaluasi tab\\)\",\"total_score\":18,\"max_score\":36,\"na_heuristics\":\"9\",\"p0_count\":1,\"p1_count\":2}' node .claude/skills/impeccable/scripts/critique-storage.mjs write \"index.html#eval-kpi\" \"C:\\\\Users\\\\adm\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-adm-new-dashboard-mdi\\\\5c4124ca-6bcb-499a-9295-362275915fa4\\\\scratchpad\\\\critique-eval-kpi.md\")",
+      "Bash(node .claude/skills/impeccable/scripts/critique-storage.mjs trend \"index.html#eval-kpi\" 5)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(node .claude/skills/impeccable/scripts/critique-storage.mjs latest \"index.html#eval-kpi\")",
+      "Bash(node .claude/skills/impeccable/scripts/detect.mjs --json index.html)",
+      "Bash(node .claude/skills/impeccable/scripts/detect.mjs --json --scope layout index.html)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{try{const j=JSON.parse\\(d\\);console.log\\('findings:',j.length\\);}catch\\(e\\){console.log\\(d\\);}}\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);j.forEach\\(f=>console.log\\(f.antipattern, f.line, f.snippet\\)\\);}\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{try{const j=JSON.parse\\(d\\);console.log\\('findings:',j.length\\); j.forEach\\(f=>console.log\\(f.antipattern,f.line\\)\\);}catch\\(e\\){console.log\\(d\\);}}\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{try{const j=JSON.parse\\(d\\);console.log\\('findings:',j.length\\); const w=j.filter\\(f=>f.line>=1383&&f.line<=1470\\); console.log\\('near trainer-deck CSS:', JSON.stringify\\(w.map\\(x=>x.antipattern+':'+x.line\\)\\)\\);}catch\\(e\\){console.log\\(d\\);}}\\)\")",
+      "mcp__plugin_claude-video-vision_claude-video-vision__video_info",
+      "mcp__plugin_claude-video-vision_claude-video-vision__video_watch",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{try{const j=JSON.parse\\(d\\);console.log\\('findings:',j.length\\); const w=j.filter\\(f=>f.line>=1383&&f.line<=1475\\); console.log\\('in trainer CSS block:', JSON.stringify\\(w.map\\(x=>x.antipattern+':'+x.line\\)\\)\\);}catch\\(e\\){console.log\\(d\\);}}\\)\")"
     ]
-  }
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/hook.mjs\" ] || node \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/hook.mjs\"",
+            "timeout": 5,
+            "statusMessage": "Checking UI changes"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/hook.mjs\" ] || node \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/hook.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Design deep pass"
+          }
+        ]
+      }
+    ]
+  },
+  "description": "Impeccable design detector: immediate-tier checks after Edit/Write/MultiEdit on UI files, full-rule deep pass on Stop."
 }

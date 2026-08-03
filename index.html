@@ -19,6 +19,7 @@
     --n50:#F7F7F7; --n100:#EDEDED; --n200:#DAD9D8; --n300:#BFBCBB; --n400:#A09B98;
     --n500:#857F7A; --n600:#736D68; --n700:#615B57; --n800:#4B4744; --n900:#353331;
     --success:#16A34A; --warning:#D97706; --danger:#DC2626;
+    --kpi-score:#166B49; --ring-track:#e9edf2;
     --card-bg:#FFFFFF; --card-border:#DAD9D8; --radius-md:8px; --radius-lg:12px; --radius-xl:16px;
     --shadow-sm:0 1px 2px rgba(0,0,0,.05);
     --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.05);
@@ -241,6 +242,19 @@
   }
   .podium-tab.active::after{background:var(--primary-base)}
 
+  /* filter chips (kepemimpinan / wewenang / interpersonal) */
+  .kfilter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .kchip{
+    display:inline-flex;align-items:center;
+    padding:7px 13px;border-radius:20px;
+    font-size:12.5px;font-weight:600;font-family:inherit;
+    background:var(--card-bg);border:1px solid var(--card-border);color:var(--n600);
+    cursor:pointer;transition:border-color .2s,color .2s,background .2s;
+  }
+  .kchip:hover{border-color:var(--primary-base);color:var(--navy)}
+  .kchip:focus-visible{outline:2px solid var(--primary-base);outline-offset:2px}
+  .kchip.active{background:var(--primary-base);border-color:var(--primary-base);color:#1a2b4d}
+
   .podium-item.last{border-color:#FDECEC;background:linear-gradient(120deg,#FFF6F6 30%,#FDECEC)}
   .medal.low{background:#FDECEC;color:var(--danger);box-shadow:0 0 0 3px #FEE2E2}
   .medal{
@@ -379,6 +393,7 @@
     --n50:#111113; --n100:#1e1e22; --n200:#2a2a30; --n300:#3e3e46;
     --n400:#6e6e78; --n500:#8e8e98; --n600:#a8a8b2; --n700:#c2c2ca; --n800:#d8d8de; --n900:#ececf0;
     --card-bg:#1a1a1e; --card-border:#2a2a30;
+    --kpi-score:#2FB37E; --ring-track:#2a2a30;
     --navy:#7eb3f0; --navy-800:#5a9de6; --navy-300:#2c5a8f; --navy-100:#1c2a3a;
     --primary-100:#2a2616; --primary-200:#3a3520; --primary-300:#5a5020;
     --primary-700:#e0b800; --primary-900:#f0d850;
@@ -1170,17 +1185,28 @@
     display: inline-block;
     flex-shrink: 0;
   }
-  @property --pct {
-    syntax: '<number>';
-    initial-value: 0;
-    inherits: false;
+  .eval-kpi-row {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
   }
   .eval-kpi-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 14px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .eval-kpi.eval-kpi-trainer {
+    background: var(--n50);
+    flex: 0 0 190px;
   }
   .eval-kpi {
+    display: block;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
     background: var(--card-bg);
     border-radius: 14px;
     padding: 18px 16px;
@@ -1190,87 +1216,240 @@
     transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     cursor: pointer;
   }
-  .eval-kpi:hover {
+  .eval-kpi:hover, .eval-kpi:focus-visible {
     transform: translateY(-6px);
     box-shadow: 0 14px 30px rgba(15,35,65,0.12), 0 0 0 1px var(--primary-base);
     border-color: var(--primary-base);
   }
-  .eval-kpi .kpi-ring {
-    width: 72px; height: 72px;
-    border-radius: 50%;
-    margin: 0 auto 10px;
-    display: flex; align-items: center; justify-content: center;
-    background: conic-gradient(#d4a017 calc(var(--pct) * 1%), #e9edf2 0);
-    transition: --pct 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s ease;
+  .eval-kpi:focus-visible {
+    outline: 2px solid var(--primary-base);
+    outline-offset: 3px;
   }
-  .eval-kpi:hover .kpi-ring {
-    transform: scale(1.08);
+  .eval-kpi .kpi-gauge {
+    position: relative;
+    width: 100px;
+    height: 56px;
+    margin: 0 auto 6px;
   }
-  .eval-kpi .ring-inner {
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    background: var(--card-bg);
-    display: flex; align-items: center; justify-content: center;
+  .eval-kpi .kpi-gauge-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .eval-kpi .kpi-gauge-track,
+  .eval-kpi .kpi-gauge-fill {
+    fill: none;
+    stroke-width: 9;
+    stroke-linecap: round;
+  }
+  .eval-kpi .kpi-gauge-track { stroke: var(--ring-track); }
+  .eval-kpi .kpi-gauge-fill {
+    stroke: #d4a017;
+    stroke-dasharray: 131.95;
+    stroke-dashoffset: 131.95;
+    transition: stroke-dashoffset 1.3s cubic-bezier(.16,1,.3,1);
+  }
+  .eval-kpi .kpi-gauge.is-active .kpi-gauge-fill {
+    stroke-dashoffset: var(--gauge-offset, 0);
+  }
+  .eval-kpi:hover .kpi-gauge, .eval-kpi:focus-visible .kpi-gauge {
+    transform: scale(1.05);
+  }
+  .eval-kpi .kpi-gauge-value {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    text-align: center;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 15px;
     color: var(--navy);
   }
   .eval-kpi .label {
     font-size: 12px;
-    color: var(--n500);
+    color: var(--n600);
     line-height: 1.35;
     min-height: 32px;
   }
   .eval-kpi .score {
     font-size: 13px;
-    color: #1f8a5f;
+    color: var(--kpi-score);
     font-weight: 800;
     margin-top: 4px;
+  }
+  .eval-kpi.eval-kpi-empty .kpi-gauge-value { color: var(--n600); }
+  .eval-kpi .score.eval-kpi-empty-note { color: var(--n600); font-weight: 700; }
+  .eval-kpi-highlight {
+    animation: evalKpiHighlight 1.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes evalKpiHighlight {
+    0%, 100% { box-shadow: none; }
+    15%, 60% { box-shadow: 0 0 0 2px var(--primary-base); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .eval-kpi, .eval-kpi .kpi-gauge { transition: none; }
+    .eval-kpi:hover, .eval-kpi:focus-visible,
+    .eval-kpi:hover .kpi-gauge, .eval-kpi:focus-visible .kpi-gauge { transform: none; }
+    .eval-kpi .kpi-gauge-fill { transition: none; }
+    .eval-kpi-highlight { animation: none; outline: 2px solid var(--primary-base); outline-offset: 3px; }
   }
   .cols {
     display: grid;
     grid-template-columns: 1.15fr 0.85fr;
     gap: 18px;
   }
-  .bar-row { margin-bottom: 14px; }
+  .bar-row { margin-bottom: 22px; }
+  .bar-row:last-child { margin-bottom: 0; }
   .bar-row .bar-label {
-    display: flex; justify-content: space-between;
-    font-size: 13px; margin-bottom: 6px; color: var(--n900);
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 13px; margin-bottom: 8px; color: var(--n900);
+    gap: 12px;
   }
+  .bar-summary {
+    font-size: 12.5px;
+    color: var(--n600);
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .bar-summary b { color: var(--navy); font-weight: 700; }
   .bar-track {
     background: #eef1f5;
-    border-radius: 10px;
-    height: 16px;
+    border-radius: 8px;
+    height: 32px;
     overflow: hidden;
     display: flex;
   }
-  .bar-fill-5 { background: #13315c; height: 100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
-  .bar-fill-4 { background: #6d93c4; height: 100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
-  .bar-fill-3 { background: #a2b1c6; height: 100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
-  .bar-fill-2 { background: #e8a87c; height: 100%; border-right: 2px solid #fff; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
-  .bar-fill-1 { background: #e27d60; height: 100%; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
-  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-  .trainer-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
+  .bar-track.bar-track-empty {
+    align-items: center;
+    justify-content: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--n700);
+    background: var(--n100);
   }
-  .trainer {
-    text-align: center;
-    padding: 16px 10px;
-    border-radius: 12px;
-    background: var(--n50);
-    border: 1px solid var(--card-border);
-  }
-  .trainer .name { font-weight: 700; color: var(--navy); font-size: 14px; margin-top: 6px; }
-  .trainer .score-big { font-size: 26px; font-weight: 800; color: #d4a017; }
-  .trainer .role { font-size: 11px; color: var(--n500); }
-  .avatar {
-    width: 46px; height: 46px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--navy-800), var(--navy-300));
-    margin: 0 auto;
+  .bar-fill-5, .bar-fill-4, .bar-fill-3, .bar-fill-2, .bar-fill-1 {
+    height: 100%;
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: 700; font-size: 15px;
+    font-size: 11.5px;
+    font-weight: 700;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.15s ease;
+  }
+  .bar-fill-5 { background: #2ecc71; border-right: 2px solid #fff; color: #000; }
+  .bar-fill-4 { background: #3498db; border-right: 2px solid #fff; color: #000; }
+  .bar-fill-3 { background: #9b59b6; border-right: 2px solid #fff; color: #fff; }
+  .bar-fill-2 { background: #f1c40f; border-right: 2px solid #fff; color: #000; }
+  .bar-fill-1 { background: #e74c3c; color: #000; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .trainer-card-body {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .trainer-carousel-wrap {
+    position: relative;
+    flex: 0 0 35%;
+    min-width: 0;
+  }
+  .trainer-feedback-col {
+    flex: 1 1 65%;
+    min-width: 0;
+  }
+  .trainer-grid {
+    position: relative;
+    min-height: 360px;
+  }
+  .trainer-carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--navy);
+    cursor: pointer;
+    z-index: 2;
+    padding: 0;
+  }
+  .trainer-carousel-nav.prev { left: -6px; }
+  .trainer-carousel-nav.next { right: -6px; }
+  .trainer-carousel-nav:hover { border-color: var(--primary-base); }
+  .trainer-carousel-nav:focus-visible { outline: 2px solid var(--primary-base); outline-offset: 2px; }
+  .trainer-carousel-nav svg { width: 16px; height: 16px; }
+  .trainer-carousel-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .trainer-carousel-dot {
+    width: 7px; height: 7px;
+    border-radius: 4px;
+    background: var(--n300);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .trainer-carousel-dot.active { background: var(--primary-base); width: 18px; }
+  .trainer-carousel-dot:focus-visible { outline: 2px solid var(--primary-base); outline-offset: 2px; }
+  .trainer-carousel-dots .trainer-carousel-nav--dot.prev,
+  .trainer-carousel-dots .trainer-carousel-nav--dot.next {
+    position: static;
+    transform: none;
+    left: auto; right: auto; top: auto;
+    width: 18px; height: 18px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--n500);
+  }
+  .trainer-carousel-dots .trainer-carousel-nav--dot:hover { color: var(--primary-base); }
+  .trainer-carousel-nav--dot svg { width: 13px; height: 13px; }
+  .trainer {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background-color: #0d2544;
+    background-size: cover;
+    background-position: center 22%;
+    background-repeat: no-repeat;
+    transform-origin: center center;
+    box-shadow: 0 10px 26px rgba(15,35,65,0.18);
+    pointer-events: none;
+    transition: transform 0.55s cubic-bezier(.16,1,.3,1), opacity 0.45s ease, box-shadow 0.4s ease;
+  }
+  .trainer--nophoto { background-image: linear-gradient(150deg, var(--navy-800), var(--navy-300)); }
+  .trainer-initials {
+    position: absolute; inset: 0;
+    display: none; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.92);
+    font-size: 54px; font-weight: 800; letter-spacing: 1px;
+  }
+  .trainer--nophoto .trainer-initials { display: flex; }
+  .trainer-scrim {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 31%;
+    background: linear-gradient(to top, rgba(5,14,28,0.47) 0%, rgba(5,14,28,0) 50%);
+    pointer-events: none;
+  }
+  .trainer-meta {
+    position: absolute; left: 0; right: 0; bottom: 16px;
+    text-align: center; padding: 0 12px;
+  }
+  .trainer-meta .name { color: #fff; font-weight: 700; font-size: 16px; line-height: 1.2; text-shadow: 0 1px 3px rgba(0,0,0,0.45); }
+  .trainer-meta .score-big { color: var(--primary-base); font-weight: 800; font-size: 30px; margin-top: 2px; text-shadow: 0 1px 5px rgba(0,0,0,0.5); }
+  .trainer-meta .score-big.score-big-empty { color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700; text-shadow: none; }
+  /* Deck stacking: data-pos 0 = front, higher = further back, fanned to the lower-right */
+  .trainer[data-pos="0"] { transform: translate(0,0) scale(1); opacity: 1; z-index: 30; }
+  .trainer[data-pos="1"] { transform: translate(17px,10px) scale(.93); opacity: .92; z-index: 20; box-shadow: 0 7px 16px rgba(15,35,65,0.14); }
+  .trainer[data-pos="2"] { transform: translate(32px,19px) scale(.86); opacity: .7; z-index: 10; box-shadow: 0 5px 12px rgba(15,35,65,0.10); }
+  .trainer[data-pos="3"] { transform: translate(32px,19px) scale(.86); opacity: 0; z-index: 1; }
+  [data-theme="dark"] .trainer[data-pos="0"] { box-shadow: 0 12px 26px rgba(0,0,0,0.55); }
+  [data-theme="dark"] .trainer[data-pos="1"] { box-shadow: 0 7px 16px rgba(0,0,0,0.45); }
+  [data-theme="dark"] .trainer[data-pos="2"] { box-shadow: 0 5px 12px rgba(0,0,0,0.4); }
+  @media (prefers-reduced-motion: reduce) {
+    .trainer { transition: none; }
   }
   .chip-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip {
@@ -1283,12 +1462,30 @@
     border: 1px solid var(--navy-300);
   }
   .chip.big { background: var(--navy-800); color: #fff; font-size: 13.5px; padding: 8px 16px; border: none; }
+  .quote-slider-wrap {
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .quote-slider {
+    overflow: hidden;
+    border-radius: 14px;
+  }
   .quote-grid {
+    display: flex;
+    transition: transform 0.5s cubic-bezier(.16,1,.3,1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .quote-grid { transition: none; }
+  }
+  .quote-slide {
+    flex: 0 0 100%;
+    min-width: 0;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 14px;
   }
   .quote {
+    min-width: 0;
     background: var(--card-bg);
     border-radius: 14px;
     padding: 20px;
@@ -1316,6 +1513,37 @@
     border-top: 1px dashed var(--card-border);
     padding-top: 8px;
   }
+  .quote-slider-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .quote-slider-dot {
+    width: 7px; height: 7px;
+    border-radius: 4px;
+    background: var(--n300);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .quote-slider-dot.active { background: var(--primary-base); width: 18px; }
+  .quote-slider-dot:focus-visible { outline: 2px solid var(--primary-base); outline-offset: 2px; }
+  .quote-slider-nav {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--n500);
+    cursor: pointer;
+  }
+  .quote-slider-nav:hover { color: var(--primary-base); }
+  .quote-slider-nav:focus-visible { outline: 2px solid var(--primary-base); outline-offset: 2px; }
+  .quote-slider-nav svg { width: 15px; height: 15px; }
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(24px); }
     to { opacity: 1; transform: translateY(0); }
@@ -1325,11 +1553,14 @@
     animation: fadeUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
   @media (max-width: 900px) {
+    .eval-kpi-row { flex-direction: column; }
     .eval-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .eval-kpi-trainer { flex-basis: auto; }
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .cols { grid-template-columns: 1fr; }
-    .quote-grid { grid-template-columns: 1fr; }
-    .trainer-grid { grid-template-columns: 1fr; }
+    .quote-slide { grid-template-columns: 1fr; }
+    .trainer-card-body { flex-direction: column; }
+    .trainer-carousel-wrap { flex-basis: auto; width: 100%; }
   }
 /* ACTION PLAN DASHBOARD CSS */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -1858,27 +2089,38 @@
       <h2 class="section-title">Hasil Utama</h2>
       
       <!-- KPI Grid -->
-      <div class="eval-kpi-grid" id="evalKpis" style="margin-bottom: 24px;"></div>
+      <div class="eval-kpi-row" style="margin-bottom: 24px;">
+        <div class="eval-kpi-grid" id="evalKpis"></div>
+        <button type="button" class="eval-kpi eval-kpi-trainer" id="evalKpiTrainer" data-scroll-target="evalTrainersCard" aria-label="Lihat detail penilaian trainer"></button>
+      </div>
       
       <!-- Satisfaction Breakdown Title -->
       <h2 class="section-title">Rincian Kepuasan</h2>
 
-      <!-- Breakdown Grid (2 cols) -->
-      <div class="cols" style="margin-bottom: 24px;">
-        <!-- Left: Satisfaction Breakdown -->
-        <div class="card" id="evalSatisfactionCard">
-          <div style="font-size:13px;color:var(--n500);margin-bottom:14px;font-weight:600;"></div>
-          <div id="evalBars" style="margin-top: 14px;"></div>
-        </div>
-        
-        <!-- Right: Trainer Ratings -->
-        <div class="card" id="evalTrainersCard">
-          <div style="font-size:13px;color:var(--n500);margin-bottom:14px;font-weight:600;">Penilaian Trainer</div>
-          <div class="trainer-grid" id="evalTrainers" style="margin-top: 14px;"></div>
-          <div id="evalTrainerFeedback" style="margin-top:16px; font-size:12.5px; line-height:1.6; background:var(--n50); padding:12px 14px; border-radius:10px; border:1px solid var(--card-border); color:var(--n800);"></div>
+      <!-- Satisfaction Breakdown -->
+      <div class="card" id="evalSatisfactionCard" style="margin-bottom: 24px;">
+        <div style="font-size:13px;color:var(--n500);margin-bottom:14px;font-weight:600;"></div>
+        <div id="evalBars" style="margin-top: 14px;"></div>
+      </div>
+
+      <!-- Trainer Ratings -->
+      <div class="card" id="evalTrainersCard" style="margin-bottom: 24px;">
+        <div style="font-size:13px;color:var(--n500);margin-bottom:14px;font-weight:600;">Penilaian Trainer</div>
+        <div class="trainer-card-body">
+          <div class="trainer-carousel-wrap">
+            <button type="button" class="trainer-carousel-nav prev" id="evalTrainersPrev" aria-label="Trainer sebelumnya">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <div class="trainer-grid" id="evalTrainers"></div>
+            <button type="button" class="trainer-carousel-nav next" id="evalTrainersNext" aria-label="Trainer berikutnya">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <div class="trainer-carousel-dots" id="evalTrainersDots"></div>
+          </div>
+          <div id="evalTrainerFeedback" class="trainer-feedback-col" style="font-size:12.5px; line-height:1.6; background:var(--n50); padding:12px 14px; border-radius:10px; border:1px solid var(--card-border); color:var(--n800);"></div>
         </div>
       </div>
-      
+
       <!-- What Landed Best Title -->
       <h2 class="section-title">Topik Paling Diminati</h2>
 
@@ -1897,8 +2139,13 @@
       <!-- In Their Own Words Title -->
       <h2 class="section-title">Kutipan Peserta</h2>
 
-      <!-- Testimonials Quote Grid -->
-      <div class="quote-grid" id="evalQuotes" style="margin-bottom: 24px;"></div>
+      <!-- Testimonials Quote Slider -->
+      <div class="quote-slider-wrap">
+        <div class="quote-slider">
+          <div class="quote-grid" id="evalQuotes"></div>
+        </div>
+        <div class="quote-slider-dots" id="evalQuotesDots"></div>
+      </div>
 
       <!-- CTA Card -->
       <div class="card" style="margin-bottom: 24px; background: linear-gradient(120deg, var(--navy) 0%, var(--navy-800) 100%); color: #fff; padding: 30px 34px; border: none; border-radius: 16px;">
@@ -3391,6 +3638,129 @@ function parseEvaluationSheet(rows) {
   return results;
 }
 
+// Half-donut gauge (arc length for r=42 semicircle: PI*42)
+const EVAL_GAUGE_ARC = Math.PI * 42;
+function gaugeMarkup(valId, pct, targetValue, format, isEmpty) {
+  const offset = (EVAL_GAUGE_ARC * (1 - Math.max(0, Math.min(100, pct)) / 100)).toFixed(3);
+  const initialText = isEmpty ? "—" : (format === "pct" ? "0%" : "0,00");
+  return `
+    <div class="kpi-gauge" style="--gauge-offset:${offset}" data-gauge-target="${targetValue}" data-gauge-format="${format}">
+      <svg viewBox="0 0 100 56" class="kpi-gauge-svg" aria-hidden="true">
+        <path class="kpi-gauge-track" d="M8,50 A42,42 0 0 1 92,50"/>
+        <path class="kpi-gauge-fill" d="M8,50 A42,42 0 0 1 92,50"/>
+      </svg>
+      <div class="kpi-gauge-value" id="${valId}">${initialText}</div>
+    </div>
+  `;
+}
+
+// Trainer carousel: deck-of-cards stack with shuffle animation + autoplay
+const trainerCarousel = { index: 0, count: 0, timer: null };
+// Assign each card its depth in the deck relative to the active index.
+function layoutTrainerDeck() {
+  const cards = [...document.querySelectorAll("#evalTrainers .trainer")];
+  const count = cards.length;
+  if (!count) return;
+  cards.forEach((c, i) => {
+    const rel = ((i - trainerCarousel.index) % count + count) % count; // 0 = front
+    c.dataset.pos = rel > 3 ? 3 : rel;
+    c.classList.toggle("active", rel === 0);
+    c.setAttribute("aria-hidden", rel === 0 ? "false" : "true");
+  });
+  document.querySelectorAll("#evalTrainersDots .trainer-carousel-dot").forEach((d, i) => {
+    d.classList.toggle("active", i === trainerCarousel.index);
+  });
+}
+function setActiveTrainer(idx) {
+  const count = document.querySelectorAll("#evalTrainers .trainer").length;
+  if (!count) return;
+  const normalized = ((idx % count) + count) % count;
+  if (normalized === trainerCarousel.index) return;
+  trainerCarousel.index = normalized;
+  layoutTrainerDeck();
+}
+function stopTrainerAutoplay() {
+  if (trainerCarousel.timer) { clearInterval(trainerCarousel.timer); trainerCarousel.timer = null; }
+}
+function startTrainerAutoplay() {
+  stopTrainerAutoplay();
+  if (trainerCarousel.count <= 1) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  trainerCarousel.timer = setInterval(() => setActiveTrainer(trainerCarousel.index + 1), 5000);
+}
+
+// Quote slider: one testimonial per row, sliding horizontally + autoplay
+const quoteSlider = { index: 0, count: 0, timer: null };
+function layoutQuoteSlide() {
+  const track = document.getElementById("evalQuotes");
+  if (!track) return;
+  track.style.transform = `translateX(-${quoteSlider.index * 100}%)`;
+  document.querySelectorAll("#evalQuotesDots .quote-slider-dot").forEach((d, i) => {
+    d.classList.toggle("active", i === quoteSlider.index);
+  });
+}
+function setActiveQuote(idx) {
+  if (!quoteSlider.count) return;
+  quoteSlider.index = ((idx % quoteSlider.count) + quoteSlider.count) % quoteSlider.count;
+  layoutQuoteSlide();
+}
+function stopQuoteAutoplay() {
+  if (quoteSlider.timer) { clearInterval(quoteSlider.timer); quoteSlider.timer = null; }
+}
+function startQuoteAutoplay() {
+  stopQuoteAutoplay();
+  if (quoteSlider.count <= 1) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  quoteSlider.timer = setInterval(() => setActiveQuote(quoteSlider.index + 1), 10000);
+}
+
+let __evalGaugeObserver = null;
+function initEvalGauges(rootEl) {
+  if (!rootEl) return;
+  if (__evalGaugeObserver) __evalGaugeObserver.disconnect();
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const gauges = rootEl.querySelectorAll(".eval-kpi:not(.eval-kpi-empty) .kpi-gauge");
+
+  const runGauge = (g) => {
+    const valEl = g.querySelector(".kpi-gauge-value");
+    const targetValue = parseFloat(g.dataset.gaugeTarget);
+    const fmt = g.dataset.gaugeFormat === "pct" ? (v => `${Math.round(v)}%`) : (v => fmtID(v, 2));
+
+    if (reduceMotion) {
+      g.classList.add("is-active");
+      valEl.textContent = fmt(targetValue);
+      return;
+    }
+
+    g.classList.remove("is-active");
+    void g.offsetWidth;
+    g.classList.add("is-active");
+
+    const dur = 1300, start = performance.now();
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    (function tick() {
+      const t = Math.min((performance.now() - start) / dur, 1);
+      valEl.textContent = fmt(targetValue * ease(t));
+      if (t < 1) requestAnimationFrame(tick);
+    })();
+  };
+
+  if (reduceMotion) {
+    gauges.forEach(runGauge);
+    return;
+  }
+
+  __evalGaugeObserver = new IntersectionObserver((entries) => {
+    entries.forEach(en => { if (en.isIntersecting) runGauge(en.target); });
+  }, { threshold: 0.4 });
+
+  gauges.forEach(g => {
+    __evalGaugeObserver.observe(g);
+    const card = g.closest(".eval-kpi");
+    if (card) card.addEventListener("mouseenter", () => runGauge(g));
+  });
+}
+
 function renderDynamicEvaluation(evalData) {
   const manualCard   = document.getElementById("evalManualCard");
   const dynamicReport = document.getElementById("evalDynamicReport");
@@ -3426,13 +3796,20 @@ function renderDynamicEvaluation(evalData) {
     document.getElementById("evalReportMetaCount").textContent = d.total || (hasData ? 0 : "—");
     document.getElementById("evalReportMetaDuration").textContent = calcDur(CONFIG.dateStart || CONFIG.date, CONFIG.dateEnd || CONFIG.date);
     document.getElementById("evalReportMetaDate").textContent = formatRange(CONFIG.dateStart || CONFIG.date, CONFIG.dateEnd || CONFIG.date);
-    // Use real data only — no fake fallback numbers
+    // Use real data only — no fake fallback numbers. A missing metric renders an
+    // explicit "Belum ada data" state instead of a fabricated zero (a 0 is
+    // indistinguishable from a genuine bottom score on a 1-5 scale).
     const empty = { pct54: 0, pct5: 0, pct4: 0, pct3: 0, pct2: 0, pct1: 0, avg: 0 };
-    const ben   = (d.benefit   && d.benefit.pct54   != null) ? d.benefit   : empty;
-    const enj   = (d.enjoyment && d.enjoyment.pct54 != null) ? d.enjoyment : empty;
-    const rel   = (d.relevance && d.relevance.pct54 != null) ? d.relevance : empty;
-    const prac  = (d.practical && d.practical.pct54 != null) ? d.practical : empty;
+    const benHasData  = !!(d.benefit   && d.benefit.pct54   != null);
+    const enjHasData  = !!(d.enjoyment && d.enjoyment.pct54 != null);
+    const relHasData  = !!(d.relevance && d.relevance.pct54 != null);
+    const pracHasData = !!(d.practical && d.practical.pct54 != null);
+    const ben   = benHasData  ? d.benefit   : empty;
+    const enj   = enjHasData  ? d.enjoyment : empty;
+    const rel   = relHasData  ? d.relevance : empty;
+    const prac  = pracHasData ? d.practical : empty;
 
+    const trainerHasData = !!(d.trainers && d.trainers.length > 0);
     let trainers = d.trainers || [];
     // Fallback: use trainer names from config if no data-driven trainers
     if (trainers.length === 0 && CONFIG.trainerNames) {
@@ -3458,92 +3835,133 @@ function renderDynamicEvaluation(evalData) {
     // 1. KPI Grid
     const evalKpisEl = document.getElementById("evalKpis");
     if(evalKpisEl) {
-      evalKpisEl.innerHTML = `
-        <div class="eval-kpi">
-          <div class="kpi-ring" style="--pct:${ben.pct54}"><div class="ring-inner">${ben.pct54}%</div></div>
-          <div class="label">Merasakan Manfaat<br>Program Pelatihan</div>
-          <div class="score">${fmtID(ben.avg, 2)} / 5 avg</div>
-        </div>
-        <div class="eval-kpi">
-          <div class="kpi-ring" style="--pct:${enj.pct54}"><div class="ring-inner">${enj.pct54}%</div></div>
-          <div class="label">Sangat Menikmati<br>Sesi Pelatihan</div>
-          <div class="score">${fmtID(enj.avg, 2)} / 5 avg</div>
-        </div>
-        <div class="eval-kpi">
-          <div class="kpi-ring" style="--pct:${rel.pct54}"><div class="ring-inner">${rel.pct54}%</div></div>
-          <div class="label">Materi Relevan<br>dengan Pekerjaan</div>
-          <div class="score">${fmtID(rel.avg, 2)} / 5 avg</div>
-        </div>
-        <div class="eval-kpi">
-          <div class="kpi-ring" style="--pct:${Math.round((trainerAvg / 5) * 100)}"><div class="ring-inner">${fmtID(trainerAvg, 2)}</div></div>
-          <div class="label">Penilaian Trainer<br>(Rata-rata)</div>
-          <div class="score">dari 5</div>
-        </div>
-        <div class="eval-kpi">
-          <div class="kpi-ring" style="--pct:${prac.pct54}"><div class="ring-inner">${prac.pct54}%</div></div>
-          <div class="label">Materi Praktikal<br>& Aplikatif</div>
-          <div class="score">${fmtID(prac.avg, 2)} / 5 avg</div>
-        </div>
+      const kpiDefs = [
+        { hasData: benHasData,  data: ben,  label: "Merasakan Manfaat<br>Program Pelatihan", short: "Merasakan Manfaat Program Pelatihan" },
+        { hasData: enjHasData,  data: enj,  label: "Sangat Menikmati<br>Sesi Pelatihan", short: "Sangat Menikmati Sesi Pelatihan" },
+        { hasData: relHasData,  data: rel,  label: "Materi Relevan<br>dengan Pekerjaan", short: "Materi Relevan dengan Pekerjaan" },
+        { hasData: pracHasData, data: prac, label: "Materi Praktikal<br>& Aplikatif", short: "Materi Praktikal & Aplikatif" }
+      ];
+      evalKpisEl.innerHTML = kpiDefs.map((k, idx) => k.hasData ? `
+        <button type="button" class="eval-kpi" data-scroll-target="evalBarRow-${idx}" aria-label="Lihat rincian: ${k.short}">
+          ${gaugeMarkup(`evalGaugeVal-${idx}`, k.data.pct54, k.data.pct54, "pct", false)}
+          <div class="label">${k.label}</div>
+          <div class="score">${fmtID(k.data.avg, 2)} / 5 avg</div>
+        </button>
+      ` : `
+        <button type="button" class="eval-kpi eval-kpi-empty" data-scroll-target="evalBarRow-${idx}" aria-label="${k.short} — belum ada data">
+          ${gaugeMarkup(`evalGaugeVal-${idx}`, 0, 0, "pct", true)}
+          <div class="label">${k.label}</div>
+          <div class="score eval-kpi-empty-note">Belum ada data</div>
+        </button>
+      `).join('');
+    }
+    const evalKpiTrainerEl = document.getElementById("evalKpiTrainer");
+    if(evalKpiTrainerEl) {
+      evalKpiTrainerEl.classList.toggle("eval-kpi-empty", !trainerHasData);
+      evalKpiTrainerEl.setAttribute("aria-label", trainerHasData ? "Lihat detail penilaian trainer" : "Penilaian Trainer — belum ada data");
+      const trainerPct = Math.round((trainerAvg / 5) * 100);
+      evalKpiTrainerEl.innerHTML = trainerHasData ? `
+        ${gaugeMarkup("evalGaugeValTrainer", trainerPct, trainerAvg, "avg", false)}
+        <div class="label">Penilaian Trainer<br>(Rata-rata)</div>
+        <div class="score">dari 5</div>
+      ` : `
+        ${gaugeMarkup("evalGaugeValTrainer", 0, 0, "avg", true)}
+        <div class="label">Penilaian Trainer<br>(Rata-rata)</div>
+        <div class="score eval-kpi-empty-note">Belum ada data</div>
       `;
     }
+    initEvalGauges(document.querySelector(".eval-kpi-row"));
 
     // 2. Satisfaction Bars (with interactive hover effects)
     const evalBarsEl = document.getElementById("evalBars");
     if(evalBarsEl) {
       const barData = [
-        { label: "Manfaat keseluruhan bagi peserta", scores: ben },
-        { label: "Tingkat kesenangan sesi", scores: enj },
-        { label: "Relevansi materi dengan pekerjaan", scores: rel },
-        { label: "Materi Praktikal dan Aplikatif", scores: prac }
+        { label: "Manfaat keseluruhan bagi peserta", scores: ben, hasData: benHasData },
+        { label: "Tingkat kesenangan sesi", scores: enj, hasData: enjHasData },
+        { label: "Relevansi materi dengan pekerjaan", scores: rel, hasData: relHasData },
+        { label: "Materi Praktikal dan Aplikatif", scores: prac, hasData: pracHasData }
       ];
       const barColors = [
-        { cls: "bar-fill-5", lbl: "Nilai 5 — Sangat Baik", color: "#13315c" },
-        { cls: "bar-fill-4", lbl: "Nilai 4 — Baik", color: "#6d93c4" },
-        { cls: "bar-fill-3", lbl: "Nilai 3 — Cukup", color: "#a2b1c6" },
-        { cls: "bar-fill-2", lbl: "Nilai 2 — Kurang", color: "#e8a87c" },
-        { cls: "bar-fill-1", lbl: "Nilai 1 — Sangat Kurang", color: "#e27d60" }
+        { cls: "bar-fill-5", lbl: "Nilai 5 — Sangat Baik", color: "#2ecc71" },
+        { cls: "bar-fill-4", lbl: "Nilai 4 — Baik", color: "#3498db" },
+        { cls: "bar-fill-3", lbl: "Nilai 3 — Cukup", color: "#9b59b6" },
+        { cls: "bar-fill-2", lbl: "Nilai 2 — Kurang", color: "#f1c40f" },
+        { cls: "bar-fill-1", lbl: "Nilai 1 — Sangat Kurang", color: "#e74c3c" }
       ];
       const pctKeys = ["pct5","pct4","pct3","pct2","pct1"];
 
       evalBarsEl.innerHTML = barData.map((b, idx) => `
-        <div class="bar-row"${idx === barData.length - 1 ? ' style="margin-bottom:0;"' : ''}>
-          <div class="bar-label"><span>${b.label}</span><span class="bar-hover-info"></span></div>
-          <div class="bar-track">
-            ${pctKeys.map((pk, pi) => `<div class="${barColors[pi].cls}" style="width:${b.scores[pk]||0}%;cursor:pointer;" data-pct="${Math.round(b.scores[pk]||0)}" data-lbl="${barColors[pi].lbl}" data-color="${barColors[pi].color}"></div>`).join('')}
+        <div class="bar-row" id="evalBarRow-${idx}">
+          <div class="bar-label">
+            <span>${b.label}</span>
+            ${b.hasData ? `<span class="bar-summary">Rata-rata <b>${fmtID(b.scores.avg, 2)}</b>/5 · <b>${b.scores.pct54}%</b> positif</span>` : ''}
           </div>
+          ${b.hasData ? `
+          <div class="bar-track">
+            ${pctKeys.map((pk, pi) => {
+              const pct = Math.round(b.scores[pk] || 0);
+              return `<div class="${barColors[pi].cls}" style="width:${b.scores[pk]||0}%" data-pct="${pct}" data-lbl="${barColors[pi].lbl}">${pct >= 8 ? pct + '%' : ''}</div>`;
+            }).join('')}
+          </div>` : `
+          <div class="bar-track bar-track-empty">Belum ada data</div>`}
         </div>
       `).join('') + `
-        <div class="legend" style="display:flex;gap:16px;font-size:11.5px;color:var(--n500,var(--muted));margin-top:10px;flex-wrap:wrap;">
+        <div class="legend" style="display:flex;gap:16px;font-size:11.5px;color:var(--n500,var(--muted));margin-top:14px;flex-wrap:wrap;">
           ${barColors.map(c => `<span><span class="dot" style="background:${c.color};width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;"></span>${c.lbl}</span>`).join('')}
         </div>`;
 
       evalBarsEl.querySelectorAll('.bar-track > div').forEach(fill => {
-        const pct = fill.dataset.pct;
-        const lbl = fill.dataset.lbl;
-        const color = fill.dataset.color;
-        if (parseInt(pct) <= 0) return;
-        const infoSpan = fill.closest('.bar-row').querySelector('.bar-hover-info');
-        fill.addEventListener('mouseenter', () => {
-          if (infoSpan) infoSpan.innerHTML = `<strong style="color:${color};font-size:14px;">${pct}%</strong> <span style="color:var(--n500,var(--muted));font-size:12px;">(${lbl})</span>`;
-          fill.style.filter = 'brightness(1.2)';
-        });
-        fill.addEventListener('mouseleave', () => {
-          if (infoSpan) infoSpan.innerHTML = '';
-          fill.style.filter = 'none';
-        });
+        if (parseInt(fill.dataset.pct, 10) <= 0) return;
+        fill.addEventListener('mouseenter', () => { fill.style.filter = 'brightness(1.12)'; });
+        fill.addEventListener('mouseleave', () => { fill.style.filter = 'none'; });
       });
     }
 
     // 3. Trainers
     const evalTrainersEl = document.getElementById("evalTrainers");
     if(evalTrainersEl) {
-      evalTrainersEl.innerHTML = trainers.map(t => `
-        <div class="trainer">
-          <div class="avatar">${initials(t.name)}</div>
-          <div class="name">${esc(t.name)}</div>
-          <div class="score-big">${fmtID(t.avg, 2)}</div>
+      // Cross-reference trainer photos already configured for "Komentar Trainer" (by name)
+      let ktByName = {};
+      let ktSource = CONFIG.komentarTrainer;
+      if (ktSource && typeof ktSource !== "string") {
+        const ktList = Array.isArray(ktSource) ? ktSource : [ktSource];
+        ktList.forEach(kt => { if (kt && kt.name) ktByName[kt.name.trim().toLowerCase()] = kt; });
+      }
+      evalTrainersEl.innerHTML = trainers.map((t, i) => {
+        const ktMatch = ktByName[(t.name || "").trim().toLowerCase()];
+        const photoUrl = ktMatch && ktMatch.photoUrl ? formatDriveImageUrl(ktMatch.photoUrl) : "";
+        const bgStyle = photoUrl ? ` style="background-image:url('${esc(photoUrl)}')"` : "";
+        return `
+        <div class="trainer${i === 0 ? " active" : ""}${photoUrl ? "" : " trainer--nophoto"}" aria-hidden="${i === 0 ? "false" : "true"}"${bgStyle}>
+          ${photoUrl ? "" : `<span class="trainer-initials">${initials(t.name)}</span>`}
+          <div class="trainer-scrim"></div>
+          <div class="trainer-meta">
+            <div class="name">${esc(t.name)}</div>
+            ${trainerHasData
+              ? `<div class="score-big">${fmtID(t.avg, 2)}</div>`
+              : `<div class="score-big score-big-empty">Belum ada data</div>`}
+          </div>
         </div>
-      `).join("");
+      `;
+      }).join("");
+
+      const dotsEl = document.getElementById("evalTrainersDots");
+      if (dotsEl) {
+        dotsEl.innerHTML = trainers.length > 1
+          ? `<button type="button" class="trainer-carousel-nav trainer-carousel-nav--dot prev" aria-label="Trainer sebelumnya">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+             </button>` +
+            trainers.map((_, i) => `<button type="button" class="trainer-carousel-dot${i === 0 ? " active" : ""}" data-dot-index="${i}" aria-label="Ke trainer ${i + 1} dari ${trainers.length}"></button>`).join("") +
+            `<button type="button" class="trainer-carousel-nav trainer-carousel-nav--dot next" aria-label="Trainer berikutnya">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+             </button>`
+          : "";
+      }
+
+      trainerCarousel.count = trainers.length;
+      trainerCarousel.index = 0;
+      layoutTrainerDeck();
+      startTrainerAutoplay();
     }
     
     const evalTrainerFeedbackEl = document.getElementById("evalTrainerFeedback");
@@ -3596,15 +4014,41 @@ function renderDynamicEvaluation(evalData) {
     const quotes = (d.comments && d.comments.length > 0) ? d.comments : [];
     const evalQuotesEl = document.getElementById("evalQuotes");
     if(evalQuotesEl) {
-      evalQuotesEl.innerHTML = quotes.length
-        ? quotes.slice(0, 6).map(q => `
-          <div class="quote">
-            <div class="mark">&ldquo;</div>
-            <p>${esc(q.text)}</p>
-            <div class="who">${esc(q.who)}</div>
+      const QUOTES_PER_SLIDE = 3;
+      const quoteSlides = [];
+      for (let i = 0; i < quotes.length; i += QUOTES_PER_SLIDE) quoteSlides.push(quotes.slice(i, i + QUOTES_PER_SLIDE));
+
+      evalQuotesEl.innerHTML = quoteSlides.length
+        ? quoteSlides.map(slide => `
+          <div class="quote-slide">
+            ${slide.map(q => `
+              <div class="quote">
+                <div class="mark">&ldquo;</div>
+                <p>${esc(q.text)}</p>
+                <div class="who">${esc(q.who)}</div>
+              </div>
+            `).join("")}
           </div>
         `).join("")
-        : `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--n500,var(--muted));font-size:13px;">Kutipan peserta akan muncul setelah data evaluasi terhubung.</div>`;
+        : `<div class="quote-slide"><div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--n500,var(--muted));font-size:13px;">Kutipan peserta akan muncul setelah data evaluasi terhubung.</div></div>`;
+
+      const dotsEl = document.getElementById("evalQuotesDots");
+      if (dotsEl) {
+        dotsEl.innerHTML = quoteSlides.length > 1
+          ? `<button type="button" class="quote-slider-nav prev" aria-label="Halaman kutipan sebelumnya">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+             </button>` +
+            quoteSlides.map((_, i) => `<button type="button" class="quote-slider-dot${i === 0 ? " active" : ""}" data-quote-dot-index="${i}" aria-label="Ke halaman kutipan ${i + 1} dari ${quoteSlides.length}"></button>`).join("") +
+            `<button type="button" class="quote-slider-nav next" aria-label="Halaman kutipan berikutnya">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+             </button>`
+          : "";
+      }
+
+      quoteSlider.count = quoteSlides.length;
+      quoteSlider.index = 0;
+      layoutQuoteSlide();
+      startQuoteAutoplay();
     }
 
     // 6. CTA Stats
@@ -3612,7 +4056,7 @@ function renderDynamicEvaluation(evalData) {
     if(ctaFb) ctaFb.textContent = `${total}/${total}`;
     
     const ctaAvg = document.getElementById("ctaStatAvg");
-    if(ctaAvg) ctaAvg.textContent = fmtID(trainerAvg, 1);
+    if(ctaAvg) ctaAvg.textContent = trainerHasData ? fmtID(trainerAvg, 1) : "—";
     
     const ctaFup = document.getElementById("ctaStatFollowUp");
     if(ctaFup) ctaFup.textContent = `${fupPct}%`;
@@ -3630,6 +4074,69 @@ function renderDynamicEvaluation(evalData) {
     }
   }
 }
+
+// Eval KPI cards jump to their existing detail section (Rincian Kepuasan bar / Penilaian Trainer card)
+document.addEventListener("click", (e) => {
+  const trigger = e.target.closest("[data-scroll-target]");
+  if (trigger) {
+    const target = document.getElementById(trigger.dataset.scrollTarget);
+    if (!target) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+    target.classList.remove("eval-kpi-highlight");
+    void target.offsetWidth;
+    target.classList.add("eval-kpi-highlight");
+    setTimeout(() => target.classList.remove("eval-kpi-highlight"), 1600);
+    return;
+  }
+
+  const navBtn = e.target.closest(".trainer-carousel-nav");
+  if (navBtn) {
+    setActiveTrainer(trainerCarousel.index + (navBtn.classList.contains("next") ? 1 : -1));
+    startTrainerAutoplay();
+    return;
+  }
+
+  const dot = e.target.closest(".trainer-carousel-dot");
+  if (dot) {
+    setActiveTrainer(parseInt(dot.dataset.dotIndex, 10));
+    startTrainerAutoplay();
+    return;
+  }
+
+  const quoteNavBtn = e.target.closest(".quote-slider-nav");
+  if (quoteNavBtn) {
+    setActiveQuote(quoteSlider.index + (quoteNavBtn.classList.contains("next") ? 1 : -1));
+    startQuoteAutoplay();
+    return;
+  }
+
+  const quoteDot = e.target.closest(".quote-slider-dot");
+  if (quoteDot) {
+    setActiveQuote(parseInt(quoteDot.dataset.quoteDotIndex, 10));
+    startQuoteAutoplay();
+  }
+});
+
+// Pause trainer carousel autoplay while the user is looking at or interacting with it
+(function(){
+  const wrap = document.querySelector(".trainer-carousel-wrap");
+  if (!wrap) return;
+  wrap.addEventListener("mouseenter", stopTrainerAutoplay);
+  wrap.addEventListener("mouseleave", startTrainerAutoplay);
+  wrap.addEventListener("focusin", stopTrainerAutoplay);
+  wrap.addEventListener("focusout", startTrainerAutoplay);
+})();
+
+// Pause quote slider autoplay while the user is looking at or interacting with it
+(function(){
+  const wrap = document.querySelector(".quote-slider-wrap");
+  if (!wrap) return;
+  wrap.addEventListener("mouseenter", stopQuoteAutoplay);
+  wrap.addEventListener("mouseleave", startQuoteAutoplay);
+  wrap.addEventListener("focusin", stopQuoteAutoplay);
+  wrap.addEventListener("focusout", startQuoteAutoplay);
+})();
 
 function buildGvizUrl(id, {out="csv", name="", range="", cb=""}={}){
   const tqx = out==="json"
