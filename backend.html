@@ -255,11 +255,36 @@
   }
 
   /* Toggle Switch Styles */
-  .toggle-switch input:checked + .toggle-slider {
-    background-color: #16a34a !important;
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+    cursor: pointer;
   }
-  .toggle-switch input:checked + .toggle-slider:before {
-    transform: translateX(20px);
+  .toggle-switch input[type="checkbox"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+    margin: 0;
+  }
+  .toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 24px;
+    transition: background-color .3s;
+    pointer-events: none;
+    z-index: 1;
   }
   .toggle-slider:before {
     position: absolute;
@@ -269,9 +294,15 @@
     left: 3px;
     bottom: 3px;
     background-color: white;
-    transition: .3s;
+    transition: transform .3s;
     border-radius: 50%;
     box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .toggle-switch input:checked + .toggle-slider {
+    background-color: #16a34a !important;
+  }
+  .toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(20px);
   }
 
   /* Sidebar nav */
@@ -2178,13 +2209,10 @@ setupToggleListener("cfgInterpersonalEnabled", "cfgInterpersonalEnabledHint");
 
 if ($("saveLeadershipCfgBtn")) {
   $("saveLeadershipCfgBtn").addEventListener("click", () => {
-    const idVal = extractSheetId($("cfgLeadershipSheetId")?.value);
-    const csvVal = $("cfgLeadershipCsvUrl")?.value.trim();
-    const isChecked = !!$("cfgLeadershipEnabled")?.checked;
     updateTraining({
-      leadershipEnabled: isChecked || !!idVal || !!csvVal,
-      leadershipSheetId: idVal,
-      leadershipCsvUrl: csvVal,
+      leadershipEnabled: !!$("cfgLeadershipEnabled")?.checked,
+      leadershipSheetId: extractSheetId($("cfgLeadershipSheetId")?.value),
+      leadershipCsvUrl: $("cfgLeadershipCsvUrl")?.value.trim(),
       leadershipSheetName: $("cfgLeadershipSheetName")?.value.trim() || "Sheet2"
     });
     activateTraining(currentTrainingId);
@@ -2193,13 +2221,10 @@ if ($("saveLeadershipCfgBtn")) {
 }
 if ($("saveWewenangCfgBtn")) {
   $("saveWewenangCfgBtn").addEventListener("click", () => {
-    const idVal = extractSheetId($("cfgWewenangSheetId")?.value);
-    const csvVal = $("cfgWewenangCsvUrl")?.value.trim();
-    const isChecked = !!$("cfgWewenangEnabled")?.checked;
     updateTraining({
-      wewenangEnabled: isChecked || !!idVal || !!csvVal,
-      wewenangSheetId: idVal,
-      wewenangCsvUrl: csvVal,
+      wewenangEnabled: !!$("cfgWewenangEnabled")?.checked,
+      wewenangSheetId: extractSheetId($("cfgWewenangSheetId")?.value),
+      wewenangCsvUrl: $("cfgWewenangCsvUrl")?.value.trim(),
       wewenangSheetName: $("cfgWewenangSheetName")?.value.trim() || "Sheet4"
     });
     activateTraining(currentTrainingId);
@@ -2208,13 +2233,10 @@ if ($("saveWewenangCfgBtn")) {
 }
 if ($("saveInterpersonalCfgBtn")) {
   $("saveInterpersonalCfgBtn").addEventListener("click", () => {
-    const idVal = extractSheetId($("cfgInterpersonalSheetId")?.value);
-    const csvVal = $("cfgInterpersonalCsvUrl")?.value.trim();
-    const isChecked = !!$("cfgInterpersonalEnabled")?.checked;
     updateTraining({
-      interpersonalEnabled: isChecked || !!idVal || !!csvVal,
-      interpersonalSheetId: idVal,
-      interpersonalCsvUrl: csvVal,
+      interpersonalEnabled: !!$("cfgInterpersonalEnabled")?.checked,
+      interpersonalSheetId: extractSheetId($("cfgInterpersonalSheetId")?.value),
+      interpersonalCsvUrl: $("cfgInterpersonalCsvUrl")?.value.trim(),
       interpersonalSheetName: $("cfgInterpersonalSheetName")?.value.trim() || "Sheet5"
     });
     activateTraining(currentTrainingId);
