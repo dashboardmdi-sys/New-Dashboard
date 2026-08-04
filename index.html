@@ -3841,11 +3841,22 @@ function renderDynamicEvaluation(evalData) {
     const prac  = pracHasData ? d.practical : empty;
 
     const trainerHasData = !!(d.trainers && d.trainers.length > 0);
-    let trainers = d.trainers || [];
-    // Fallback: use trainer names from config if no data-driven trainers
-    if (trainers.length === 0 && CONFIG.trainerNames) {
-      const names = CONFIG.trainerNames.split(/[,&]|dan/i).map(s=>s.trim()).filter(Boolean);
-      trainers = names.map(n => ({ name: n, avg: 0, pct5: 0, count5: 0 }));
+    let trainers = d.trainers ? [...d.trainers] : [];
+
+    // Override/align trainer display names using CONFIG.trainerNames from backend if provided
+    const cfgTrainerNamesList = (CONFIG.trainerNames || "").split(/[,&]|dan/i).map(s=>s.trim()).filter(Boolean);
+    if (cfgTrainerNamesList.length > 0) {
+      if (trainers.length > 0) {
+        trainers = trainers.map((t, idx) => ({
+          ...t,
+          name: cfgTrainerNamesList[idx] || t.name
+        }));
+        for (let i = trainers.length; i < cfgTrainerNamesList.length; i++) {
+          trainers.push({ name: cfgTrainerNamesList[i], avg: 0, pct5: 0, count5: 0 });
+        }
+      } else {
+        trainers = cfgTrainerNamesList.map(n => ({ name: n, avg: 0, pct5: 0, count5: 0 }));
+      }
     }
     const trainerAvg = trainers.length ? trainers.reduce((a,b)=>a+b.avg,0)/trainers.length : 0;
 
