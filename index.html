@@ -3841,23 +3841,22 @@ function renderDynamicEvaluation(evalData) {
     const prac  = pracHasData ? d.practical : empty;
 
     const trainerHasData = !!(d.trainers && d.trainers.length > 0);
-    let trainers = d.trainers ? [...d.trainers] : [];
+    const rawSheetTrainers = d.trainers ? [...d.trainers] : [];
+    let trainers = [];
 
-    // Override/align trainer display names using CONFIG.trainerNames from backend if provided.
-    // If CONFIG.trainerNames is empty, leave trainers empty until filled in backend.
+    // Strictly match the number of trainer cards with the names filled in backend CONFIG.trainerNames
     const cfgTrainerNamesList = (CONFIG.trainerNames || "").split(/[,&]|dan/i).map(s=>s.trim()).filter(Boolean);
     if (cfgTrainerNamesList.length > 0) {
-      if (trainers.length > 0) {
-        trainers = trainers.map((t, idx) => ({
-          ...t,
-          name: cfgTrainerNamesList[idx] || t.name
-        }));
-        for (let i = trainers.length; i < cfgTrainerNamesList.length; i++) {
-          trainers.push({ name: cfgTrainerNamesList[i], avg: 0, pct5: 0, count5: 0 });
-        }
-      } else {
-        trainers = cfgTrainerNamesList.map(n => ({ name: n, avg: 0, pct5: 0, count5: 0 }));
-      }
+      trainers = cfgTrainerNamesList.map((n, idx) => {
+        const tData = rawSheetTrainers[idx] || {};
+        return {
+          ...tData,
+          name: n,
+          avg: tData.avg || 0,
+          pct5: tData.pct5 || 0,
+          count5: tData.count5 || 0
+        };
+      });
     } else {
       trainers = [];
     }
