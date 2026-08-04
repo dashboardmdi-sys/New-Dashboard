@@ -3843,7 +3843,8 @@ function renderDynamicEvaluation(evalData) {
     const trainerHasData = !!(d.trainers && d.trainers.length > 0);
     let trainers = d.trainers ? [...d.trainers] : [];
 
-    // Override/align trainer display names using CONFIG.trainerNames from backend if provided
+    // Override/align trainer display names using CONFIG.trainerNames from backend if provided.
+    // If CONFIG.trainerNames is empty, leave trainers empty until filled in backend.
     const cfgTrainerNamesList = (CONFIG.trainerNames || "").split(/[,&]|dan/i).map(s=>s.trim()).filter(Boolean);
     if (cfgTrainerNamesList.length > 0) {
       if (trainers.length > 0) {
@@ -3857,11 +3858,13 @@ function renderDynamicEvaluation(evalData) {
       } else {
         trainers = cfgTrainerNamesList.map(n => ({ name: n, avg: 0, pct5: 0, count5: 0 }));
       }
+    } else {
+      trainers = [];
     }
     const trainerAvg = trainers.length ? trainers.reduce((a,b)=>a+b.avg,0)/trainers.length : 0;
 
     // Header names update
-    document.getElementById("evalReportMetaTrainers").textContent = trainers.map(t=>t.name).join(" & ");
+    document.getElementById("evalReportMetaTrainers").textContent = trainers.length ? trainers.map(t=>t.name).join(" & ") : "—";
 
     // Check manual override for CTA Pct
     let manualFup = null;
@@ -3971,24 +3974,28 @@ function renderDynamicEvaluation(evalData) {
       }
       const evalPhotosList = (CONFIG.trainerPhotos || "").split(",").map(s => s.trim()).filter(Boolean);
 
-      evalTrainersEl.innerHTML = trainers.map((t, i) => {
-        const ktMatch = ktByName[(t.name || "").trim().toLowerCase()];
-        const rawPhoto = evalPhotosList[i] || (ktMatch && ktMatch.photoUrl ? ktMatch.photoUrl : "");
-        const photoUrl = rawPhoto ? formatDriveImageUrl(rawPhoto) : "";
-        const bgStyle = photoUrl ? ` style="background-image:url('${esc(photoUrl)}')"` : "";
-        return `
-        <div class="trainer${i === 0 ? " active" : ""}${photoUrl ? "" : " trainer--nophoto"}" aria-hidden="${i === 0 ? "false" : "true"}"${bgStyle}>
-          ${photoUrl ? "" : `<span class="trainer-initials">${initials(t.name)}</span>`}
-          <div class="trainer-scrim"></div>
-          <div class="trainer-meta">
-            <div class="name">${esc(t.name)}</div>
-            ${trainerHasData
-              ? `<div class="score-big">${fmtID(t.avg, 2)}</div>`
-              : `<div class="score-big score-big-empty">Belum ada data</div>`}
+      if (trainers.length === 0) {
+        evalTrainersEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--n500,#888);font-size:0.88rem;background:var(--n100,#f8f9fa);border-radius:12px;border:1px dashed var(--n300,#ccc);">Belum ada nama trainer yang diisi di backend.</div>`;
+      } else {
+        evalTrainersEl.innerHTML = trainers.map((t, i) => {
+          const ktMatch = ktByName[(t.name || "").trim().toLowerCase()];
+          const rawPhoto = evalPhotosList[i] || (ktMatch && ktMatch.photoUrl ? ktMatch.photoUrl : "");
+          const photoUrl = rawPhoto ? formatDriveImageUrl(rawPhoto) : "";
+          const bgStyle = photoUrl ? ` style="background-image:url('${esc(photoUrl)}')"` : "";
+          return `
+          <div class="trainer${i === 0 ? " active" : ""}${photoUrl ? "" : " trainer--nophoto"}" aria-hidden="${i === 0 ? "false" : "true"}"${bgStyle}>
+            ${photoUrl ? "" : `<span class="trainer-initials">${initials(t.name)}</span>`}
+            <div class="trainer-scrim"></div>
+            <div class="trainer-meta">
+              <div class="name">${esc(t.name)}</div>
+              ${trainerHasData
+                ? `<div class="score-big">${fmtID(t.avg, 2)}</div>`
+                : `<div class="score-big score-big-empty">Belum ada data</div>`}
+            </div>
           </div>
-        </div>
-      `;
-      }).join("");
+        `;
+        }).join("");
+      }
 
       const dotsEl = document.getElementById("evalTrainersDots");
       if (dotsEl) {
