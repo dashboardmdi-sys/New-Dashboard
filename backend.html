@@ -880,15 +880,17 @@
               <label for="cfgEvalDataRange">Data Range (Opsional)</label>
               <input type="text" id="cfgEvalDataRange" placeholder="contoh: A1:Z100 — kosongkan untuk ambil semua">
             </div>
-            <div class="field">
-              <label for="cfgTrainerNames">Nama Trainer (untuk deteksi kolom evaluasi)</label>
-              <input type="text" id="cfgTrainerNames" placeholder="contoh: Arif Hidayat, Atik Fauzia">
-              <div class="help">Pisahkan nama trainer dengan koma. Digunakan untuk mencari kolom penilaian & kesan trainer di sheet evaluasi.</div>
-            </div>
-            <div class="field">
-              <label for="cfgTrainerPhotos">URL Link Foto Trainer (Opsional — untuk kartu nilai trainer)</label>
-              <input type="text" id="cfgTrainerPhotos" placeholder="contoh: https://drive.google.com/file/d/.../view, https://...">
-              <div class="help">Pisahkan URL link foto dengan koma sesuai urutan Nama Trainer di atas (atau tempel link foto Google Drive / Web).</div>
+            <!-- Pengaturan Per-Trainer Evaluasi (Nama & Link Foto Terpisah) -->
+            <div style="border:1px solid var(--card-border);border-radius:var(--radius-lg);padding:14px;background:var(--n50,#fdfdfd);margin-top:14px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <h3 style="font-size:0.95rem;font-weight:700;color:var(--navy-900);margin:0;">👤 Daftar Trainer Evaluasi</h3>
+                <button type="button" class="btn btn-secondary btn-sm" id="addEvalTrainerBtn" style="font-size:0.8rem;padding:4px 10px;">
+                  + Tambah Trainer
+                </button>
+              </div>
+              <p style="font-size:0.8rem;color:var(--n500);margin-bottom:12px;">Isikan Nama dan URL Link Foto secara khusus dan terpisah untuk masing-masing trainer pada sesi ini.</p>
+              
+              <div id="evalTrainersListWrap" style="display:flex;flex-direction:column;gap:12px;"></div>
             </div>
 
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
@@ -1747,8 +1749,17 @@ function openEditTraining(tid){
   $("cfgEvalCsvUrl").value = t.evalCsvUrl || "";
   $("cfgEvalSheetName").value = t.evalSheetName || "Sheet2";
   $("cfgEvalDataRange").value = t.evalDataRange || "";
-  $("cfgTrainerNames").value = t.trainerNames || "";
-  if ($("cfgTrainerPhotos")) $("cfgTrainerPhotos").value = t.trainerPhotos || "";
+  
+  let evalTrainers = [];
+  if (t.evalTrainersData && Array.isArray(t.evalTrainersData) && t.evalTrainersData.length > 0) {
+    evalTrainers = JSON.parse(JSON.stringify(t.evalTrainersData));
+  } else {
+    const namesList = (t.trainerNames || "").split(/[,&]|dan/i).map(s=>s.trim()).filter(Boolean);
+    const photosList = (t.trainerPhotos || "").split(",").map(s=>s.trim()).filter(Boolean);
+    evalTrainers = namesList.map((n, i) => ({ name: n, photoUrl: photosList[i] || "" }));
+  }
+  window.evalTrainersData = evalTrainers;
+  renderEvalTrainersList();
   refreshEvalCfgPreview();
 
   function updateToggleHint(checkboxId, hintId) {
@@ -2082,6 +2093,65 @@ $("cfgTestBtn").addEventListener("click", async()=>{
 /* ===========================
    TAB 2 — EVALUASI
    =========================== */
+window.evalTrainersData = [];
+
+function renderEvalTrainersList() {
+  const wrap = $("evalTrainersListWrap");
+  if (!wrap) return;
+  if (!window.evalTrainersData || window.evalTrainersData.length === 0) {
+    wrap.innerHTML = `<div style="text-align:center;padding:16px;color:var(--n500);font-size:0.82rem;border:1px dashed var(--card-border);border-radius:var(--radius-md);background:#fff;">Belum ada trainer ditambahkan. Klik <b>+ Tambah Trainer</b> di atas untuk memasukkan data trainer.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = window.evalTrainersData.map((tr, ti) => {
+    const photoDriveUrl = tr.photoUrl ? formatDriveImageUrl(tr.photoUrl) : "";
+    return `
+      <div style="border:1px solid var(--card-border);border-radius:var(--radius-md);padding:12px;background:#fff;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:0.82rem;font-weight:700;color:var(--navy-800);">Trainer #${ti + 1}</span>
+          <button type="button" class="btn btn-danger btn-sm" style="font-size:0.75rem;padding:3px 8px;" onclick="removeEvalTrainer(${ti})">Hapus</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label style="font-size:0.78rem;font-weight:600;margin-bottom:4px;display:block;">Nama Trainer</label>
+            <input type="text" placeholder="contoh: Billy Santoso" value="${esc(tr.name||'')}" oninput="window.evalTrainersData[${ti}].name=this.value" style="font-size:0.85rem;padding:7px 10px;width:100%;box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;font-weight:600;margin-bottom:4px;display:block;">URL Link Foto Trainer (Khusus Trainer ini)</label>
+            <input type="text" placeholder="https://drive.google.com/... atau https://..." value="${esc(tr.photoUrl||'')}" oninput="window.evalTrainersData[${ti}].photoUrl=this.value; updateEvalTrainerPhotoPreview(${ti}, this.value);" style="font-size:0.85rem;padding:7px 10px;width:100%;box-sizing:border-box;">
+          </div>
+        </div>
+        <div id="evalTrainerPhotoPreview-${ti}" style="margin-top:2px;">
+          ${photoDriveUrl ? `<div style="display:flex;align-items:center;gap:8px;font-size:0.75rem;color:var(--n600);"><img src="${esc(photoDriveUrl)}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--card-border);"> Preview Foto Trainer #${ti + 1}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function updateEvalTrainerPhotoPreview(ti, url) {
+  if (!window.evalTrainersData || !window.evalTrainersData[ti]) return;
+  window.evalTrainersData[ti].photoUrl = url;
+  const pEl = $(`evalTrainerPhotoPreview-${ti}`);
+  if (!pEl) return;
+  const photoDriveUrl = url ? formatDriveImageUrl(url) : "";
+  pEl.innerHTML = photoDriveUrl ? `<div style="display:flex;align-items:center;gap:8px;font-size:0.75rem;color:var(--n600);"><img src="${esc(photoDriveUrl)}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--card-border);"> Preview Foto Trainer #${ti + 1}</div>` : "";
+}
+
+function addEvalTrainer() {
+  window.evalTrainersData = window.evalTrainersData || [];
+  window.evalTrainersData.push({ name: "", photoUrl: "" });
+  renderEvalTrainersList();
+}
+
+function removeEvalTrainer(ti) {
+  if (!window.evalTrainersData) return;
+  window.evalTrainersData.splice(ti, 1);
+  renderEvalTrainersList();
+}
+
+if ($("addEvalTrainerBtn")) $("addEvalTrainerBtn").onclick = addEvalTrainer;
+
 function refreshEvalCfgPreview(){
   const raw=$("cfgEvalSheetId").value.trim();
   const id=extractSheetId(raw);
@@ -2093,18 +2163,20 @@ function refreshEvalCfgPreview(){
 $("cfgEvalSheetId").addEventListener("input",refreshEvalCfgPreview);
 
 $("cfgEvalSaveBtn").addEventListener("click",()=>{
+  const namesStr = (window.evalTrainersData || []).map(tr => (tr.name || "").trim()).filter(Boolean).join(", ");
+  const photosStr = (window.evalTrainersData || []).map(tr => (tr.photoUrl || "").trim()).join(", ");
   const cfg = {
     evalSheetId: extractSheetId($("cfgEvalSheetId").value),
     evalCsvUrl:  $("cfgEvalCsvUrl").value.trim(),
     evalSheetName: $("cfgEvalSheetName").value.trim(),
     evalDataRange: $("cfgEvalDataRange").value.trim(),
-    trainerNames: $("cfgTrainerNames").value.trim(),
-    trainerPhotos: $("cfgTrainerPhotos") ? $("cfgTrainerPhotos").value.trim() : "",
+    trainerNames: namesStr,
+    trainerPhotos: photosStr,
+    evalTrainersData: window.evalTrainersData || []
   };
   updateTraining(cfg);
   
-  // SELALU aktifkan dan sinkronkan sesi ini ke dashboard saat disimpan, 
-  // agar user tidak bingung mengapa dashboard tidak berubah.
+  // SELALU aktifkan dan sinkronkan sesi ini ke dashboard saat disimpan
   activateTraining(currentTrainingId);
   
   toast("✓ Konfigurasi tersimpan & otomatis disinkronkan ke Dashboard");
