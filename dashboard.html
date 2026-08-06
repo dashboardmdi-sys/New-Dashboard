@@ -915,12 +915,319 @@ h2 { font-size: 24px; font-weight: 600; line-height: 1.3; margin-bottom: 12px; }
 h3 { font-size: 20px; font-weight: 600; line-height: 1.4; margin-bottom: 12px; }
 .body-text { font-size: 14px; font-weight: 400; line-height: 1.6; }
 .body-small { font-size: 13px; font-weight: 400; line-height: 1.5; }
-.label { font-size: 12px; font-weight: 500; line-height: 1.4; }
-.caption { font-size: 11px; font-weight: 400; line-height: 1.3; color: #64748b; }
+/* ── GOOGLE FORMS ACTION PLAN FORM FILL STYLING ── */
+:root {
+  --gf-bg:          #faece3;
+  --gf-card-bg:     #ffffff;
+  --gf-border:      #dadce0;
+  --gf-text-dark:   #202124;
+  --gf-text-muted:  #5f6368;
+  --gf-purple:      #70757a;
+  --gf-red:         #d93025;
+  --gf-blue:        #1a73e8;
+}
+
+#section-formfill {
+  background: var(--gf-bg);
+  min-height: 100vh;
+  padding: 24px 12px 60px;
+  overflow-y: auto;
+}
+
+.gforms-layout {
+  width: 100%;
+  max-width: 770px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gf-card {
+  background: var(--gf-card-bg);
+  border: 1px solid var(--gf-border);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.gf-card.brand-card {
+  border-top: 10px solid var(--mdi-orange);
+  padding: 24px;
+}
+.gf-card.brand-card .brand-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--gf-text-dark);
+  margin-bottom: 12px;
+  text-align: center;
+}
+.gf-card.brand-card .brand-desc {
+  font-size: 13.5px;
+  color: var(--gf-text-muted);
+  line-height: 1.6;
+  margin-bottom: 8px;
+  word-break: break-word;
+  text-align: center;
+}
+.brand-divider {
+  height: 1px;
+  background: var(--gf-border);
+  margin: 16px 0;
+}
+
+.gf-card.section-card {
+  background: var(--mdi-orange);
+  color: #fff;
+  padding: 12px 24px;
+  border-top: none;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.gf-card.question-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gf-card.question-card.error {
+  border-color: var(--gf-red);
+  box-shadow: 0 0 0 1px var(--gf-red);
+}
+.q-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--gf-text-dark);
+  line-height: 1.4;
+}
+.q-req {
+  color: var(--gf-red);
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+.gf-input-text {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--gf-border);
+  padding: 8px 0;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--gf-text-dark);
+  outline: none;
+  background: transparent;
+  transition: border-color 0.25s ease;
+}
+.gf-input-text:focus {
+  border-bottom: 2px solid var(--mdi-orange);
+}
+
+.gf-input-textarea {
+  width: 100%;
+  border: none;
+  border-bottom: 1px dashed var(--gf-border);
+  padding: 8px 0;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--gf-text-dark);
+  outline: none;
+  background: transparent;
+  resize: vertical;
+  min-height: 40px;
+  line-height: 1.5;
+  transition: border-color 0.25s ease;
+}
+.gf-input-textarea:focus {
+  border-bottom: 2px solid var(--mdi-orange);
+}
+
+.gf-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}
+.gf-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: var(--gf-text-dark);
+}
+.gf-radio-option input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--mdi-orange);
+}
+
+.gf-select {
+  border: 1px solid var(--gf-border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--gf-text-dark);
+  outline: none;
+  background: #fff;
+  cursor: pointer;
+  min-width: 180px;
+  max-width: 100%;
+  transition: border-color 0.15s;
+}
+.gf-select:focus {
+  border-color: var(--mdi-orange);
+}
+
+.gf-error-msg {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  color: var(--gf-red);
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+.gf-card.error .gf-error-msg {
+  display: flex;
+}
+
+.section-page {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeInPage 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes fadeInPage {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  margin-top: 24px;
+  border-top: 1px solid var(--gf-border);
+  padding-top: 20px;
+}
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.btn-submit {
+  background: var(--mdi-orange);
+  color: #fff;
+  border: 1px solid var(--mdi-orange);
+  border-radius: 4px;
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.btn-submit:hover {
+  background: var(--mdi-orange-hover);
+  border-color: var(--mdi-orange-hover);
+}
+.btn-clear {
+  background: transparent;
+  color: var(--mdi-orange);
+  border: 1px solid transparent;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 18px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+.btn-clear:hover {
+  background: var(--mdi-orange-soft);
+}
+.btn-clear.btn-back {
+  border: 1px solid var(--gf-border);
+  color: var(--gf-text-muted);
+}
+.btn-clear.btn-back:hover {
+  background: #f1f3f4;
+  color: var(--gf-text-dark);
+}
+
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.progress-bar-bg {
+  flex-grow: 1;
+  max-width: 180px;
+  background: #e0e0e0;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-right: 12px;
+}
+.progress-bar-fill {
+  background: var(--mdi-orange);
+  height: 100%;
+  width: 0%;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.progress-text {
+  font-size: 12px;
+  color: var(--gf-text-muted);
+  font-weight: 500;
+}
+
+.success-layout {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+.success-layout.active {
+  display: flex;
+  animation: scaleUp 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+.success-text {
+  font-size: 14px;
+  color: var(--gf-text-dark);
+  line-height: 1.6;
+}
+.success-link {
+  color: var(--gf-blue);
+  text-decoration: none;
+  font-size: 13.5px;
+  display: inline-block;
+  margin-top: 12px;
+  cursor: pointer;
+}
+.success-link:hover { text-decoration: underline; }
+.gateway-option-card:hover {
+  border-color: var(--gf-purple) !important;
+  box-shadow: 0 4px 14px rgba(103, 58, 183, 0.08) !important;
+  transform: translateY(-1px);
+}
+.gateway-option-card:hover span {
+  color: var(--gf-purple) !important;
+}
 </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="db-config.js"></script>
-  <script src="db-sync.js"></script>
 </head>
 <body>
 <!-- SIDEBAR -->
@@ -945,6 +1252,9 @@ h3 { font-size: 20px; font-weight: 600; line-height: 1.4; margin-bottom: 12px; }
     </button>
     <button class="menu-btn" id="menu-spreadsheet2" onclick="switchTab('spreadsheet2')">
       <span>📝</span> Rekap Penyelesaian
+    </button>
+    <button class="menu-btn" id="menu-formfill" onclick="switchTab('formfill')">
+      <span>📋</span> Formulir (Isi Form)
     </button>
 
     
@@ -1242,6 +1552,126 @@ h3 { font-size: 20px; font-weight: 600; line-height: 1.4; margin-bottom: 12px; }
       </div>
     </div>
 
+    <!-- SECTION 5: GOOGLE FORMS ACTION PLAN FORM FILL -->
+    <div id="section-formfill" class="view-section" style="display: none;">
+      <div class="gforms-layout">
+        
+        <!-- GATEWAY LANDING HUB -->
+        <div id="gateway-hub" style="display:none; flex-direction:column; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; width:100%;">
+          <div class="gf-card brand-card" style="max-width:540px; width:100%; border-top: 10px solid var(--gf-purple); padding:24px;">
+            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+              <img src="Asset 7-8 (1).png" alt="MDI Logo" style="max-height: 55px; object-fit: contain;">
+            </div>
+            <h1 class="brand-title" id="gateway-title" style="text-align:center; font-size:22px; margin-bottom:8px;">Action Plan</h1>
+            <div class="brand-desc" id="gateway-desc" style="text-align:center; margin-bottom:24px; font-size:13.5px; color:var(--gf-text-muted);">Silakan pilih formulir yang ingin Anda isi di bawah ini.</div>
+            
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <!-- Option 1: Form Awal -->
+              <div class="gateway-option-card" onclick="selectGatewayOption('awal')" style="border: 1px solid var(--gf-border); border-radius:8px; padding:18px; cursor:pointer; background:#fff; transition: all 0.2s ease; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+                  <div style="background:#ffe8d6; color:#a0522d; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:bold;">📋</div>
+                  <span style="font-weight:800; font-size:14.5px; color:var(--gf-navy); transition: color 0.2s;">Isi Komitmen Rencana Aksi (Tahap 1)</span>
+                </div>
+                <div style="font-size:12.5px; color:var(--gf-text-muted); line-height:1.5; padding-left:44px;">
+                  Pilih ini jika Anda baru pertama kali mengisi komitmen rencana aksi Anda setelah pelatihan.
+                </div>
+              </div>
+              
+              <!-- Option 2: Form Penyelesaian -->
+              <div class="gateway-option-card" style="border: 1px solid var(--gf-border); border-radius:8px; padding:18px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div style="background:#e2f0d9; color:#385723; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:bold;">🔄</div>
+                  <span style="font-weight:800; font-size:14.5px; color:var(--gf-navy);">Perbarui Progres Rencana Aksi (Tahap 2)</span>
+                </div>
+                <div style="font-size:12.5px; color:var(--gf-text-muted); line-height:1.5; padding-left:44px;">
+                  Pilih ini jika Anda ingin memperbarui progres/tantangan rencana aksi Anda setelah 30 hari.
+                </div>
+                
+                <div style="padding-left:44px; display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+                  <label style="font-size:11px; font-weight:700; color:var(--gf-navy); text-transform:uppercase;">Pilih Nama Anda:</label>
+                  <select id="gateway-pic-select" style="width:100%; padding:8px 12px; border:1px solid var(--gf-border); border-radius:4px; font-size:13.5px; background:#fff; color:var(--gf-navy); cursor:pointer;">
+                    <option value="">-- Pilih Nama Anda --</option>
+                  </select>
+                  <button class="btn-submit" onclick="selectGatewayOption('penyelesaian')" style="width:100%; margin-top:4px; padding:10px; font-size:13px; font-weight:700; border-radius:4px; cursor:pointer;">Mulai Perbarui Progres</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INTERACTIVE WORKING FORM PANEL -->
+        <div id="form-fill-hub" style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Top Brand Card -->
+          <div class="gf-card brand-card">
+            <div id="save-indicator-badge" title="Draf disimpan otomatis" style="position: absolute; top: 18px; right: 18px; font-size: 18px; color: var(--gf-text-muted); cursor: default;">☁️</div>
+            
+            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+              <img src="Asset 7-8 (1).png" alt="MDI Logo" style="max-height: 55px; object-fit: contain;">
+            </div>
+            
+            <h1 class="brand-title" id="gf-title">Action Plan</h1>
+            <div class="brand-desc" id="gf-desc">Deskripsi form...</div>
+          </div>
+
+          <!-- Container for wizard dynamic pages -->
+          <div id="dynamic-cards-container" style="display:flex; flex-direction:column; gap:12px;">
+            <!-- Sections and Question Cards injected dynamically into pages by JS -->
+          </div>
+
+          <!-- Footer Controls -->
+          <div class="form-footer">
+            <div class="nav-buttons">
+              <button class="btn-clear btn-back" id="btn-prev" onclick="goToPrevSection()" style="visibility: hidden;">Kembali</button>
+              <button class="btn-submit" id="btn-next" onclick="handleNextOrSubmit()">Berikutnya</button>
+            </div>
+            
+            <div class="progress-row">
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-bar-fill"></div>
+              </div>
+              <span class="progress-text" id="progress-text">Halaman 1 dari 3</span>
+            </div>
+            
+            <button class="btn-clear" onclick="clearGFormInputs()" style="font-size: 12px; color: var(--gf-text-muted); margin-top: 8px;">Kosongkan formulir</button>
+          </div>
+        </div>
+
+        <!-- SUCCESS SCREEN -->
+        <div class="success-layout" id="success-screen-hub">
+          <div class="gf-card brand-card">
+            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+              <img src="Asset 7-8 (1).png" alt="MDI Logo" style="max-height: 55px; object-fit: contain;">
+            </div>
+            <h1 class="brand-title" id="success-brand-title">Action Plan</h1>
+            <div class="success-text" style="margin-top: 14px; text-align: center;">
+              Tanggapan Anda telah direkam. Terima kasih atas partisipasi Anda dalam program evaluasi Action Plan.
+            </div>
+            <div class="brand-divider"></div>
+            <div style="text-align: center;">
+              <a class="success-link" onclick="reloadFormForEditing()">✏️ Edit tanggapan Anda</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- CLOSED FORM SCREEN -->
+        <div class="success-layout" id="closed-form-hub">
+          <div class="gf-card brand-card" style="border-top: 10px solid var(--gf-red);">
+            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+              <img src="Asset 7-8 (1).png" alt="MDI Logo" style="max-height: 55px; object-fit: contain;">
+            </div>
+            <h1 class="brand-title" id="closed-brand-title">Action Plan</h1>
+            <div class="success-text" style="margin-top: 14px; font-weight: 800; font-size: 18px; color: var(--gf-red); text-align: center;">
+              Formulir ini sudah tidak menerima tanggapan lagi / Formulir telah ditutup.
+            </div>
+            <div style="margin-top: 8px; color: var(--gf-text-muted); font-size: 13.5px; line-height: 1.6; text-align: center;">
+              Hubungi administrator jika Anda merasa ini adalah kesalahan. Tanggapan draf Anda sebelumnya tetap aman di database admin.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
 
   </div> <!-- .content-inner -->
 </div> <!-- .main-content -->
@@ -1352,6 +1782,10 @@ window.addEventListener('message', function(e) {
       localStorage.setItem(`mdi_participants_${formId}`, JSON.stringify(PARTICIPANTS_STAGE1));
       if(typeof loadAndMergeParticipants === 'function') loadAndMergeParticipants();
     }
+    if (e.data.actionPlanFormConfig) {
+      FORM_CONFIG = e.data.actionPlanFormConfig;
+      localStorage.setItem(`mdi_form_config_${formId}`, JSON.stringify(FORM_CONFIG));
+    }
     switchTab(e.data.tab);
   } else if (e.data.type === 'trainingChanged' || e.data.type === 'loadActionPlan') {
     if (e.data.formId) {
@@ -1359,6 +1793,10 @@ window.addEventListener('message', function(e) {
       if (e.data.actionPlanData) {
         PARTICIPANTS_STAGE1 = e.data.actionPlanData;
         localStorage.setItem(`mdi_participants_${formId}`, JSON.stringify(PARTICIPANTS_STAGE1));
+      }
+      if (e.data.actionPlanFormConfig) {
+        FORM_CONFIG = e.data.actionPlanFormConfig;
+        localStorage.setItem(`mdi_form_config_${formId}`, JSON.stringify(FORM_CONFIG));
       }
       if(typeof loadAndMergeParticipants === 'function') loadAndMergeParticipants();
       if(typeof fetchData === 'function') fetchData(); // Reload data for the new training
@@ -1485,19 +1923,32 @@ function init() {
   const urlParams = new URLSearchParams(window.location.search);
   formId = urlParams.get('formId') || formId;
 
-  let currentForm = forms.find(f => f.id === formId);
-  if (!currentForm && forms.length > 0) {
-    currentForm = forms[0];
-    formId = currentForm.id;
+  let currentForm = null;
+  const singleConfig = localStorage.getItem(`mdi_form_config_${formId}`);
+  if (singleConfig) {
+    try { currentForm = JSON.parse(singleConfig); } catch(e){}
   }
-  
+
+  if (!currentForm) {
+    currentForm = forms.find(f => f && f.id === formId);
+  }
+
   if (!currentForm) {
     currentForm = {
       id: formId,
-      title: "Unknown Form",
-      desc: "Tidak ada data formulir yang ditemukan.",
-      fields: [],
-      sections: []
+      title: "Action Plan",
+      desc: "Silakan isi rencana aksi pelatihan Anda di bawah ini.",
+      sections: ["Bagian 1 – Identitas", "Bagian 2 – Action Plan Commitments", "Bagian 3 – Progress & Challenges"],
+      fields: [
+        {id: "q_nama", label: "Nama", type: "text", required: true, section: "Bagian 1 – Identitas", options: []},
+        {id: "q_grade", label: "Grade", type: "text", required: true, section: "Bagian 1 – Identitas", options: []},
+        {id: "q_dept", label: "Departemen", type: "text", required: true, section: "Bagian 1 – Identitas", options: []},
+        {id: "q_action1", label: "Commitment Action 1", type: "textarea", required: true, section: "Bagian 2 – Action Plan Commitments", options: []},
+        {id: "q_action2", label: "Commitment Action 2", type: "textarea", required: true, section: "Bagian 2 – Action Plan Commitments", options: []},
+        {id: "q_action3", label: "Commitment Action 3", type: "textarea", required: true, section: "Bagian 2 – Action Plan Commitments", options: []},
+        {id: "q_notes", label: "30-Day Progress Update & Notes", type: "textarea", required: false, section: "Bagian 3 – Progress & Challenges", options: []},
+        {id: "q_challenge", label: "Challenges / Roadblocks Encountered", type: "textarea", required: false, section: "Bagian 3 – Progress & Challenges", options: []}
+      ]
     };
   }
 
@@ -1557,42 +2008,477 @@ function renderAll() {
 // ── PORTAL NAVIGATION ──
 function switchTab(tabId) {
   activeTab = tabId;
-  document.getElementById("menu-tracker").classList.remove("active");
-  document.getElementById("menu-backend").classList.remove("active");
-  document.getElementById("menu-spreadsheet").classList.remove("active");
-  document.getElementById("menu-spreadsheet2").classList.remove("active");
+  const mt = document.getElementById("menu-tracker"); if(mt) mt.classList.remove("active");
+  const mb = document.getElementById("menu-backend"); if(mb) mb.classList.remove("active");
+  const ms1 = document.getElementById("menu-spreadsheet"); if(ms1) ms1.classList.remove("active");
+  const ms2 = document.getElementById("menu-spreadsheet2"); if(ms2) ms2.classList.remove("active");
+  const mf = document.getElementById("menu-formfill"); if(mf) mf.classList.remove("active");
   const mc = document.getElementById("menu-clients"); if(mc) mc.classList.remove("active");
   
-  document.getElementById("section-tracker").style.display = "none";
-  document.getElementById("section-backend").style.display = "none";
-  document.getElementById("section-spreadsheet").style.display = "none";
-  document.getElementById("section-spreadsheet2").style.display = "none";
+  const st = document.getElementById("section-tracker"); if(st) st.style.display = "none";
+  const sb = document.getElementById("section-backend"); if(sb) sb.style.display = "none";
+  const ss1 = document.getElementById("section-spreadsheet"); if(ss1) ss1.style.display = "none";
+  const ss2 = document.getElementById("section-spreadsheet2"); if(ss2) ss2.style.display = "none";
+  const sf = document.getElementById("section-formfill"); if(sf) sf.style.display = "none";
   const sc = document.getElementById("section-clients"); if(sc) sc.style.display = "none";
 
   if (tabId === "tracker") {
-    document.getElementById("menu-tracker").classList.add("active");
-    document.getElementById("section-tracker").style.display = "block";
-    document.getElementById("page-head-title").innerHTML = `Dashboard Admin <em style="font-style:normal; color:var(--mdi-orange); font-weight:600; font-size:13.5px; background:var(--mdi-orange-soft); padding:2px 8px; border-radius:4px; margin-left:8px;">${FORM_CONFIG.title}</em>`;
+    if(mt) mt.classList.add("active");
+    if(st) st.style.display = "block";
+    document.getElementById("page-head-title").innerHTML = `Dashboard Admin <em style="font-style:normal; color:var(--mdi-orange); font-weight:600; font-size:13.5px; background:var(--mdi-orange-soft); padding:2px 8px; border-radius:4px; margin-left:8px;">${FORM_CONFIG.title || ""}</em>`;
     renderTrackerTable();
   } else if (tabId === "backend") {
-    document.getElementById("menu-backend").classList.add("active");
-    document.getElementById("section-backend").style.display = "block";
-    document.getElementById("page-head-title").innerHTML = `Form Backend Settings <em style="font-style:normal; color:var(--mdi-orange); font-weight:600; font-size:13.5px; background:var(--mdi-orange-soft); padding:2px 8px; border-radius:4px; margin-left:8px;">${FORM_CONFIG.title}</em>`;
+    if(mb) mb.classList.add("active");
+    if(sb) sb.style.display = "block";
+    document.getElementById("page-head-title").innerHTML = `Form Backend Settings <em style="font-style:normal; color:var(--mdi-orange); font-weight:600; font-size:13.5px; background:var(--mdi-orange-soft); padding:2px 8px; border-radius:4px; margin-left:8px;">${FORM_CONFIG.title || ""}</em>`;
     renderConfiguratorUI();
   } else if (tabId === "spreadsheet") {
-    document.getElementById("menu-spreadsheet").classList.add("active");
-    document.getElementById("section-spreadsheet").style.display = "block";
-    document.getElementById("page-head-title").innerHTML = `Rekap Spreadsheet Awal <em style="font-style:normal; color:var(--mdi-orange); font-weight:600; font-size:13.5px; background:var(--mdi-orange-soft); padding:2px 8px; border-radius:4px; margin-left:8px;">${FORM_CONFIG.title}</em>`;
+    if(ms1) ms1.classList.add("active");
+    if(ss1) ss1.style.display = "block";
+    document.getElementById("page-head-title").innerHTML = `Rekap Spreadsheet Awal <em style="font-style:normal; color:var(--mdi-orange); font-weight:600; font-size:13.5px; background:var(--mdi-orange-soft); padding:2px 8px; border-radius:4px; margin-left:8px;">${FORM_CONFIG.title || ""}</em>`;
     renderSpreadsheet();
   } else if (tabId === "spreadsheet2") {
-    document.getElementById("menu-spreadsheet2").classList.add("active");
-    document.getElementById("section-spreadsheet2").style.display = "block";
-    document.getElementById("page-head-title").innerHTML = `Rekap Penyelesaian <em style="font-style:normal; color:var(--mdi-orange); font-weight:600; font-size:13.5px; background:var(--mdi-orange-soft); padding:2px 8px; border-radius:4px; margin-left:8px;">${FORM_CONFIG.title}</em>`;
+    if(ms2) ms2.classList.add("active");
+    if(ss2) ss2.style.display = "block";
+    document.getElementById("page-head-title").innerHTML = `Rekap Penyelesaian <em style="font-style:normal; color:var(--mdi-orange); font-weight:600; font-size:13.5px; background:var(--mdi-orange-soft); padding:2px 8px; border-radius:4px; margin-left:8px;">${FORM_CONFIG.title || ""}</em>`;
     renderSpreadsheet2();
+  } else if (tabId === "formfill") {
+    if(mf) mf.classList.add("active");
+    if(sf) sf.style.display = "block";
+    document.getElementById("page-head-title").innerHTML = `Formulir Action Plan (Isi Form) <em style="font-style:normal; color:var(--mdi-orange); font-weight:600; font-size:13.5px; background:var(--mdi-orange-soft); padding:2px 8px; border-radius:4px; margin-left:8px;">${FORM_CONFIG.title || ""}</em>`;
+    showGatewayScreen();
   }
 }
 
+/* =========================================================
+   GOOGLE FORMS ACTION PLAN ENGINE (LOCAL STORAGE / LOCAL DB)
+   ========================================================= */
+let currentPICNo = Date.now();
+let currentSectionIndex = 0;
+let autosaveTimeout = null;
+let activeFormStage = 1;
+let renderedSectionIndices = [];
 
+function showGatewayScreen() {
+  const fHub = document.getElementById("form-fill-hub"); if (fHub) fHub.style.display = "none";
+  const ffNav = document.querySelector("#section-formfill .form-footer"); if (ffNav) ffNav.style.display = "none";
+  const cHub = document.getElementById("closed-form-hub"); if (cHub) cHub.classList.remove("active");
+  const sHub = document.getElementById("success-screen-hub"); if (sHub) sHub.classList.remove("active");
+  
+  const selectEl = document.getElementById("gateway-pic-select");
+  if (selectEl) {
+    selectEl.innerHTML = '<option value="">-- Pilih Nama Anda --</option>';
+    const sorted = [...PARTICIPANTS].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    sorted.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.no || p.picNoStage1;
+      opt.textContent = `${p.name} (${p.dept || "-"})`;
+      selectEl.appendChild(opt);
+    });
+  }
+
+  const gt = document.getElementById("gateway-title"); if (gt) gt.textContent = FORM_CONFIG.title || "Action Plan";
+  const gd = document.getElementById("gateway-desc"); if (gd) gd.textContent = FORM_CONFIG.desc || "Silakan pilih formulir yang ingin Anda isi di bawah ini:";
+  
+  const gHub = document.getElementById("gateway-hub"); if (gHub) gHub.style.display = "flex";
+  const sf = document.getElementById("section-formfill"); if (sf) sf.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectGatewayOption(type) {
+  if (type === 'awal') {
+    activeFormStage = 1;
+    currentPICNo = Date.now();
+    const newP1 = {
+      no: currentPICNo,
+      name: "",
+      dept: "",
+      grade: "",
+      status: "none",
+      answers: {}
+    };
+    PARTICIPANTS_STAGE1.push(newP1);
+    saveAllData();
+    
+    const gHub = document.getElementById("gateway-hub"); if (gHub) gHub.style.display = "none";
+    hideClosedFormScreen();
+    loadParticipantAnswers();
+  } else if (type === 'penyelesaian') {
+    const picSelect = document.getElementById("gateway-pic-select");
+    const selectedNo = picSelect ? picSelect.value : "";
+    if (!selectedNo) {
+      alert("Silakan pilih nama Anda terlebih dahulu!");
+      return;
+    }
+    
+    activeFormStage = 2;
+    currentPICNo = isNaN(selectedNo) ? selectedNo : parseInt(selectedNo);
+    
+    const gHub = document.getElementById("gateway-hub"); if (gHub) gHub.style.display = "none";
+    hideClosedFormScreen();
+    loadParticipantAnswers();
+  }
+}
+
+function showClosedFormScreen() {
+  const fHub = document.getElementById("form-fill-hub"); if (fHub) fHub.style.display = "none";
+  const ffNav = document.querySelector("#section-formfill .form-footer"); if (ffNav) ffNav.style.display = "none";
+  const sHub = document.getElementById("success-screen-hub"); if (sHub) sHub.classList.remove("active");
+  const cTitle = document.getElementById("closed-brand-title"); if (cTitle) cTitle.textContent = FORM_CONFIG.title || "Action Plan";
+  const cHub = document.getElementById("closed-form-hub"); if (cHub) cHub.classList.add("active");
+}
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function createSectionCard(title) {
+  const card = document.createElement("div");
+  card.className = "gf-card section-card";
+  card.textContent = title;
+  return card;
+}
+
+function autoGrow(element) {
+  if (!element) return;
+  element.style.height = 'auto';
+  element.style.height = (element.scrollHeight) + 'px';
+}
+
+function hideClosedFormScreen() {
+  const cHub = document.getElementById("closed-form-hub"); if (cHub) cHub.classList.remove("active");
+  const fHub = document.getElementById("form-fill-hub"); if (fHub) fHub.style.display = "flex";
+  const ffNav = document.querySelector("#section-formfill .form-footer"); if (ffNav) ffNav.style.display = "flex";
+}
+
+function loadParticipantAnswers() {
+  let pic = PARTICIPANTS_STAGE1.find(p => p.no === currentPICNo);
+  if (!pic) {
+    pic = PARTICIPANTS.find(p => p.no === currentPICNo || p.picNoStage1 === currentPICNo);
+    if (pic && pic.picNoStage1) {
+      pic = PARTICIPANTS_STAGE1.find(p => p.no === pic.picNoStage1) || pic;
+    }
+  }
+  if (!pic) {
+    pic = { no: currentPICNo, name: "", dept: "", grade: "", status: "none", answers: {} };
+  }
+
+  const gfTitle = document.getElementById("gf-title"); if (gfTitle) gfTitle.textContent = FORM_CONFIG.title || "Action Plan";
+  const gfDesc = document.getElementById("gf-desc"); if (gfDesc) gfDesc.textContent = FORM_CONFIG.desc || "";
+  const sTitle = document.getElementById("success-brand-title"); if (sTitle) sTitle.textContent = FORM_CONFIG.title || "Action Plan";
+
+  const container = document.getElementById("dynamic-cards-container");
+  if (!container) return;
+  container.innerHTML = "";
+
+  currentSectionIndex = 0;
+
+  if (!FORM_CONFIG.sections || FORM_CONFIG.sections.length === 0) {
+    FORM_CONFIG.sections = ["Bagian 1 – Identitas", "Bagian 2 – Action Plan Commitments", "Bagian 3 – Progress & Challenges"];
+  }
+
+  const isSectionStage2 = (name) => {
+    const n = (name || "").toLowerCase();
+    return n.includes("progress") || n.includes("challenge") || n.includes("penyelesaian") || n.includes("stage 2") || n.includes("tahap 2") || n.includes("tahap kedua") || n.includes("30 hari") || n.includes("30-day");
+  };
+
+  let visibleSectionIndex = 0;
+  renderedSectionIndices = [];
+
+  FORM_CONFIG.sections.forEach((secName, secIdx) => {
+    const isSec2 = isSectionStage2(secName);
+    if (activeFormStage === 1 && isSec2) return;
+    if (activeFormStage === 2 && !isSec2) return;
+
+    const sectionFields = (FORM_CONFIG.fields || []).filter(f => f.section === secName);
+    
+    const secPage = document.createElement("div");
+    secPage.className = "section-page";
+    secPage.id = `section-page-${visibleSectionIndex}`;
+    renderedSectionIndices.push(secIdx);
+    
+    if (sectionFields.length > 0) {
+      secPage.appendChild(createSectionCard(secName));
+      
+      if (activeFormStage === 2 && visibleSectionIndex === 0) {
+        const plansCard = document.createElement("div");
+        plansCard.className = "gf-card";
+        plansCard.style.cssText = "border-top: 4px solid var(--gf-purple); padding: 16px; margin-bottom: 12px; background: #faf9ff;";
+        
+        let plansHtml = "";
+        (FORM_CONFIG.fields || []).forEach(f => {
+          if (!isSectionStage2(f.section) && !["q_nama", "q_dept", "q_grade"].includes(f.id)) {
+            const planVal = pic.answers ? (pic.answers[f.id] || "") : "";
+            if (planVal) {
+              plansHtml += `<div style="margin-bottom:10px;"><strong>📌 ${escapeHtml(f.label)}:</strong><div style="font-style:italic; padding-left:12px; margin-top:4px; color:var(--gf-navy); white-space:pre-wrap;">${escapeHtml(planVal)}</div></div>`;
+            }
+          }
+        });
+        
+        plansCard.innerHTML = `
+          <div style="font-weight:800; font-size:12.5px; color:var(--gf-purple); text-transform:uppercase; margin-bottom:10px;">📋 Rencana Aksi (Commitment) Anda Sebelumnya:</div>
+          <div style="font-size:13px; line-height:1.5; color: var(--gf-text-dark);">
+            ${plansHtml || '<div style="color:var(--gf-text-muted); font-style:italic;">Belum ada rencana aksi yang terekam.</div>'}
+          </div>
+        `;
+        secPage.appendChild(plansCard);
+      }
+
+      sectionFields.forEach(f => {
+        const val = pic.answers ? (pic.answers[f.id] || "") : "";
+        const card = document.createElement("div");
+        card.className = "gf-card question-card";
+        card.id = `q-card-${f.id}`;
+
+        let inputHtml = "";
+        if (f.type === "text") {
+          inputHtml = `<input type="text" class="gf-input-text gf-answer-input" data-qid="${f.id}" id="input-${f.id}" value="${escapeHtml(val)}" oninput="triggerAutosave()" placeholder="Jawaban Anda">`;
+        } else if (f.type === "textarea") {
+          inputHtml = `<textarea class="gf-input-textarea gf-answer-input" data-qid="${f.id}" id="input-${f.id}" rows="1" oninput="triggerAutosave(); autoGrow(this);" placeholder="Jawaban Anda">${escapeHtml(val)}</textarea>`;
+        } else if (f.type === "radio") {
+          const radioOptions = (f.options || []).map(o => `
+            <label class="gf-radio-option">
+              <input type="radio" name="radio-${f.id}" class="gf-answer-radio" data-qid="${f.id}" value="${escapeHtml(o)}" ${val === o ? 'checked' : ''} onchange="triggerAutosave()">
+              <span>${escapeHtml(o)}</span>
+            </label>
+          `).join("");
+          inputHtml = `<div class="gf-radio-group">${radioOptions}</div>`;
+        } else if (f.type === "select") {
+          const selectOptions = (f.options || []).map(o => `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(o)}</option>`).join("");
+          inputHtml = `
+            <select class="gf-select gf-answer-input" data-qid="${f.id}" id="input-${f.id}" onchange="triggerAutosave()">
+              <option value="">Pilih</option>
+              ${selectOptions}
+            </select>
+          `;
+        } else if (f.type === "date") {
+          inputHtml = `<input type="date" class="gf-input-text gf-answer-input" data-qid="${f.id}" id="input-${f.id}" value="${escapeHtml(val)}" onchange="triggerAutosave()">`;
+        }
+
+        card.innerHTML = `
+          <div class="q-label">${escapeHtml(f.label)} ${f.required ? '<span class="q-req">*</span>' : ''}</div>
+          ${inputHtml}
+          <div class="gf-error-msg">
+            <span>⚠️</span> Pertanyaan ini wajib diisi
+          </div>
+        `;
+        secPage.appendChild(card);
+      });
+      
+      container.appendChild(secPage);
+      visibleSectionIndex++;
+    }
+  });
+
+  window.visibleSectionCount = visibleSectionIndex;
+  document.querySelectorAll('textarea.gf-input-textarea').forEach(el => autoGrow(el));
+  updateWizardNavigation();
+}
+
+function updateWizardNavigation() {
+  const totalSections = window.visibleSectionCount || 1;
+  for (let i = 0; i < totalSections; i++) {
+    const el = document.getElementById(`section-page-${i}`);
+    if (el) el.style.display = (i === currentSectionIndex) ? "flex" : "none";
+  }
+  
+  const btnPrev = document.getElementById("btn-prev");
+  if (btnPrev) btnPrev.style.visibility = (currentSectionIndex === 0) ? "hidden" : "visible";
+  
+  const btnNext = document.getElementById("btn-next");
+  if (btnNext) btnNext.textContent = (currentSectionIndex === totalSections - 1) ? "Kirim" : "Berikutnya";
+  
+  const fill = document.getElementById("progress-bar-fill");
+  if (fill) fill.style.width = `${((currentSectionIndex + 1) / totalSections) * 100}%`;
+  
+  const text = document.getElementById("progress-text");
+  if (text) text.textContent = `Halaman ${currentSectionIndex + 1} dari ${totalSections}`;
+}
+
+function goToPrevSection() {
+  if (currentSectionIndex > 0) {
+    currentSectionIndex--;
+    updateWizardNavigation();
+  }
+}
+
+function validateSection(secIdx) {
+  let pic = PARTICIPANTS_STAGE1.find(p => p.no === currentPICNo);
+  if (!pic) return true;
+
+  const actualSecIdx = renderedSectionIndices[secIdx];
+  const secName = (FORM_CONFIG.sections || [])[actualSecIdx];
+  if (!secName) return true;
+  const sectionFields = (FORM_CONFIG.fields || []).filter(f => f.section === secName);
+  
+  let isValid = true;
+  let firstErrorElement = null;
+
+  sectionFields.forEach(f => {
+    const card = document.getElementById(`q-card-${f.id}`);
+    if (card) card.classList.remove("error");
+  });
+
+  sectionFields.forEach(f => {
+    let val = "";
+    if (f.type === "radio") {
+      const checked = document.querySelector(`input[name="radio-${f.id}"]:checked`);
+      val = checked ? checked.value : "";
+    } else {
+      const el = document.getElementById(`input-${f.id}`);
+      val = el ? el.value.trim() : "";
+    }
+
+    if (f.required && !val) {
+      isValid = false;
+      const card = document.getElementById(`q-card-${f.id}`);
+      if (card) {
+        card.classList.add("error");
+        if (!firstErrorElement) firstErrorElement = card;
+      }
+    }
+  });
+
+  if (!isValid && firstErrorElement) {
+    firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  return isValid;
+}
+
+function handleNextOrSubmit() {
+  const btnNext = document.getElementById("btn-next");
+  if (btnNext && btnNext.disabled) return;
+  
+  if (btnNext) {
+    btnNext.disabled = true;
+    setTimeout(() => { btnNext.disabled = false; }, 600);
+  }
+
+  executeAutosave();
+
+  if (!validateSection(currentSectionIndex)) {
+    return;
+  }
+
+  const totalSections = window.visibleSectionCount || 1;
+  if (currentSectionIndex < totalSections - 1) {
+    currentSectionIndex++;
+    updateWizardNavigation();
+  } else {
+    submitFormFinal();
+  }
+}
+
+function submitFormFinal() {
+  let pic = PARTICIPANTS_STAGE1.find(p => p.no === currentPICNo);
+  if (!pic) return;
+
+  if (activeFormStage === 1) {
+    pic.status = "prog";
+    pic.submitDate = new Date().toLocaleDateString('en-CA');
+  } else {
+    pic.status = "done";
+    pic.s2Status = "Completed";
+    pic.s2Update = pic.answers["q_notes"] || pic.answers["q_custom_notes"] || "";
+    pic.s2Challenge = pic.answers["q_challenge"] || pic.answers["q_custom_challenge"] || "";
+  }
+
+  saveAllData();
+
+  document.getElementById("form-fill-hub").style.display = "none";
+  const ffNav = document.querySelector("#section-formfill .form-footer"); if (ffNav) ffNav.style.display = "none";
+  document.getElementById("closed-form-hub").classList.remove("active");
+  document.getElementById("success-screen-hub").classList.add("active");
+}
+
+function triggerAutosave() {
+  const b = document.getElementById("save-indicator-badge");
+  if (b) { b.textContent = "🔄"; b.title = "Menyimpan draf..."; }
+  if (autosaveTimeout) clearTimeout(autosaveTimeout);
+  autosaveTimeout = setTimeout(executeAutosave, 1000);
+}
+
+function executeAutosave() {
+  if (autosaveTimeout) clearTimeout(autosaveTimeout);
+  let pic = PARTICIPANTS_STAGE1.find(p => p.no === currentPICNo);
+  if (!pic) return;
+
+  if (!pic.answers) pic.answers = {};
+  const isSectionStage2 = (name) => {
+    const n = (name || "").toLowerCase();
+    return n.includes("progress") || n.includes("challenge") || n.includes("penyelesaian") || n.includes("stage 2") || n.includes("tahap 2") || n.includes("tahap kedua") || n.includes("30 hari") || n.includes("30-day");
+  };
+
+  (FORM_CONFIG.fields || []).forEach(f => {
+    const isSec2 = isSectionStage2(f.section);
+    if (activeFormStage === 1 && isSec2) return;
+    if (activeFormStage === 2 && !isSec2) return;
+
+    let val = "";
+    if (f.type === "radio") {
+      const checked = document.querySelector(`input[name="radio-${f.id}"]:checked`);
+      val = checked ? checked.value : "";
+      pic.answers[f.id] = val;
+    } else {
+      const el = document.getElementById(`input-${f.id}`);
+      if (el) {
+        val = el.value.trim();
+        pic.answers[f.id] = val;
+      }
+    }
+  });
+
+  pic.name = pic.answers["q_nama"] || pic.name || "";
+  pic.dept = pic.answers["q_dept"] || pic.dept || "";
+  pic.grade = pic.answers["q_grade"] || pic.grade || "";
+
+  let fillCount = 0;
+  (FORM_CONFIG.fields || []).forEach(f => { if (pic.answers[f.id]) fillCount++; });
+  if (fillCount === 0) pic.status = "none";
+  else if (pic.status === "none") pic.status = "prog";
+
+  saveAllData();
+
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  
+  const pt = document.getElementById("progress-text");
+  if (pt) pt.textContent = `Draf disimpan otomatis: ${timeStr}`;
+  const badge = document.getElementById("save-indicator-badge");
+  if (badge) { badge.textContent = "☁️"; badge.title = "Draf disimpan otomatis"; }
+}
+
+function clearGFormInputs() {
+  if (confirm("Apakah Anda yakin ingin mengosongkan semua jawaban Anda?")) {
+    let pic = PARTICIPANTS_STAGE1.find(p => p.no === currentPICNo);
+    if (!pic) return;
+
+    pic.answers = {};
+    pic.status = "none";
+    saveAllData();
+    loadParticipantAnswers();
+  }
+}
+
+function reloadFormForEditing() {
+  if (FORM_CONFIG.status === "inactive") {
+    showClosedFormScreen();
+    return;
+  }
+
+  document.getElementById("success-screen-hub").classList.remove("active");
+  document.getElementById("closed-form-hub").classList.remove("active");
+  document.getElementById("form-fill-hub").style.display = "flex";
+  const ffNav = document.querySelector("#section-formfill .form-footer"); if (ffNav) ffNav.style.display = "flex";
+  document.querySelectorAll('textarea.gf-input-textarea').forEach(el => autoGrow(el));
+}
 
 // ── DASHBOARD ADMIN: TRACKER LOGIC ──
 function updateMiniKPIs() {
@@ -1751,21 +2637,37 @@ function renderTrackerTable() {
       </tr>
       <tr class="detail-row" id="detail-${p.no}">
         <td colspan="10" class="detail-cell" style="background:#f8f9fa; border-left: 3px solid #d95d39;">
-          <div class="detail-inner" style="padding:0;">
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; padding: 16px 8px;">
+          <div class="detail-inner" style="padding:12px 16px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom:16px;">
               <div>
-                <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">ALL ${plans.length} ACTION PLANS</div>
+                <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">ALL ${plans.length} ACTION PLANS</div>
                 <ol style="margin:0; padding-left:16px; font-size:13px; color:var(--mdi-ink); line-height:1.6; font-weight:600; color:#d95d39;">
-                  ${plans.map(pl => `<li style="margin-bottom:8px;"><span style="color:var(--mdi-ink); font-weight:400;">${pl}</span></li>`).join("")}
+                  ${plans.map(pl => `<li style="margin-bottom:6px;"><span style="color:var(--mdi-ink); font-weight:400;">${escapeHtml(pl)}</span></li>`).join("")}
                 </ol>
               </div>
               <div>
-                <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">30-DAY UPDATE</div>
-                <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${p.s2Update || "No update reported."}</div>
+                <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">30-DAY UPDATE</div>
+                <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${escapeHtml(p.s2Update || "No update reported.")}</div>
               </div>
               <div>
-                <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">CHALLENGE / BARRIER</div>
-                <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${p.s2Challenge || "No challenges reported."}</div>
+                <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">CHALLENGE / BARRIER</div>
+                <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${escapeHtml(p.s2Challenge || "No challenges reported.")}</div>
+              </div>
+            </div>
+
+            <!-- Dynamic Answer Breakdown matching Form Backend Questions -->
+            <div style="border-top: 1px dashed var(--mdi-border); padding-top: 12px; margin-top: 8px;">
+              <div style="font-size:10px; font-weight:800; color:var(--mdi-orange); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">📋 DETAIL JAWABAN FORMULIR (SESUAI PERTANYAAN FORM):</div>
+              <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;">
+                ${(FORM_CONFIG.fields || []).map(f => {
+                  const ansVal = p.answers ? (p.answers[f.id] || "—") : "—";
+                  return `
+                    <div style="background:#fff; border:1px solid var(--mdi-border); border-radius:6px; padding:8px 12px;">
+                      <div style="font-size:10.5px; font-weight:700; color:var(--mdi-navy); margin-bottom:3px;">${escapeHtml(f.label)}</div>
+                      <div style="font-size:12px; color:var(--mdi-ink); line-height:1.4;">${escapeHtml(ansVal)}</div>
+                    </div>
+                  `;
+                }).join("")}
               </div>
             </div>
           </div>
@@ -1872,6 +2774,12 @@ function saveState() {
   window.parent.postMessage({ type: 'saveActionPlan', formId: formId, data: PARTICIPANTS_STAGE1 }, '*');
 }
 
+function saveAllData() {
+  saveState();
+  if (typeof loadAndMergeParticipants === 'function') loadAndMergeParticipants();
+  if (typeof renderAll === 'function') renderAll();
+}
+
 
 // ── FORM BACKEND CONFIGURATOR LOGIC ──
 function renderConfiguratorUI() {
@@ -1906,7 +2814,7 @@ function renderConfiguratorUI() {
               <div class="q-actions">
                 <button class="btn" style="padding:2px 6px; font-size:11px;" onclick="moveQuestion(${globalIdx}, -1)" ${globalIdx === 0 ? 'disabled' : ''}>▲ Up</button>
                 <button class="btn" style="padding:2px 6px; font-size:11px;" onclick="moveQuestion(${globalIdx}, 1)" ${globalIdx === config.fields.length - 1 ? 'disabled' : ''}>▼ Down</button>
-                ${isCore ? `<span style="font-size:9px; font-weight:700; color:var(--mdi-muted); padding-left:10px;">CORE FIELD</span>` : `<button class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="deleteQuestion(${globalIdx})">🗑️ Remove</button>`}
+                <button class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="deleteQuestion(${globalIdx})">🗑️ Remove</button>
               </div>
             </div>
             
@@ -1953,7 +2861,7 @@ function renderConfiguratorUI() {
         </div>
         <div onclick="event.stopPropagation();" style="display:flex; gap:8px;">
           <button class="btn btn-primary" style="font-size:11px; padding:3px 10px;" onclick="addNewQuestionToSection('${secName}')">➕ Add Question</button>
-          ${secIdx > 0 ? `<button class="btn btn-danger" style="font-size:11px; padding:3px 10px;" onclick="deleteSection(${secIdx})">🗑️ Delete Section</button>` : ''}
+          ${config.sections.length > 1 ? `<button class="btn btn-danger" style="font-size:11px; padding:3px 10px;" onclick="deleteSection(${secIdx})">🗑️ Delete Section</button>` : ''}
         </div>
       </div>
       <div class="${bodyClass}" id="sec-body-${secIdx}">
@@ -2271,9 +3179,13 @@ function resetFormSchema() {
 }
 
 function saveFormSchema() {
-  const newTitle = document.getElementById("cfg-title").value.trim();
-  const newDesc = document.getElementById("cfg-desc").value.trim();
-  const newTDate = document.getElementById("cfg-training-date").value.trim();
+  const titleEl = document.getElementById("cfg-title");
+  const descEl = document.getElementById("cfg-desc");
+  const tDateEl = document.getElementById("cfg-training-date");
+
+  const newTitle = titleEl ? titleEl.value.trim() : (FORM_CONFIG.title || "Action Plan");
+  const newDesc = descEl ? descEl.value.trim() : (FORM_CONFIG.desc || "");
+  const newTDate = tDateEl ? tDateEl.value.trim() : (FORM_CONFIG.trainingDate || "");
 
   if (!newTitle) {
     alert("Judul form tidak boleh kosong.");
@@ -2281,25 +3193,41 @@ function saveFormSchema() {
   }
 
   const cachedForms = JSON.parse(localStorage.getItem("mdi_forms") || "[]");
-  const idx = cachedForms.findIndex(f => f.id === formId);
+  let idx = cachedForms.findIndex(f => f && f.id === formId);
   
+  let targetConfig = (idx !== -1 && cachedForms[idx]) ? cachedForms[idx] : FORM_CONFIG;
+  targetConfig.title = newTitle;
+  targetConfig.desc = newDesc;
+  targetConfig.trainingDate = newTDate;
+
+  syncDOMToState(targetConfig);
+
   if (idx !== -1) {
-    const targetConfig = cachedForms[idx];
-    targetConfig.title = newTitle;
-    targetConfig.desc = newDesc;
-    targetConfig.trainingDate = newTDate;
-
-    syncDOMToState(targetConfig);
-
-    localStorage.setItem("mdi_forms", JSON.stringify(cachedForms));
-    
-    FORM_CONFIG = targetConfig;
-    
-    document.getElementById("head-form-title").textContent = FORM_CONFIG.title;
-    document.getElementById("admin-brand-title").innerHTML = `${FORM_CONFIG.title} <span>Action Plan Admin</span>`;
-    alert("Form Backend settings successfully saved!");
-    renderAll();
+    cachedForms[idx] = targetConfig;
+  } else {
+    cachedForms.push(targetConfig);
   }
+
+  localStorage.setItem("mdi_forms", JSON.stringify(cachedForms));
+  localStorage.setItem(`mdi_form_config_${formId}`, JSON.stringify(targetConfig));
+  FORM_CONFIG = targetConfig;
+  
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'saveActionPlanFormConfig', formId: formId, formConfig: FORM_CONFIG }, '*');
+    }
+  } catch(e) {
+    console.warn("Post message error:", e);
+  }
+
+  const hTitle = document.getElementById("head-form-title");
+  if (hTitle) hTitle.textContent = FORM_CONFIG.title;
+  const aTitle = document.getElementById("admin-brand-title");
+  if (aTitle) aTitle.innerHTML = `${FORM_CONFIG.title} <span>Action Plan Admin</span>`;
+  
+  if (typeof showToast === 'function') showToast("Form Backend settings successfully saved!");
+  alert("Form Backend settings successfully saved!");
+  renderAll();
 }
 
 // ── ADD / EDIT PIC MODAL LOGIC ──
