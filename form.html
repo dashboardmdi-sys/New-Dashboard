@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulir Action Plan — MDI Tack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-base: #c8872f;
+      --navy: #0f172a;
+      --card-border: #dadce0;
+      --bg-color: #faece3;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-color);
+      color: #202124;
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 20px 12px 40px;
+    }
+
+    .form-wrapper {
+      max-width: 740px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .gf-card {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 24px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      position: relative;
+    }
+
+    .gf-card.brand-card {
+      border-top: 10px solid var(--primary-base);
+    }
+
+    .brand-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #202124;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .brand-desc {
+      font-size: 13.5px;
+      color: #5f6368;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .gateway-option-card {
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      padding: 18px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .gateway-option-card:hover {
+      border-color: var(--primary-base);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+
+    .btn {
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: var(--navy);
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn-outline {
+      background: #ffffff;
+      color: var(--navy);
+      border: 1px solid #dadce0;
+    }
+    .btn-outline:hover {
+      background: #f8fafc;
+    }
+
+    .gf-input-text {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid #dadce0;
+      padding: 8px 0;
+      font-family: inherit;
+      font-size: 14px;
+      color: #202124;
+      outline: none;
+      background: transparent;
+      transition: border-color 0.2s;
+    }
+    .gf-input-text:focus {
+      border-bottom: 2px solid var(--primary-base);
+    }
+
+    .gf-input-textarea {
+      width: 100%;
+      border: none;
+      border-bottom: 1px dashed #dadce0;
+      padding: 8px 0;
+      font-family: inherit;
+      font-size: 14px;
+      color: #202124;
+      outline: none;
+      background: transparent;
+      resize: vertical;
+      min-height: 44px;
+    }
+    .gf-input-textarea:focus {
+      border-bottom: 2px solid var(--primary-base);
+    }
+
+    .gf-select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #dadce0;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13.5px;
+      background: #fff;
+      color: #202124;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      display: none;
+      z-index: 9999;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast.show { display: flex; animation: toastFade 0.3s ease; }
+    @keyframes toastFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Loader Spinner */
+    #loader {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(250, 236, 227, 0.95);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .spinner {
+      width: 42px; height: 42px;
+      border: 4px solid #eee;
+      border-top: 4px solid var(--primary-base);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- LOADER SPINNER -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <div style="margin-top:16px; font-weight:700; color:var(--navy); font-size:14px;">Memuat Formulir Action Plan...</div>
+  </div>
+
+  <!-- TOAST NOTICE -->
+  <div class="toast" id="toast"></div>
+
+  <!-- MAIN FORM CONTAINER -->
+  <div class="form-wrapper">
+
+    <!-- GATEWAY HUB (CHOICE TAHAP 1 OR TAHAP 2) -->
+    <div id="ap-gateway-hub" style="display:flex; flex-direction:column; gap:16px; width:100%;">
+      <div class="gf-card brand-card">
+        <div style="display:flex; justify-content:center; margin-bottom:20px;">
+          <img src="Asset 7-8 (1).png" alt="MDI Logo" style="max-height:55px; object-fit:contain;">
+        </div>
+        <h1 class="brand-title" id="ap-gateway-title">Action Plan</h1>
+        <div class="brand-desc" id="ap-gateway-desc">Silakan pilih formulir pemantauan di bawah ini.</div>
+
+        <div style="display:flex; flex-direction:column; gap:16px; margin-top:24px;">
+          <!-- OPTION 1: TAHAP 1 -->
+          <div class="gateway-option-card" onclick="selectApGatewayOption('awal')">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="background:#ffe8d6; color:#a0522d; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:bold;">📋</div>
+              <span style="font-weight:800; font-size:15px; color:#202124;">Isi Komitmen Rencana Aksi (Tahap 1)</span>
+            </div>
+            <div style="font-size:13px; color:#5f6368; line-height:1.5; padding-left:46px;">
+              Pilih ini jika Anda baru pertama kali mengisi komitmen rencana aksi Anda setelah pelatihan.
+            </div>
+            <div style="padding-left:46px; margin-top:4px;">
+              <button class="btn btn-primary" onclick="selectApGatewayOption('awal'); event.stopPropagation();" style="width:100%;">Mulai Isi Komitmen (Tahap 1)</button>
+            </div>
+          </div>
+
+          <!-- OPTION 2: TAHAP 2 -->
+          <div class="gateway-option-card" style="cursor:default;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="background:#e2f0d9; color:#385723; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:bold;">🔄</div>
+              <span style="font-weight:800; font-size:15px; color:#202124;">Perbarui Progres Rencana Aksi (Tahap 2)</span>
+            </div>
+            <div style="font-size:13px; color:#5f6368; line-height:1.5; padding-left:46px;">
+              Pilih ini jika Anda ingin memperbarui progres/tantangan rencana aksi Anda setelah 30 hari.
+            </div>
+
+            <div style="padding-left:46px; display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+              <label style="font-size:11px; font-weight:700; color:#202124; text-transform:uppercase;">Pilih Nama Anda:</label>
+              <select id="ap-gateway-pic-select" class="gf-select">
+                <option value="">-- Pilih Nama Anda --</option>
+              </select>
+              <button class="btn btn-primary" onclick="selectApGatewayOption('penyelesaian')" style="width:100%; margin-top:4px;">Mulai Perbarui Progres</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM FILLER WIZARD -->
+    <div id="ap-form-fill-hub" style="display:none; flex-direction:column; gap:14px; width:100%;">
+      <div class="gf-card brand-card">
+        <div style="display:flex; justify-content:center; margin-bottom:20px;">
+          <img src="Asset 7-8 (1).png" alt="MDI Logo" style="max-height:55px; object-fit:contain;">
+        </div>
+        <h1 class="brand-title" id="ap-gf-title">Action Plan</h1>
+        <div class="brand-desc" id="ap-gf-desc">Deskripsi form...</div>
+      </div>
+
+      <!-- Container for dynamic wizard cards -->
+      <div id="ap-dynamic-cards-container" style="display:flex; flex-direction:column; gap:14px;"></div>
+
+      <!-- Navigation & Progress Footer -->
+      <div class="gf-card" style="padding:18px 24px; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <button class="btn btn-outline" id="ap-btn-prev" onclick="goToApPrevSection()" style="visibility:hidden;">Kembali</button>
+          <button class="btn btn-primary" id="ap-btn-next" onclick="handleApNextOrSubmit()">Berikutnya</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; margin-top:6px;">
+          <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+            <div id="ap-progress-bar-fill" style="width:33%; height:100%; background:var(--primary-base); transition:width 0.3s ease;"></div>
+          </div>
+          <span style="font-size:12px; color:#5f6368; font-weight:600;" id="ap-progress-text">Halaman 1 dari 1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS SCREEN -->
+    <div id="ap-success-screen-hub" style="display:none; flex-direction:column; align-items:center; width:100%;">
+      <div class="gf-card brand-card" style="border-top-color:#16a34a; text-align:center;">
+        <div style="display:flex; justify-content:center; margin-bottom:20px;">
+          <img src="Asset 7-8 (1).png" alt="MDI Logo" style="max-height:55px; object-fit:contain;">
+        </div>
+        <h1 class="brand-title" id="ap-success-brand-title">Action Plan</h1>
+        <div style="font-size:14.5px; color:#202124; line-height:1.6; margin:16px 0 24px;">
+          Tanggapan Anda telah berhasil direkam ke dalam database. Terima kasih atas partisipasi Anda dalam program pemantauan Action Plan.
+        </div>
+        <button class="btn btn-outline" onclick="reloadApFormForEditing()" style="margin:0 auto;">✏️ Edit tanggapan Anda</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    "use strict";
+
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCAAAkpGxp0tq4MwL2xz8Uq9DjYJS-Jlj9GdnEUPx2zXy5RP6q2vLj8NEXa-Bb--tr2g/exec";
+    
+    let clientsDb = [];
+    let currentClientId = null;
+    let currentTrainingId = null;
+
+    let apActiveFormStage = 1;
+    let apCurrentPICNo = null;
+    let apCurrentPICDraft = null;
+    let apCurrentSectionIndex = 0;
+    let apRenderedSectionIndices = [];
+
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 3200);
+    }
+
+    function escapeApHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function getApCurrentTraining() {
+      if (!currentClientId || !currentTrainingId) return null;
+      const c = clientsDb.find(x => String(x.id) === String(currentClientId));
+      if (!c || !c.trainings) return null;
+      return c.trainings.find(x => String(x.id) === String(currentTrainingId)) || null;
+    }
+
+    function getApFormConfig() {
+      const t = getApCurrentTraining();
+      if (t && t.actionPlanFormConfig && Array.isArray(t.actionPlanFormConfig.fields)) {
+        return t.actionPlanFormConfig;
+      }
+      return {
+        title: "Action Plan",
+        desc: "Silakan lengkapi action plan peserta pemantauan secara seksama.",
+        themeColor: "#c8872f",
+        sections: ["Bagian 1 – Identitas", "Bagian 2 – Action Plan Commitments", "Bagian 3 – Progress & Challenges"],
+        fields: [
+          {id: "q_nama", label: "Nama Lengkap", type: "text", required: true, section: "Bagian 1 – Identitas", options: []},
+          {id: "q_dept", label: "Departemen", type: "text", required: true, section: "Bagian 1 – Identitas", options: []},
+          {id: "q_grade", label: "Grade", type: "text", required: true, section: "Bagian 1 – Identitas", options: []},
+          {id: "q_ap1", label: "Rencana Aksi 1 (Commitment)", type: "textarea", required: true, section: "Bagian 2 – Action Plan Commitments", options: []},
+          {id: "q_ap2", label: "Rencana Aksi 2 (Commitment)", type: "textarea", required: false, section: "Bagian 2 – Action Plan Commitments", options: []},
+          {id: "q_notes", label: "30-Day Progress Update & Notes", type: "textarea", required: false, section: "Bagian 3 – Progress & Challenges", options: []},
+          {id: "q_challenge", label: "Challenges / Roadblocks Encountered", type: "textarea", required: false, section: "Bagian 3 – Progress & Challenges", options: []}
+        ]
+      };
+    }
+
+    function getApParticipants() {
+      const t = getApCurrentTraining();
+      return (t && Array.isArray(t.actionPlan)) ? t.actionPlan : [];
+    }
+
+    async function saveApParticipants(participants) {
+      if (!currentClientId || !currentTrainingId) return;
+      const c = clientsDb.find(x => String(x.id) === String(currentClientId));
+      if (!c || !c.trainings) return;
+      const t = c.trainings.find(x => String(x.id) === String(currentTrainingId));
+      if (!t) return;
+      t.actionPlan = participants;
+
+      // Local save
+      try {
+        const i = clientsDb.findIndex(x => String(x.id) === String(c.id));
+        if (i > -1) clientsDb[i] = c;
+        localStorage.setItem("clientsDb", JSON.stringify(clientsDb));
+      } catch (e) { console.warn(e); }
+
+      // Remote GAS API save
+      try {
+        await fetch(WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({action: 'updateClient', client: c})
+        });
+      } catch (e) { console.warn("GAS save warning:", e); }
+    }
+
+    function applyApThemeColor(colorHex) {
+      const hex = colorHex || "#c8872f";
+      document.documentElement.style.setProperty('--primary-base', hex);
+      document.querySelectorAll(".brand-card").forEach(card => {
+        card.style.borderTopColor = hex;
+      });
+      document.querySelectorAll(".ap-section-page .gf-card:first-child").forEach(card => {
+        card.style.background = hex;
+        card.style.color = "#ffffff";
+      });
+      const barEl = document.getElementById("ap-progress-bar-fill");
+      if (barEl) barEl.style.background = hex;
+    }
+
+    function showApGatewayScreen() {
+      const config = getApFormConfig();
+      const participants = getApParticipants();
+
+      if (config.themeColor) applyApThemeColor(config.themeColor);
+
+      const titleEl = document.getElementById("ap-gateway-title"); if (titleEl) titleEl.textContent = config.title || "Action Plan";
+      const descEl = document.getElementById("ap-gateway-desc"); if (descEl) descEl.textContent = config.desc || "";
+
+      const picSelect = document.getElementById("ap-gateway-pic-select");
+      if (picSelect) {
+        picSelect.innerHTML = `<option value="">-- Pilih Nama Anda --</option>` + participants.map(p => `
+          <option value="${p.no}">${escapeApHtml(p.name)} (${escapeApHtml(p.dept || "-")})</option>
+        `).join("");
+      }
+
+      document.getElementById("ap-gateway-hub").style.display = "flex";
+      document.getElementById("ap-form-fill-hub").style.display = "none";
+      document.getElementById("ap-success-screen-hub").style.display = "none";
+    }
+
+    function selectApGatewayOption(type) {
+      try {
+        if (type === 'awal') {
+          apActiveFormStage = 1;
+          apCurrentPICNo = Date.now();
+          apCurrentPICDraft = {
+            no: apCurrentPICNo,
+            name: "",
+            dept: "",
+            grade: "-",
+            status: "prog",
+            answers: {}
+          };
+
+          document.getElementById("ap-gateway-hub").style.display = "none";
+          document.getElementById("ap-success-screen-hub").style.display = "none";
+          loadApParticipantAnswers();
+        } else if (type === 'penyelesaian') {
+          const selVal = document.getElementById("ap-gateway-pic-select")?.value;
+          if (!selVal) {
+            toast("⚠️ Silakan pilih nama Anda terlebih dahulu pada dropdown!");
+            document.getElementById("ap-gateway-pic-select")?.focus();
+            return;
+          }
+          apActiveFormStage = 2;
+          apCurrentPICNo = isNaN(selVal) ? selVal : parseInt(selVal);
+
+          document.getElementById("ap-gateway-hub").style.display = "none";
+          document.getElementById("ap-success-screen-hub").style.display = "none";
+          loadApParticipantAnswers();
+        }
+      } catch (err) {
+        console.error(err);
+        toast("⚠️ Gagal memuat formulir: " + err.message);
+      }
+    }
+
+    function getApActionPlans(participant, config) {
+      const cfg = config || getApFormConfig();
+      const plans = [];
+      if (!participant || !participant.answers) return plans;
+
+      const isSectionStage2 = (name) => {
+        const n = (name || "").toLowerCase();
+        return n.includes("progress") || n.includes("challenge") || n.includes("penyelesaian") || n.includes("stage 2") || n.includes("tahap 2") || n.includes("30 hari");
+      };
+
+      (cfg.fields || []).forEach(f => {
+        if (!isSectionStage2(f.section) && participant.answers[f.id] && f.id !== "q_nama" && f.id !== "q_dept" && f.id !== "q_grade") {
+          plans.push(`${f.label}: ${participant.answers[f.id]}`);
+        }
+      });
+      return plans;
+    }
+
+    function loadApParticipantAnswers() {
+      const config = getApFormConfig();
+      const participants = getApParticipants();
+      const pic = participants.find(p => String(p.no) === String(apCurrentPICNo)) || apCurrentPICDraft || { no: apCurrentPICNo, answers: {} };
+
+      if (config.themeColor) applyApThemeColor(config.themeColor);
+
+      const titleEl = document.getElementById("ap-gf-title"); if (titleEl) titleEl.textContent = config.title || "Action Plan";
+      const descEl = document.getElementById("ap-gf-desc"); if (descEl) descEl.textContent = config.desc || "";
+
+      const container = document.getElementById("ap-dynamic-cards-container");
+      if (!container) return;
+      container.innerHTML = "";
+
+      apCurrentSectionIndex = 0;
+      apRenderedSectionIndices = [];
+
+      const isSectionStage2 = (name) => {
+        const n = (name || "").toLowerCase();
+        return n.includes("progress") || n.includes("challenge") || n.includes("penyelesaian") || n.includes("stage 2") || n.includes("tahap 2") || n.includes("30 hari");
+      };
+
+      const allSections = (config.sections && config.sections.length > 0) ? config.sections : ["Bagian 1 – Identitas", "Bagian 2 – Action Plan Commitments", "Bagian 3 – Progress & Challenges"];
+
+      let validSections = allSections.filter((secName) => {
+        const isSec2 = isSectionStage2(secName);
+        if (apActiveFormStage === 1) return !isSec2;
+        if (apActiveFormStage === 2) return isSec2;
+        return true;
+      });
+
+      if (validSections.length === 0) {
+        if (apActiveFormStage === 1) {
+          validSections = allSections.slice(0, Math.max(1, allSections.length - 1));
+        } else {
+          validSections = allSections.slice(-1);
+        }
+      }
+
+      validSections.forEach((secName) => {
+        const secIdx = allSections.indexOf(secName);
+        const sectionFields = (config.fields || []).filter(f => f.section === secName || (validSections.length === 1 && !f.section));
+        const secPage = document.createElement("div");
+        secPage.className = "ap-section-page";
+        secPage.id = `ap-sec-page-${apRenderedSectionIndices.length}`;
+        secPage.style.display = apRenderedSectionIndices.length === 0 ? "flex" : "none";
+        secPage.style.flexDirection = "column";
+        secPage.style.gap = "14px";
+
+        apRenderedSectionIndices.push(secIdx >= 0 ? secIdx : 0);
+
+        const secCard = document.createElement("div");
+        secCard.className = "gf-card";
+        secCard.style.cssText = `background:${config.themeColor || '#c8872f'}; color:#ffffff; padding:12px 20px; font-weight:800; font-size:14.5px; border-radius:8px;`;
+        secCard.textContent = secName;
+        secPage.appendChild(secCard);
+
+        if (apActiveFormStage === 2 && apRenderedSectionIndices.length === 1) {
+          const plansCard = document.createElement("div");
+          plansCard.className = "gf-card";
+          plansCard.style.cssText = "border-top:4px solid var(--navy); padding:16px; background:#faf9ff;";
+
+          const plans = getApActionPlans(pic, config);
+          plansCard.innerHTML = `
+            <div style="font-weight:800; font-size:12px; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">📋 Rencana Aksi (Commitment) Anda Sebelumnya:</div>
+            <div style="font-size:13px; line-height:1.5; color:#202124;">
+              ${plans.length > 0 ? plans.map(p => `<div style="margin-bottom:4px;">• ${escapeApHtml(p)}</div>`).join("") : '<div style="color:#5f6368; font-style:italic;">Belum ada komitmen terekam.</div>'}
+            </div>
+          `;
+          secPage.appendChild(plansCard);
+        }
+
+        sectionFields.forEach(f => {
+          const val = pic.answers ? (pic.answers[f.id] || "") : "";
+          const qCard = document.createElement("div");
+          qCard.className = "gf-card";
+          qCard.id = `ap-q-card-${f.id}`;
+
+          let inputHtml = "";
+          if (f.type === "text") {
+            inputHtml = `<input type="text" class="gf-input-text ap-ans-input" data-qid="${f.id}" id="ap-input-${f.id}" value="${escapeApHtml(val)}" placeholder="Jawaban Anda">`;
+          } else if (f.type === "textarea") {
+            inputHtml = `<textarea class="gf-input-textarea ap-ans-input" data-qid="${f.id}" id="ap-input-${f.id}" rows="2" placeholder="Jawaban Anda">${escapeApHtml(val)}</textarea>`;
+          } else if (f.type === "radio") {
+            inputHtml = (f.options || []).map(o => `
+              <label style="display:flex; align-items:center; gap:8px; margin-top:8px; cursor:pointer; font-size:13.5px;">
+                <input type="radio" name="ap-radio-${f.id}" class="ap-ans-radio" data-qid="${f.id}" value="${escapeApHtml(o)}" ${val === o ? 'checked' : ''}>
+                <span>${escapeApHtml(o)}</span>
+              </label>
+            `).join("");
+          } else if (f.type === "select") {
+            inputHtml = `<select class="gf-select ap-ans-select" data-qid="${f.id}" id="ap-input-${f.id}">
+              <option value="">-- Pilih --</option>
+              ${(f.options || []).map(o => `<option value="${escapeApHtml(o)}" ${val === o ? 'selected' : ''}>${escapeApHtml(o)}</option>`).join("")}
+            </select>`;
+          } else if (f.type === "date") {
+            inputHtml = `<input type="date" class="gf-input-text ap-ans-input" data-qid="${f.id}" id="ap-input-${f.id}" value="${escapeApHtml(val)}">`;
+          }
+
+          qCard.innerHTML = `
+            <div style="font-weight:600; font-size:14.5px; color:#202124; margin-bottom:10px;">
+              ${escapeApHtml(f.label)} ${f.required ? '<span style="color:#d93025">*</span>' : ''}
+            </div>
+            ${inputHtml}
+          `;
+          secPage.appendChild(qCard);
+        });
+
+        container.appendChild(secPage);
+      });
+
+      document.getElementById("ap-form-fill-hub").style.display = "flex";
+      updateApWizardNavigation();
+    }
+
+    function updateApWizardNavigation() {
+      const total = apRenderedSectionIndices.length;
+      const prevBtn = document.getElementById("ap-btn-prev");
+      const nextBtn = document.getElementById("ap-btn-next");
+      const textEl = document.getElementById("ap-progress-text");
+      const barEl = document.getElementById("ap-progress-bar-fill");
+
+      if (prevBtn) prevBtn.style.visibility = apCurrentSectionIndex > 0 ? "visible" : "hidden";
+      if (nextBtn) nextBtn.textContent = apCurrentSectionIndex === total - 1 ? "Kirim (Submit)" : "Berikutnya";
+      if (textEl) textEl.textContent = `Halaman ${apCurrentSectionIndex + 1} dari ${total}`;
+      if (barEl) barEl.style.width = `${((apCurrentSectionIndex + 1) / total) * 100}%`;
+    }
+
+    function goToApPrevSection() {
+      if (apCurrentSectionIndex > 0) {
+        document.getElementById(`ap-sec-page-${apCurrentSectionIndex}`).style.display = "none";
+        apCurrentSectionIndex--;
+        document.getElementById(`ap-sec-page-${apCurrentSectionIndex}`).style.display = "flex";
+        updateApWizardNavigation();
+      }
+    }
+
+    function handleApNextOrSubmit() {
+      const total = apRenderedSectionIndices.length;
+      if (apCurrentSectionIndex < total - 1) {
+        document.getElementById(`ap-sec-page-${apCurrentSectionIndex}`).style.display = "none";
+        apCurrentSectionIndex++;
+        document.getElementById(`ap-sec-page-${apCurrentSectionIndex}`).style.display = "flex";
+        updateApWizardNavigation();
+      } else {
+        submitApFormFinal();
+      }
+    }
+
+    async function submitApFormFinal() {
+      const participants = getApParticipants();
+      let pic = participants.find(p => String(p.no) === String(apCurrentPICNo));
+
+      if (!pic) {
+        if (apActiveFormStage === 1) {
+          pic = apCurrentPICDraft || {
+            no: apCurrentPICNo || Date.now(),
+            name: "",
+            dept: "",
+            grade: "-",
+            status: "prog",
+            answers: {}
+          };
+          participants.push(pic);
+        } else {
+          toast("⚠️ Data peserta tidak ditemukan!");
+          return;
+        }
+      }
+
+      if (!pic.answers) pic.answers = {};
+
+      document.querySelectorAll(".ap-ans-input").forEach(el => {
+        const qid = el.getAttribute("data-qid");
+        if (qid) pic.answers[qid] = el.value.trim();
+      });
+      document.querySelectorAll(".ap-ans-select").forEach(el => {
+        const qid = el.getAttribute("data-qid");
+        if (qid) pic.answers[qid] = el.value;
+      });
+      document.querySelectorAll(".ap-ans-radio:checked").forEach(el => {
+        const qid = el.getAttribute("data-qid");
+        if (qid) pic.answers[qid] = el.value;
+      });
+
+      if (pic.answers["q_nama"]) pic.name = pic.answers["q_nama"];
+      if (pic.answers["q_dept"]) pic.dept = pic.answers["q_dept"];
+      if (pic.answers["q_grade"]) pic.grade = pic.answers["q_grade"];
+
+      if (apActiveFormStage === 1) {
+        pic.status = "prog";
+      } else {
+        pic.status = "done";
+        pic.s2Status = "Completed";
+        pic.s2Update = pic.answers["q_notes"] || pic.s2Update || "";
+        pic.s2Challenge = pic.answers["q_challenge"] || pic.s2Challenge || "";
+      }
+
+      await saveApParticipants(participants);
+      toast("✓ Tanggapan Anda telah berhasil disimpan!");
+
+      document.getElementById("ap-form-fill-hub").style.display = "none";
+      document.getElementById("ap-success-screen-hub").style.display = "flex";
+    }
+
+    function reloadApFormForEditing() {
+      document.getElementById("ap-success-screen-hub").style.display = "none";
+      loadApParticipantAnswers();
+    }
+
+    // INIT PAGE
+    async function initFormPage() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const cidParam = urlParams.get("cid");
+      const tidParam = urlParams.get("tid");
+      const stageParam = urlParams.get("stage");
+
+      // Load local storage first
+      try {
+        const localData = localStorage.getItem("clientsDb");
+        if (localData) clientsDb = JSON.parse(localData);
+      } catch (e) { console.warn(e); }
+
+      // Fetch latest database from Apps Script
+      try {
+        const res = await fetch(WEB_APP_URL + "?action=getClients");
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          clientsDb = json.data;
+          try { localStorage.setItem("clientsDb", JSON.stringify(clientsDb)); } catch(e){}
+        }
+      } catch (e) {
+        console.warn("Could not fetch remote database, using local fallback");
+      }
+
+      document.getElementById("loader").style.display = "none";
+
+      if (cidParam) currentClientId = cidParam;
+      else if (clientsDb.length > 0) currentClientId = clientsDb[0].id;
+
+      const client = clientsDb.find(x => String(x.id) === String(currentClientId));
+      if (client && client.trainings && client.trainings.length > 0) {
+        if (tidParam) currentTrainingId = tidParam;
+        else currentTrainingId = client.trainings[0].id;
+      }
+
+      showApGatewayScreen();
+
+      if (stageParam === "1") {
+        selectApGatewayOption("awal");
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", initFormPage);
+  </script>
+</body>
+</html>
