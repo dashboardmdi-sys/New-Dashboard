@@ -1794,6 +1794,8 @@ body.is-embedded { background: transparent !important; }
         sessionStorage.removeItem("mdi_cp_loggedInClient");
         sessionStorage.removeItem("mdi_cp_activeView");
         sessionStorage.removeItem("mdi_cp_activeFormId");
+        localStorage.removeItem("mdi_client_saved");
+        loggedInClient = null;
         location.reload();
       }
 

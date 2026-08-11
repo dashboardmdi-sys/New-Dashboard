@@ -432,17 +432,25 @@
     width: 18px;
     height: 18px;
   }
+  .dropdown {
+    position: relative;
+    z-index: 100;
+  }
+  .client-card:has(.dropdown-content.show),
+  .card:has(.dropdown-content.show) {
+    z-index: 1000 !important;
+  }
   .dropdown-content {
     display: none;
     position: absolute;
     right: 0;
     top: 100%;
-    z-index: 100;
+    z-index: 9999 !important;
     min-width: 140px;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.18);
     padding: 6px 0;
     margin-top: 4px;
   }
@@ -4163,11 +4171,16 @@ window.toggleDropdown = function(event, dropId){
   
   if (!show) {
     target.classList.add("show");
+    const parentCard = target.closest(".client-card, .card, .training-card, .dropdown");
+    if (parentCard) parentCard.style.zIndex = "1000";
   }
 };
 
 window.closeAllDropdowns = function() {
   document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+  document.querySelectorAll(".client-card, .card, .training-card, .dropdown").forEach(c => {
+    c.style.zIndex = "";
+  });
 };
 
 document.addEventListener("click", () => {

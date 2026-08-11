@@ -2920,7 +2920,12 @@ function applyClientConfig(client) {
 }
 
 let mainMenuEntranceShown = false;
-window.showMainMenu = function() {
+window.showMainMenu = function(skipHistory = false) {
+  if (!skipHistory) {
+    try {
+      history.pushState({ view: "menu" }, "", window.location.pathname);
+    } catch(e){}
+  }
   // First arrival only: hero settles in, then session cards deal in behind it.
   // Repeat visits (e.g. clicking back-to-menu mid-debrief) render instantly.
   // Captured once per call so both the instant render below and the async
@@ -3012,10 +3017,64 @@ window.logout = function() {
   sessionStorage.removeItem("mdp-logged-client");
   sessionStorage.removeItem("mdp-active-training");
   sessionStorage.removeItem("mdp-active-tab");
+  localStorage.removeItem("mdp-logged-client");
+  localStorage.removeItem("mdp-active-training");
+  localStorage.removeItem("mdp-active-tab");
+  loggedClient = null;
+  activeTrainingId = null;
+  try {
+    history.replaceState({ view: "gate" }, "", window.location.pathname);
+  } catch(e){}
   window.location.reload();
-}
+};
 
-function showDashboard(training) {
+// 🛡️ Browser Back (←) and Forward (→) Navigation Controller
+window.addEventListener("popstate", function(event) {
+  let loggedId = sessionStorage.getItem("mdp-logged-client") || localStorage.getItem("mdp-logged-client");
+  if (!loggedId || !clientsDb || !clientsDb.find(c => String(c.id).trim() === String(loggedId).trim())) {
+    loggedClient = null;
+    activeTrainingId = null;
+    hideLoader();
+    showPinGate();
+    return;
+  }
+
+  const state = event.state;
+  if (state && state.view === "dashboard" && state.trainingId) {
+    const t = (loggedClient.trainings || []).find(x => String(x.id).trim() === String(state.trainingId).trim());
+    if (t) {
+      activeTrainingId = String(t.id);
+      sessionStorage.setItem("mdp-active-training", activeTrainingId);
+      showDashboard(t, true);
+      return;
+    }
+  }
+
+  // Default: return to Main Menu
+  activeTrainingId = null;
+  sessionStorage.removeItem("mdp-active-training");
+  sessionStorage.removeItem("mdp-active-tab");
+  showMainMenu(true);
+});
+
+// Guard against BFCache restoring logged-in views after logout
+window.addEventListener("pageshow", function(event) {
+  if (event.persisted) {
+    let loggedId = sessionStorage.getItem("mdp-logged-client") || localStorage.getItem("mdp-logged-client");
+    if (!loggedId) {
+      loggedClient = null;
+      activeTrainingId = null;
+      showPinGate();
+    }
+  }
+});
+
+function showDashboard(training, skipHistory = false) {
+  if (!skipHistory) {
+    try {
+      history.pushState({ view: "dashboard", trainingId: training.id }, "", window.location.pathname + "#training-" + training.id);
+    } catch(e){}
+  }
   // 1. Start from client appearance config (stored in client.config)
   const clientCfg = loggedClient.config || {};
   Object.assign(CONFIG, {
