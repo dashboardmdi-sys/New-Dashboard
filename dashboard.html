@@ -3554,7 +3554,13 @@ function getExcelColumnLabel(colIndex) {
 function renderSpreadsheet() {
   const data = PARTICIPANTS;
   
-  let fields1 = FORM_CONFIG.fields || [];
+  let fields1 = (FORM_CONFIG.fields || []).filter(f => {
+    const fid = (f.id || "").toLowerCase();
+    const lbl = (f.label || "").toLowerCase().trim();
+    if (fid === "q_nama" || fid === "q_dept" || fid === "q_grade" || fid === "q_timestamp") return false;
+    if (lbl === "nama" || lbl === "nama lengkap" || lbl === "nama peserta" || lbl === "departemen" || lbl === "department:" || lbl === "department" || lbl === "grade" || lbl === "timestamp" || lbl === "#" || lbl === "no") return false;
+    return true;
+  });
   
   let totalCols = 5 + fields1.length;
   
