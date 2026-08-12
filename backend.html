@@ -3886,8 +3886,12 @@ function handleApStage1ExcelUpload(event) {
     const headers = rows[0].map(h => (h || "").toString().trim());
     const lowerHeaders = headers.map(h => h.toLowerCase());
     
-    let nameIdx = lowerHeaders.findIndex(h => h === "nama" || h === "name" || h === "nama lengkap" || h === "nama peserta");
-    if (nameIdx === -1) nameIdx = lowerHeaders.findIndex(h => h.includes("nama") || h.includes("name"));
+    let nameIdx = lowerHeaders.findIndex(h => h === "nama" || h === "name" || h === "nama lengkap" || h === "nama peserta" || h === "peserta");
+    if (nameIdx === -1) nameIdx = lowerHeaders.findIndex(h => h.includes("nama") || h.includes("name") || h.includes("peserta"));
+    if (nameIdx === -1) {
+      nameIdx = headers.findIndex((h, idx) => idx > 0 && h !== "#" && h.toLowerCase() !== "no");
+      if (nameIdx === -1) nameIdx = 0;
+    }
     
     let deptIdx = lowerHeaders.findIndex(h => h === "departemen" || h === "dept" || h === "department" || h === "department:" || h === "divisi" || h === "unit kerja");
     if (deptIdx === -1) deptIdx = lowerHeaders.findIndex(h => h.includes("dept") || h.includes("departemen") || h.includes("department"));
@@ -3965,6 +3969,8 @@ function handleApStage1ExcelUpload(event) {
     saveApParticipants(participants);
     toast(`✓ Berhasil mengimpor ${importedCount} data peserta dari Excel!`);
     renderApTrackerTable();
+    renderApSpreadsheet();
+    renderApConfiguratorUI();
     event.target.value = '';
   };
   reader.readAsArrayBuffer(file);
@@ -3995,8 +4001,8 @@ function handleApStage2ExcelUpload(event) {
     const headers = rows[0].map(h => (h || "").toString().trim());
     const lowerHeaders = headers.map(h => h.toLowerCase());
     
-    let nameIdx = lowerHeaders.findIndex(h => h === "nama" || h === "name" || h === "nama lengkap" || h === "nama peserta");
-    if (nameIdx === -1) nameIdx = lowerHeaders.findIndex(h => h.includes("nama") || h.includes("name"));
+    let nameIdx = lowerHeaders.findIndex(h => h === "nama" || h === "name" || h === "nama lengkap" || h === "nama peserta" || h === "peserta");
+    if (nameIdx === -1) nameIdx = lowerHeaders.findIndex(h => h.includes("nama") || h.includes("name") || h.includes("peserta"));
     
     let statusIdx = lowerHeaders.findIndex(h => h.includes("status"));
     let updateIdx = lowerHeaders.findIndex(h => h.includes("update") || h.includes("notes") || h.includes("progres") || h.includes("progress"));
@@ -4037,6 +4043,8 @@ function handleApStage2ExcelUpload(event) {
     saveApParticipants(participants);
     toast(`✓ Berhasil memperbarui data progres Tahap 2 untuk ${updatedCount} peserta dari Excel!`);
     renderApTrackerTable();
+    renderApSpreadsheet();
+    renderApSpreadsheet2();
     event.target.value = '';
   };
   reader.readAsArrayBuffer(file);
