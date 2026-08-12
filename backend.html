@@ -1596,19 +1596,29 @@ function updateLocalClientArray(c) {
 
 // Menarik data dari server saat halaman dimuat
 async function fetchDatabase() {
+  const hideLoader = () => { const l = document.getElementById("loader"); if(l) l.style.display = "none"; };
+
+  // Load localStorage cache first so page isn't blank if server is slow/unreachable
+  try {
+    const cached = localStorage.getItem("mdp-clients-db");
+    if(cached) { const parsed = JSON.parse(cached); if(Array.isArray(parsed)) clientsDb = parsed; }
+  } catch(e) {}
+
   try {
     const res = await fetch(WEB_APP_URL + "?action=getClients");
     const json = await res.json();
-    if(json.success) {
+    if(json.success && Array.isArray(json.data)) {
       clientsDb = json.data;
-      document.getElementById("loader").style.display = "none";
-      initApp();
+      try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
     } else {
-      toast("⚠️ Gagal mengambil database");
+      toast("⚠️ Gagal mengambil database dari server");
     }
   } catch(e) {
-    toast("⚠️ Error koneksi database");
-    console.error(e);
+    console.error("fetchDatabase error:", e);
+    if(clientsDb.length === 0) toast("⚠️ Tidak dapat terhubung ke server. Pastikan terhubung ke internet.");
+  } finally {
+    hideLoader();
+    initApp();
   }
 }
 
@@ -2905,6 +2915,7 @@ let apCurrentSectionIndex = 0;
 let apRenderedSectionIndices = [];
 let apCollapsedSections = {};
 let apAutosaveTimeout = null;
+let apBackendSectionFilter = "all";
 
 function escapeApHtml(str) {
   if (str === null || str === undefined) return '';
@@ -3003,7 +3014,9 @@ function saveApParticipants(participants) {
 function getApActionPlans(participant, config) {
   const cfg = config || getApFormConfig();
   const plans = [];
-  if (!participant || !participant.answers) return plans;
+  if (!participant || !participant.answers) {
+    return (participant && Array.isArray(participant.extractedPlans)) ? participant.extractedPlans : plans;
+  }
 
   const identityIds = ["q_nama", "q_dept", "q_grade", "q_timestamp"];
   const isSectionStage2 = (name) => {
@@ -3042,6 +3055,9 @@ function getApActionPlans(participant, config) {
       }
     }
   });
+  if (plans.length === 0 && Array.isArray(participant.extractedPlans) && participant.extractedPlans.length > 0) {
+    return participant.extractedPlans;
+  }
   return plans;
 }
 
@@ -3545,6 +3561,16 @@ function resetApFormSchema() {
   }
 }
 
+function filterApBackendSections(filter, btnEl) {
+  apBackendSectionFilter = filter;
+  ['ap-btn-filter-all', 'ap-btn-filter-t1', 'ap-btn-filter-t2'].forEach(id => {
+    const b = document.getElementById(id);
+    if(b) { b.style.background = ''; b.style.color = ''; }
+  });
+  if(btnEl) { btnEl.style.background = 'var(--navy)'; btnEl.style.color = '#fff'; }
+  renderApConfiguratorUI();
+}
+
 function addApNewSection() {
   const config = getApFormConfig();
   syncApDOMToConfig(config);
@@ -3998,6 +4024,71 @@ function handleApStage1ExcelUpload(event) {
 
     saveApParticipants(participants);
     toast(`✓ Berhasil mengimpor ${importedCount} data peserta dari Excel!`);
+    renderApTrackerTable();
+    event.target.value = '';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function handleApExcelUpload(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    let data;
+    try { data = new Uint8Array(e.target.result); } catch(err) { alert("Gagal membaca file Excel."); return; }
+    const workbook = XLSX.read(data, {type: 'array'});
+    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+    if(rows.length < 2) { alert("File kosong atau tidak memiliki data."); return; }
+
+    const headers = rows[0].map(h => (h || "").toString().trim());
+    const lowerHeaders = headers.map(h => h.toLowerCase());
+    const config = getApFormConfig();
+
+    let nameIdx = lowerHeaders.findIndex(h => h === "nama" || h === "name" || h === "nama lengkap" || h === "nama peserta");
+    if(nameIdx === -1) nameIdx = lowerHeaders.findIndex(h => h.includes("nama") || h.includes("name"));
+    if(nameIdx === -1) { alert("Kolom 'Nama' tidak ditemukan di file Excel."); return; }
+
+    let deptIdx = lowerHeaders.findIndex(h => h.includes("dept") || h.includes("departemen") || h.includes("divisi") || h.includes("unit"));
+    let gradeIdx = lowerHeaders.findIndex(h => h.includes("grade") || h.includes("level") || h.includes("jabatan"));
+
+    const participants = getApParticipants();
+    let added = 0, updated = 0;
+
+    for(let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if(!row || row.length === 0) continue;
+      const name = (row[nameIdx] || "").toString().trim();
+      if(!name) continue;
+
+      let p = participants.find(x => x.name.toLowerCase() === name.toLowerCase());
+      if(!p) {
+        const newNo = participants.length > 0 ? Math.max(...participants.map(x => x.no || 0)) + 1 : i;
+        p = { no: newNo, name, dept: "-", grade: "-", status: "prog", answers: {} };
+        participants.push(p);
+        added++;
+      } else {
+        updated++;
+      }
+
+      if(deptIdx !== -1 && row[deptIdx]) p.dept = (row[deptIdx] || "").toString().trim();
+      if(gradeIdx !== -1 && row[gradeIdx]) p.grade = (row[gradeIdx] || "").toString().trim();
+      if(!p.answers) p.answers = {};
+
+      // Map Excel columns to form config fields by matching label text
+      (config.fields || []).forEach(f => {
+        const lbl = (f.label || "").toLowerCase();
+        const colIdx = lowerHeaders.findIndex(h => h === lbl || (lbl.length > 8 && h.includes(lbl.substring(0, 20))));
+        if(colIdx !== -1 && row[colIdx] !== undefined && row[colIdx] !== null) {
+          const val = (row[colIdx] || "").toString().trim();
+          if(val) p.answers[f.id] = val;
+        }
+      });
+    }
+
+    saveApParticipants(participants);
+    toast(`✓ Import Tahap 1 selesai: ${added} peserta baru, ${updated} peserta diperbarui.`);
     renderApTrackerTable();
     event.target.value = '';
   };

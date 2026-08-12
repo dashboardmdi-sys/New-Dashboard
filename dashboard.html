@@ -1842,7 +1842,8 @@ function loadAndMergeParticipants() {
       s2Update: p1.s2Update || "",
       s2Challenge: p1.s2Challenge || "",
             clientCompany: p1.clientCompany || null,
-      picNoStage1: p1.no
+      picNoStage1: p1.no,
+      extractedPlans: Array.isArray(p1.extractedPlans) ? p1.extractedPlans : []
     });
   });
 
@@ -1856,9 +1857,9 @@ function getActualStatus(p) {
 }
 
 function getActionPlans(p) {
-  if (!p.answers) return [];
+  if (!p.answers) return Array.isArray(p.extractedPlans) ? p.extractedPlans : [];
   const plans = [];
-  if (typeof FORM_CONFIG !== 'undefined' && FORM_CONFIG && FORM_CONFIG.fields) {
+  if (typeof FORM_CONFIG !== 'undefined' && FORM_CONFIG && FORM_CONFIG.fields && FORM_CONFIG.fields.length) {
     const identityIds = ["q_nama", "q_dept", "q_grade", "q_timestamp"];
     const isSectionStage2 = (name) => {
       const n = (name || "").toLowerCase();
@@ -1898,6 +1899,9 @@ function getActionPlans(p) {
         }
       }
     });
+  }
+  if (plans.length === 0 && Array.isArray(p.extractedPlans) && p.extractedPlans.length > 0) {
+    return p.extractedPlans;
   }
   return plans;
 }
