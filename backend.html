@@ -2976,6 +2976,9 @@ function saveApFormConfig(config) {
   t.actionPlanFormConfig = config;
   updateLocalClientArray(c);
   apiUpdateClient(c);
+  // Sync to frontend localStorage keys for dashboard.html
+  const fId = `form_${currentTrainingId}`;
+  try { localStorage.setItem(`mdi_form_config_${fId}`, JSON.stringify(config)); } catch(e){}
 }
 
 function getApParticipants() {
@@ -2992,6 +2995,9 @@ function saveApParticipants(participants) {
   t.actionPlan = participants;
   updateLocalClientArray(c);
   apiUpdateClient(c);
+  // Sync to frontend localStorage keys for dashboard.html
+  const fId = `form_${currentTrainingId}`;
+  try { localStorage.setItem(`mdi_participants_${fId}`, JSON.stringify(participants)); } catch(e){}
 }
 
 function getApActionPlans(participant, config) {
@@ -3062,6 +3068,14 @@ function switchApTab(tabId, btnEl) {
 }
 
 function notifyIframeTrainingChanged() {
+  // Sync data to frontend localStorage keys for dashboard.html
+  if (currentTrainingId) {
+    const fId = `form_${currentTrainingId}`;
+    const config = getApFormConfig();
+    const participants = getApParticipants();
+    try { localStorage.setItem(`mdi_form_config_${fId}`, JSON.stringify(config)); } catch(e){}
+    try { localStorage.setItem(`mdi_participants_${fId}`, JSON.stringify(participants)); } catch(e){}
+  }
   switchApTab('tracker');
 }
 
