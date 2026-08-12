@@ -1859,25 +1859,20 @@ function getActionPlans(p) {
   if (!p.answers) return [];
   const plans = [];
   if (typeof FORM_CONFIG !== 'undefined' && FORM_CONFIG && FORM_CONFIG.fields) {
+    const identityIds = ["q_nama", "q_dept", "q_grade", "q_timestamp"];
+    const isSectionStage2 = (name) => {
+      const n = (name || "").toLowerCase();
+      return n.includes("progress") || n.includes("challenge") || n.includes("penyelesaian") || n.includes("stage 2") || n.includes("tahap 2") || n.includes("30 hari");
+    };
+
     FORM_CONFIG.fields.forEach(f => {
-      if (f.id.startsWith("q_custom_")) {
-        const lbl = f.label.toLowerCase();
-        // Check for common column headers that represent action plans
-        if (lbl.includes("rencana tindakan") || lbl.includes("action plan") || lbl.includes("commitment action") || lbl.includes("komitmen") || lbl.includes("tindakan")) {
-          // EXCLUDE date, time, and status columns that happen to contain the keyword
-          if (lbl.includes("kapan") || lbl.includes("waktu") || lbl.includes("tanggal") || lbl.includes("date") || lbl.includes("when") || lbl.includes("status") || lbl.includes("penyelesaian") || lbl.includes("progress")) {
-            return; // skip this column
-          }
-          
-          const ans = p.answers[f.id];
-          if (ans && String(ans).trim() !== "" && ans !== "-") {
-            // Split by newline, comma, period, semicolon, and bullet numbers
-            let splitted = String(ans).split(/\n|;|,|\d+[\.\)]\s*|\.|\-\s+/).map(s => s ? s.trim().replace(/^[\-\•\*]\s*/, '') : '').filter(s => s.length > 2 && s.toLowerCase() !== "null");
-            if (splitted.length > 0) plans.push(...splitted);
-            else plans.push(ans);
-          }
-        }
-      } else if (f.id.startsWith("q_action")) {
+      // Skip identity fields and Stage 2 section fields
+      if (identityIds.includes(f.id)) return;
+      if (f.id === "q_notes" || f.id === "q_challenge") return;
+      if (f.section && isSectionStage2(f.section)) return;
+
+      // Include q_action* fields and q_custom_* fields from non-Stage2 sections
+      if (f.id.startsWith("q_action") || f.id.startsWith("q_custom_")) {
         const ans = p.answers[f.id];
         if (ans && String(ans).trim() !== "" && ans !== "-") {
           let splitted = String(ans).split(/\n|;|,|\d+[\.\)]\s*|\.|\-\s+/).map(s => s ? s.trim().replace(/^[\-\•\*]\s*/, '') : '').filter(s => s.length > 2 && s.toLowerCase() !== "null");
