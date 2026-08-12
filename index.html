@@ -3107,6 +3107,7 @@ function showDashboard(training, skipHistory = false) {
     komentarTrainer: training.komentarTrainer || "",
     dokumentasi:   training.dokumentasi   || [],
     actionPlan:    training.actionPlan    || [],
+    actionPlanFormConfig: training.actionPlanFormConfig || null,
     aiSummary:     training.aiSummary     || null,
     trainerNames:  training.trainerNames  || "",
     trainerPhotos: training.trainerPhotos || "",
@@ -4591,6 +4592,40 @@ function render(flash){
 }
 
 function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+// Fallback: derive Action Plan commitments straight from answers + form config
+// when a participant has no precomputed extractedPlans (e.g. imported before
+// that field existed, or the training's actionPlanFormConfig was set later).
+function deriveApPlansFromAnswers(answers, formConfig) {
+  if (!answers || !formConfig || !Array.isArray(formConfig.fields)) return [];
+  const plans = [];
+  const identityIds = ["q_nama", "q_dept", "q_grade", "q_timestamp"];
+  const isSectionStage2 = (name) => {
+    const n = (name || "").toLowerCase();
+    return n.includes("progress") || n.includes("challenge") || n.includes("penyelesaian") || n.includes("stage 2") || n.includes("tahap 2") || n.includes("30 hari");
+  };
+  formConfig.fields.forEach(f => {
+    if (identityIds.includes(f.id)) return;
+    if (f.id === "q_notes" || f.id === "q_challenge") return;
+    if (f.section && isSectionStage2(f.section)) return;
+    const lbl = (f.label || "").toLowerCase();
+    if (
+      lbl.includes("tantangan") || lbl.includes("kendala") || lbl.includes("hambatan") ||
+      lbl.includes("hambat") || lbl.includes("challenge") || lbl.includes("barrier") ||
+      lbl.includes("roadblock") || lbl.includes("manfaat") || lbl.includes("dukungan") ||
+      lbl.includes("indikator") || lbl.includes("tanggal") || lbl.includes("waktu") || lbl.includes("kapan")
+    ) return;
+    if (f.id.startsWith("q_action") || f.id.startsWith("q_custom_")) {
+      const ans = answers[f.id];
+      if (ans && String(ans).trim() !== "" && ans !== "-" && ans !== "—") {
+        let splitted = String(ans).split(/\n|;|\d+[\.\\)]\s*|\-\s+/).map(s => s ? s.trim().replace(/^[\-\•\*]\s*/, '') : '').filter(s => s.length > 2 && s.toLowerCase() !== "null");
+        if (splitted.length > 0) plans.push(...splitted);
+        else plans.push(ans);
+      }
+    }
+  });
+  return plans;
+}
 
 /* --- Podium --- */
 function renderPodium(tab){
@@ -6451,8 +6486,11 @@ function renderActiveClientSections(){
          if (!p) return null;
          let st = (p.status === "done" || p.status === "not_done") ? p.status : "prog";
          if (p.s2Status === "100%") st = "done";
+         const plans = (Array.isArray(p.extractedPlans) && p.extractedPlans.length > 0)
+           ? p.extractedPlans
+           : deriveApPlansFromAnswers(p.answers, CONFIG.actionPlanFormConfig);
          return {
-           no: p.no, name: p.name, dept: p.dept, plans: p.extractedPlans || [], status: st,
+           no: p.no, name: p.name, dept: p.dept, plans: plans, status: st,
            s2Update: (p.answers && p.answers['q_notes']) ? p.answers['q_notes'] : (p.s2Update || ""),
            s2Challenge: p.s2Challenge || ""
          };
