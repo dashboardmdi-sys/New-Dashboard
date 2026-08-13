@@ -158,6 +158,30 @@
   .ring .track{stroke:var(--n200)}
   .ring .prog{stroke:var(--primary-600);stroke-linecap:round;transition:stroke-dashoffset .25s linear}
 
+  /* ============ COMPACT MOBILE HEADER ============ */
+  @media (max-width:640px){
+    .header-inner{padding:8px 14px;gap:6px 8px;flex-wrap:wrap}
+    .logo,.logo-mdi{height:22px}
+    .logo-sep{display:none}
+    .btn-back{width:28px;height:28px}
+    .btn-back svg{width:14px;height:14px}
+    .title-block{min-width:0;flex:1;order:1}
+    .title-block h1{
+      font-size:.82rem;
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+      overflow:hidden;text-overflow:ellipsis;white-space:normal;line-height:1.25;
+    }
+    .title-block p{
+      font-size:.58rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      max-width:100%;margin-top:1px;
+    }
+    .updated{display:none}
+    .header-right{gap:6px;order:2;flex-basis:100%;justify-content:flex-start}
+    .theme-toggle,.logout-btn,.refresh-wrap{width:28px;height:28px}
+    .theme-toggle svg{width:14px;height:14px}
+    .lang-toggle button{padding:4px 8px;font-size:10px}
+  }
+
   /* ============ LAYOUT ============ */
   main{max-width:1280px;margin:0 auto;padding:28px 24px 72px;position:relative;z-index:1}
   .overline{
