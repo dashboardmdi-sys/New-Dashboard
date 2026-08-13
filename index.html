@@ -3233,8 +3233,10 @@ async function loadClientsDbAsync() {
   }
 
   loadClientsActivePromise = (async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // never let a stalled network hang the login button forever
     try {
-      const res = await fetch(WEB_APP_URL + "?action=getClients");
+      const res = await fetch(WEB_APP_URL + "?action=getClients", { signal: controller.signal });
       const json = await res.json();
       if(json && json.success && Array.isArray(json.data)) {
         clientsDb = json.data;
@@ -3242,6 +3244,8 @@ async function loadClientsDbAsync() {
       }
     } catch(e) {
       console.error("Failed to load clients database:", e);
+    } finally {
+      clearTimeout(timeoutId);
     }
   })();
 

@@ -1604,8 +1604,10 @@ async function fetchDatabase() {
     if(cached) { const parsed = JSON.parse(cached); if(Array.isArray(parsed)) clientsDb = parsed; }
   } catch(e) {}
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // never let a stalled network leave the loader stuck forever
   try {
-    const res = await fetch(WEB_APP_URL + "?action=getClients");
+    const res = await fetch(WEB_APP_URL + "?action=getClients", { signal: controller.signal });
     const json = await res.json();
     if(json.success && Array.isArray(json.data)) {
       clientsDb = json.data;
@@ -1617,6 +1619,7 @@ async function fetchDatabase() {
     console.error("fetchDatabase error:", e);
     if(clientsDb.length === 0) toast("⚠️ Tidak dapat terhubung ke server. Pastikan terhubung ke internet.");
   } finally {
+    clearTimeout(timeoutId);
     hideLoader();
     initApp();
   }
