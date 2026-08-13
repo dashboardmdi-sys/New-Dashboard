@@ -386,6 +386,24 @@
   [data-theme="dark"] .theme-toggle .icon-sun{display:block}
   [data-theme="dark"] .theme-toggle .icon-moon{display:none}
 
+  /* ============ LANGUAGE TOGGLE (ID/EN) ============ */
+  .lang-toggle{
+    display:inline-flex;align-items:center;background:var(--n100);border:1px solid var(--card-border);
+    border-radius:20px;padding:3px;gap:2px;flex-shrink:0;
+  }
+  .lang-toggle button{
+    border:none;background:transparent;font-family:var(--font-head);font-size:11px;font-weight:800;
+    letter-spacing:.3px;padding:6px 11px;border-radius:16px;cursor:pointer;color:var(--n500);
+    transition:background .2s,color .2s;line-height:1;
+  }
+  .lang-toggle button.active{background:var(--navy);color:#fff}
+  .lang-toggle button:hover:not(.active){color:var(--navy)}
+  [data-theme="dark"] .lang-toggle button.active{background:var(--navy);color:#0b1220}
+  .lang-toggle-pin{position:absolute;top:24px;right:28px;z-index:5}
+  @media (max-width:640px){
+    .lang-toggle-pin{position:static;margin-bottom:16px;align-self:flex-end}
+  }
+
   /* ============ DARK MODE ============ */
   [data-theme="dark"]{
     --n50:#111113; --n100:#1e1e22; --n200:#2a2a30; --n300:#3e3e46;
@@ -1806,7 +1824,7 @@
 <div id="loader" style="position:fixed; inset:0; background:radial-gradient(circle at center, #0b1e36 0%, #001227 100%); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
   <div class="loader-spinner-premium"></div>
   <div style="margin-top:20px; font-family:var(--font-head); font-weight:700; color:#fff; font-size: 1.05rem; letter-spacing: 0.5px;">MDI TACK Portal</div>
-  <div style="margin-top:6px; font-family:var(--font-body); font-weight:500; color:rgba(255,255,255,0.4); font-size: 0.78rem;">Memuat data secara real-time...</div>
+  <div style="margin-top:6px; font-family:var(--font-body); font-weight:500; color:rgba(255,255,255,0.4); font-size: 0.78rem;" data-i18n="loader.loading">Memuat data secara real-time...</div>
 </div>
 
 <div class="glow"></div>
@@ -1815,36 +1833,40 @@
 <div id="pinGate" style="display:none">
   <!-- LEFT PANEL: Login form -->
   <div class="login-form-panel">
+    <div class="lang-toggle lang-toggle-pin" id="langTogglePin" role="group" aria-label="Bahasa / Language">
+      <button type="button" data-lang="id">ID</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
     <img src="Asset 7-8 (1).png" alt="MDI Logo" class="login-form-logo">
     <div class="pin-box" id="pinBox">
-      <div class="pin-title">Selamat Datang!</div>
-      <p class="pin-sub">Masukkan nama perusahaan dan PIN akses untuk melanjutkan ke dashboard.</p>
+      <div class="pin-title" data-i18n="login.welcome">Selamat Datang!</div>
+      <p class="pin-sub" data-i18n="login.instruction">Masukkan nama perusahaan dan PIN akses untuk melanjutkan ke dashboard.</p>
 
       <!-- LOGIN FORM -->
       <div class="login-step" id="loginForm">
         <div class="company-input-wrap">
-          <label class="lf-label-travel">Nama Perusahaan</label>
-          <input type="text" id="companyNameInput" placeholder="contoh: PT Maju Bersama" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+          <label class="lf-label-travel" data-i18n="login.companyLabel">Nama Perusahaan</label>
+          <input type="text" id="companyNameInput" placeholder="contoh: PT Maju Bersama" data-i18n-placeholder="login.companyPlaceholder" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
         </div>
 
         <div class="company-input-wrap" style="margin-bottom: 24px;">
-          <label class="lf-label-travel">PIN Akses</label>
-          <input type="password" id="companyPinInput" placeholder="Masukkan PIN Akses" inputmode="numeric" minlength="4" maxlength="6">
+          <label class="lf-label-travel" data-i18n="login.pinLabel">PIN Akses</label>
+          <input type="password" id="companyPinInput" placeholder="Masukkan PIN Akses" data-i18n-placeholder="login.pinPlaceholder" inputmode="numeric" minlength="4" maxlength="6">
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
           <label style="display:flex; align-items:center; gap:8px; font-size:0.82rem; color:var(--n600); cursor:pointer; user-select:none; margin:0;">
             <input type="checkbox" id="rememberMe" style="accent-color:var(--navy); cursor:pointer; width:16px; height:16px;">
-            Remember me
+            <span data-i18n="login.rememberMe">Remember me</span>
           </label>
         </div>
 
-        <button class="btn-next" id="btnSubmitLogin">Masuk Dashboard</button>
+        <button class="btn-next" id="btnSubmitLogin" data-i18n="login.submit">Masuk Dashboard</button>
       </div>
 
       <div class="pin-err" id="pinErr"></div>
 
-      <p class="login-form-footer">Dengan melanjutkan, Anda menyetujui kebijakan penggunaan portal MDI TACK.</p>
+      <p class="login-form-footer" data-i18n="login.footer">Dengan melanjutkan, Anda menyetujui kebijakan penggunaan portal MDI TACK.</p>
     </div>
   </div>
 
@@ -1856,7 +1878,7 @@
 
 <header>
   <div class="header-inner">
-    <button id="btnBackToMenu" class="btn-back" onclick="sessionStorage.removeItem('mdp-active-training'); sessionStorage.removeItem('mdp-active-tab'); activeTrainingId=null; showMainMenu();" title="Kembali ke Beranda" aria-label="Kembali ke Beranda">
+    <button id="btnBackToMenu" class="btn-back" onclick="sessionStorage.removeItem('mdp-active-training'); sessionStorage.removeItem('mdp-active-tab'); activeTrainingId=null; showMainMenu();" title="Kembali ke Beranda" data-i18n-title="header.backToHome" aria-label="Kembali ke Beranda" data-i18n-aria="header.backToHome">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
     </button>
     <img src="Asset 7-8 (1).png" alt="MDI" class="logo-mdi" data-animate>
@@ -1871,14 +1893,18 @@
         <span class="live-dot"></span><span id="liveText">LIVE</span>
       </span>
       <div class="updated" data-animate>
-        Diperbarui <b id="lastUpdated">—</b><br>
+        <span data-i18n="header.updatedPrefix">Diperbarui</span> <b id="lastUpdated">—</b><br>
         <span id="nextIn">sinkronisasi otomatis tiap 10 dtk</span>
       </div>
-      <button class="theme-toggle" id="themeToggle" data-animate title="Ganti tema terang/gelap" aria-label="Toggle dark mode">
+      <div class="lang-toggle" id="langToggleHeader" data-animate role="group" aria-label="Bahasa / Language">
+        <button type="button" data-lang="id">ID</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+      <button class="theme-toggle" id="themeToggle" data-animate title="Ganti tema terang/gelap" data-i18n-title="header.themeToggle" aria-label="Toggle dark mode">
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
       </button>
-      <div class="refresh-wrap" data-animate title="Muat ulang data sekarang">
+      <div class="refresh-wrap" data-animate title="Muat ulang data sekarang" data-i18n-title="header.refreshTitle">
         <svg class="ring" viewBox="0 0 38 38">
           <circle class="track" cx="19" cy="19" r="17.5"></circle>
           <circle class="prog" id="ringProg" cx="19" cy="19" r="17.5"></circle>
@@ -1887,7 +1913,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
         </button>
       </div>
-      <button class="logout-btn" id="btnLogout" onclick="logout()" title="Keluar dari Akun" aria-label="Logout" style="background: none; border: 1.5px solid var(--card-border); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: var(--secondary-base); cursor: pointer; transition: all 0.2s; flex-shrink: 0;" onmouseover="this.style.background='rgba(238, 63, 52, 0.08)'; this.style.borderColor='var(--secondary-base)';" onmouseout="this.style.background='none'; this.style.borderColor='var(--card-border)';">
+      <button class="logout-btn" id="btnLogout" onclick="logout()" title="Keluar dari Akun" data-i18n-title="header.logout" aria-label="Logout" style="background: none; border: 1.5px solid var(--card-border); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: var(--secondary-base); cursor: pointer; transition: all 0.2s; flex-shrink: 0;" onmouseover="this.style.background='rgba(238, 63, 52, 0.08)'; this.style.borderColor='var(--secondary-base)';" onmouseout="this.style.background='none'; this.style.borderColor='var(--card-border)';">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
     </div>
@@ -1904,27 +1930,27 @@
     <div class="mm-hero-content">
       <div class="mm-hero-badge">
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <span id="mmRealtimeDate">Memuat tanggal...</span>
+        <span id="mmRealtimeDate" data-i18n="mm.loadingDate">Memuat tanggal...</span>
       </div>
       <h2 class="mm-hero-title">
-        Selamat Datang di <span id="mmClientName" style="color: var(--primary-base); text-shadow: 0 2px 10px rgba(255,210,4,0.15);"></span>
+        <span data-i18n="mm.welcomePrefix">Selamat Datang di</span> <span id="mmClientName" style="color: var(--primary-base); text-shadow: 0 2px 10px rgba(255,210,4,0.15);"></span>
       </h2>
-      <p class="mm-hero-desc">
+      <p class="mm-hero-desc" data-i18n="mm.desc">
         Akses ringkasan &amp; dashboard laporan pelatihan perusahaan anda pada kartu sesi berikut.
       </p>
     </div>
 
     <!-- Client Quick Stats Card -->
     <div class="mm-hero-stats">
-      <div class="mm-stats-label">Ringkasan Client</div>
+      <div class="mm-stats-label" data-i18n="mm.summaryLabel">Ringkasan Client</div>
       <div class="mm-stats-rows">
         <div class="mm-stats-row bordered">
-          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.75);">Total Sesi:</span>
+          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.75);" data-i18n="mm.totalSessions">Total Sesi:</span>
           <span style="font-family: var(--font-mono); font-size: 0.95rem; color: #ffd204; font-weight: 700;" id="mmTotalSessionsCount">0 Sesi</span>
         </div>
         <div class="mm-stats-row">
-          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.75);">Status Server:</span>
-          <span style="font-family: var(--font-head); font-size: 0.72rem; color: #4ade80; font-weight: 800; background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.25); padding: 2px 8px; border-radius: 20px;">ONLINE</span>
+          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.75);" data-i18n="mm.serverStatus">Status Server:</span>
+          <span style="font-family: var(--font-head); font-size: 0.72rem; color: #4ade80; font-weight: 800; background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.25); padding: 2px 8px; border-radius: 20px;" data-i18n="mm.online">ONLINE</span>
         </div>
       </div>
     </div>
@@ -1934,9 +1960,9 @@
   <div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--n200); padding-bottom: 14px;">
     <h3 style="font-family: var(--font-head); font-size: 1.15rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 8px;">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      Daftar Sesi Pelatihan
+      <span data-i18n="mm.sessionListTitle">Daftar Sesi Pelatihan</span>
     </h3>
-    <span style="font-size: 0.78rem; color: var(--n500); font-weight: 500;">Pilih sesi untuk melihat detail</span>
+    <span style="font-size: 0.78rem; color: var(--n500); font-weight: 500;" data-i18n="mm.sessionListHint">Pilih sesi untuk melihat detail</span>
   </div>
 
   <div id="mmTrainingsGrid" class="mm-card-grid">
@@ -1950,42 +1976,42 @@
     <div class="nav-pills">
       <a href="#pane-prepost" class="nav-pill active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-        Evaluasi Pre &amp; Post
+        <span data-i18n="nav.prepost">Evaluasi Pre &amp; Post</span>
       </a>
       <a href="#pane-actionplan" class="nav-pill" id="navPillAp">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-        Action Plan
+        <span data-i18n="nav.actionplan">Action Plan</span>
       </a>
       <a href="#pane-evaluasi" class="nav-pill" id="navPillEval">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Evaluasi
+        <span data-i18n="nav.evaluasi">Evaluasi</span>
       </a>
       <a href="#pane-komentar" class="nav-pill" id="navPillKomentar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Komentar Trainer
+        <span data-i18n="nav.komentar">Komentar Trainer</span>
       </a>
       <a href="#pane-dokumentasi" class="nav-pill" id="navPillDoc">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-        Dokumentasi Training
+        <span data-i18n="nav.dokumentasi">Dokumentasi Training</span>
       </a>
       <a href="#pane-leadership" class="nav-pill" id="navPillLeadership">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
-        Gaya Kepemimpinan
+        <span data-i18n="nav.leadership">Gaya Kepemimpinan</span>
       </a>
       <a href="#pane-wewenang" class="nav-pill" id="navPillWewenang">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        Analisis Wewenang
+        <span data-i18n="nav.wewenang">Analisis Wewenang</span>
       </a>
       <a href="#pane-interpersonal" class="nav-pill" id="navPillInterpersonal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-        Gaya Interpersonal
+        <span data-i18n="nav.interpersonal">Gaya Interpersonal</span>
       </a>
     </div>
   </div>
 
   <!-- ============ KPI ============ -->
   <div class="dash-pane active" id="pane-prepost">
-    <div class="overline" data-animate id="section-prepost"><span class="num">01</span> Ringkasan Program</div>
+    <div class="overline" data-animate id="section-prepost"><span class="num">01</span> <span data-i18n="sec.prepost01">Ringkasan Program</span></div>
     <section class="kpi-grid" id="kpiGrid">
 
     <div class="card kpi" data-animate id="kpiPeserta">
@@ -1993,8 +2019,8 @@
       <div class="icon" style="background:var(--navy-100);color:var(--navy)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       </div>
-      <span class="label">Total Peserta</span>
-      <div class="value"><span id="vPeserta" class="skeleton">00</span><span class="unit">orang</span></div>
+      <span class="label" data-i18n="pp.totalPeserta">Total Peserta</span>
+      <div class="value"><span id="vPeserta" class="skeleton">00</span><span class="unit" data-i18n="pp.orang">orang</span></div>
       <div class="sub" id="sPeserta">Program Country MDP</div>
     </div>
 
@@ -2003,7 +2029,7 @@
       <div class="icon" style="background:var(--primary-100);color:var(--primary-700)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
       </div>
-      <span class="label">Rata-rata Nilai Pre Test</span>
+      <span class="label" data-i18n="pp.avgPreLabel">Rata-rata Nilai Pre Test</span>
       <div class="value"><span id="vPre" class="skeleton">00,0</span></div>
       <div class="sub" id="sPre">min — · maks —</div>
     </div>
@@ -2013,7 +2039,7 @@
       <div class="icon" style="background:#FDECEC;color:var(--secondary-600)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
       </div>
-      <span class="label">Rata-rata Nilai Post Test</span>
+      <span class="label" data-i18n="pp.avgPostLabel">Rata-rata Nilai Post Test</span>
       <div class="value"><span id="vPost" class="skeleton">—</span></div>
       <div class="sub" id="sPost">menunggu data post test</div>
     </div>
@@ -2023,18 +2049,18 @@
       <div class="icon" style="background:#E7F6EC;color:var(--success)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
       </div>
-      <span class="label">Peningkatan Pemahaman</span>
+      <span class="label" data-i18n="pp.deltaLabel">Peningkatan Pemahaman</span>
       <div class="value"><span id="vDelta" class="skeleton">—</span></div>
       <div class="sub" id="sDelta">rata-rata seluruh peserta</div>
     </div>
   </section>
 
   <!-- ============ PODIUM + MAIN CHART ============ -->
-  <div class="overline" data-animate><span class="num">02</span> Performa Peserta</div>
+  <div class="overline" data-animate><span class="num">02</span> <span data-i18n="sec.prepost02">Performa Peserta</span></div>
   <section class="mid-grid">
     <div class="card" data-animate>
       <div class="card-head">
-        <h2>&#127942; Peringkat Peserta</h2>
+        <h2>&#127942; <span data-i18n="pp.peringkatTitle2">Peringkat Peserta</span></h2>
         <span class="hint" id="podiumHint">berdasarkan pre test</span>
       </div>
       <div class="podium-tabs">
@@ -2042,13 +2068,13 @@
         <button class="podium-tab" data-podtab="bottom" id="tabBottom">&#9660; Bottom 3</button>
       </div>
       <div class="podium-list" id="podiumList">
-        <div class="podium-empty">Memuat data…</div>
+        <div class="podium-empty" data-i18n="pp.podiumEmpty">Memuat data…</div>
       </div>
     </div>
 
     <div class="card" data-animate>
       <div class="card-head">
-        <h2>Perbandingan Pre &amp; Post Test</h2>
+        <h2 data-i18n="pp.compareTitle">Perbandingan Pre &amp; Post Test</h2>
         <div class="legend">
           <span><i style="background:#002c63"></i>Pre Test</span>
           <span><i style="background:#ffd204"></i>Post Test</span>
@@ -2061,25 +2087,25 @@
   </section>
 
   <!-- ============ DISTRIBUTION + TABLE ============ -->
-  <div class="overline" data-animate><span class="num">03</span> Detail &amp; Distribusi Nilai</div>
+  <div class="overline" data-animate><span class="num">03</span> <span data-i18n="sec.prepost03">Detail &amp; Distribusi Nilai</span></div>
   <section class="bottom-grid">
     <div class="card" data-animate>
       <div class="card-head">
-        <h2>Distribusi Nilai</h2>
-        <span class="hint">jumlah peserta per rentang</span>
+        <h2 data-i18n="pp.distTitle">Distribusi Nilai</h2>
+        <span class="hint" data-i18n="pp.distHint">jumlah peserta per rentang</span>
       </div>
       <div class="chart-fixed"><canvas id="chartDist"></canvas></div>
     </div>
 
     <div class="card" data-animate>
       <div class="card-head">
-        <h2>Rekap Nilai Peserta</h2>
-        <span class="hint">klik judul kolom untuk mengurutkan</span>
+        <h2 data-i18n="pp.recapTitle">Rekap Nilai Peserta</h2>
+        <span class="hint" data-i18n="pp.sortHint">klik judul kolom untuk mengurutkan</span>
       </div>
       <div class="table-tools">
         <label class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="searchInput" placeholder="Cari nama peserta…" autocomplete="off">
+          <input type="text" id="searchInput" placeholder="Cari nama peserta…" data-i18n-placeholder="pp.searchPlaceholder" autocomplete="off">
         </label>
         <span class="count-pill" id="rowCount">0 peserta</span>
       </div>
@@ -2088,16 +2114,16 @@
           <thead>
             <tr>
               <th data-sort="rank">#<span class="arrow"></span></th>
-              <th data-sort="name">Nama<span class="arrow"></span></th>
-              <th data-sort="pre">Nilai Pre<span class="arrow"></span></th>
-              <th data-sort="post">Nilai Post<span class="arrow"></span></th>
-              <th data-sort="delta">Peningkatan Pemahaman<span class="arrow"></span></th>
+              <th data-sort="name"><span data-i18n="pp.colName">Nama</span><span class="arrow"></span></th>
+              <th data-sort="pre"><span data-i18n="pp.colPre">Nilai Pre</span><span class="arrow"></span></th>
+              <th data-sort="post"><span data-i18n="pp.colPost">Nilai Post</span><span class="arrow"></span></th>
+              <th data-sort="delta"><span data-i18n="pp.deltaLabel">Peningkatan Pemahaman</span><span class="arrow"></span></th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
           <tfoot>
             <tr>
-              <td colspan="2">Average</td>
+              <td colspan="2" data-i18n="pp.average">Average</td>
               <td id="fPre">—</td>
               <td id="fPost">—</td>
               <td id="fDelta">—</td>
@@ -2110,7 +2136,7 @@
 
   <!-- ============ EVALUATION ============ -->
   <div class="dash-pane" id="pane-evaluasi">
-    <div class="overline" data-animate><span class="num">02</span> Evaluasi Pelatihan</div>
+    <div class="overline" data-animate><span class="num">02</span> <span data-i18n="sec.evaluasi02">Evaluasi Pelatihan</span></div>
     
 
 
@@ -2125,16 +2151,16 @@
       <span id="evalReportMetaTrainers" style="display:none"></span>
 
       <!-- Headline Results Title -->
-      <h2 class="section-title">Hasil Utama</h2>
-      
+      <h2 class="section-title" data-i18n="ev.hasilUtama">Hasil Utama</h2>
+
       <!-- KPI Grid -->
       <div class="eval-kpi-row" style="margin-bottom: 24px;">
         <div class="eval-kpi-grid" id="evalKpis"></div>
-        <button type="button" class="eval-kpi eval-kpi-trainer" id="evalKpiTrainer" data-scroll-target="evalTrainersCard" aria-label="Lihat detail penilaian trainer"></button>
+        <button type="button" class="eval-kpi eval-kpi-trainer" id="evalKpiTrainer" data-scroll-target="evalTrainersCard" aria-label="Lihat detail penilaian trainer" data-i18n-aria="ev.lihatDetailTrainer"></button>
       </div>
-      
+
       <!-- Satisfaction Breakdown Title -->
-      <h2 class="section-title">Rincian Kepuasan</h2>
+      <h2 class="section-title" data-i18n="ev.rincianKepuasan">Rincian Kepuasan</h2>
 
       <!-- Satisfaction Breakdown -->
       <div class="card" id="evalSatisfactionCard" style="margin-bottom: 24px;">
@@ -2144,7 +2170,7 @@
 
       <!-- Trainer Ratings -->
       <div class="card" id="evalTrainersCard" style="margin-bottom: 24px;">
-        <div style="font-size:13px;color:var(--n500);margin-bottom:14px;font-weight:600;">Penilaian Trainer</div>
+        <div style="font-size:13px;color:var(--n500);margin-bottom:14px;font-weight:600;" data-i18n="ev.penilaianTrainer">Penilaian Trainer</div>
         <div class="trainer-card-body">
           <div class="trainer-carousel-wrap">
             <div class="trainer-grid" id="evalTrainers"></div>
@@ -2155,22 +2181,22 @@
       </div>
 
       <!-- What Landed Best Title -->
-      <h2 class="section-title">Topik Paling Diminati</h2>
+      <h2 class="section-title" data-i18n="ev.topikPalingDiminati">Topik Paling Diminati</h2>
 
       <!-- Topics Grid (2 cols) -->
       <div class="cols" style="margin-bottom: 24px;">
         <div class="card">
-          <div style="font-size:13px;color:var(--n500);margin-bottom:12px;font-weight:600;">Topik paling bermanfaat yang dibahas</div>
+          <div style="font-size:13px;color:var(--n500);margin-bottom:12px;font-weight:600;" data-i18n="ev.topikBermanfaat">Topik paling bermanfaat yang dibahas</div>
           <div class="chip-wrap" id="evalValuableTopics" style="margin-top: 14px;"></div>
         </div>
         <div class="card">
-          <div style="font-size:13px;color:var(--n500);margin-bottom:12px;font-weight:600;">Paling banyak diminta untuk training selanjutnya</div>
+          <div style="font-size:13px;color:var(--n500);margin-bottom:12px;font-weight:600;" data-i18n="ev.topikSelanjutnya">Paling banyak diminta untuk training selanjutnya</div>
           <div class="chip-wrap" id="evalNextTopics" style="margin-top: 14px;"></div>
         </div>
       </div>
-      
+
       <!-- In Their Own Words Title -->
-      <h2 class="section-title">Kutipan Peserta</h2>
+      <h2 class="section-title" data-i18n="ev.kutipanPeserta">Kutipan Peserta</h2>
 
       <!-- Testimonials Marquee -->
       <div class="quote-marquee-wrap">
@@ -2187,15 +2213,15 @@
           <div style="display: flex; gap: 26px;">
             <div style="text-align:center;">
               <div style="font-size:30px; font-weight:800; color:#d4a017;" id="ctaStatFeedback">0/0</div>
-              <div style="font-size:11px; color:#cfe0f5; text-transform:uppercase; letter-spacing:.4px;">Umpan Balik Positif</div>
+              <div style="font-size:11px; color:#cfe0f5; text-transform:uppercase; letter-spacing:.4px;" data-i18n="ev.umpanBalikPositif">Umpan Balik Positif</div>
             </div>
             <div style="text-align:center;">
               <div style="font-size:30px; font-weight:800; color:#d4a017;" id="ctaStatAvg">0.0</div>
-              <div style="font-size:11px; color:#cfe0f5; text-transform:uppercase; letter-spacing:.4px;">Rata-rata Nilai Trainer</div>
+              <div style="font-size:11px; color:#cfe0f5; text-transform:uppercase; letter-spacing:.4px;" data-i18n="ev.rataRataNilaiTrainer">Rata-rata Nilai Trainer</div>
             </div>
             <div style="text-align:center;">
               <div style="font-size:30px; font-weight:800; color:#d4a017;" id="ctaStatFollowUp">0%</div>
-              <div style="font-size:11px; color:#cfe0f5; text-transform:uppercase; letter-spacing:.4px;">Ingin Training Selanjutnya</div>
+              <div style="font-size:11px; color:#cfe0f5; text-transform:uppercase; letter-spacing:.4px;" data-i18n="ev.inginTrainingSelanjutnya">Ingin Training Selanjutnya</div>
             </div>
           </div>
         </div>
@@ -2210,25 +2236,25 @@
 
   <!-- ============ DOCUMENTATION ============ -->
   <div class="dash-pane" id="pane-dokumentasi">
-    <div class="overline" data-animate id="titleDoc"><span class="num">04</span> Dokumentasi Pelatihan</div>
+    <div class="overline" data-animate id="titleDoc"><span class="num">04</span> <span data-i18n="sec.dokumentasi04">Dokumentasi Pelatihan</span></div>
     <section id="sectDoc" class="card" data-animate style="padding: 24px;">
       <div class="day-acc" id="docAccordion">
-        <div style="text-align:center;padding:20px;color:var(--n500);font-size:.85rem">Belum ada dokumentasi pelatihan.</div>
+        <div style="text-align:center;padding:20px;color:var(--n500);font-size:.85rem" data-i18n="doc.noDocs">Belum ada dokumentasi pelatihan.</div>
       </div>
     </section>
   </div>
 
   <!-- ============ GAYA KEPEMIMPINAN ============ -->
   <div class="dash-pane" id="pane-leadership">
-    <div class="overline" data-animate><span class="num">05</span> Ringkasan Gaya Kepemimpinan</div>
+    <div class="overline" data-animate><span class="num">05</span> <span data-i18n="sec.leadership05">Ringkasan Gaya Kepemimpinan</span></div>
     <section class="kpi-grid" id="lKpiGrid">
       <div class="card kpi" data-animate>
         <div class="accent" style="background:var(--navy)"></div>
         <div class="icon" style="background:var(--navy-100);color:var(--navy)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
-        <div class="label">TOTAL PESERTA TERNILAI</div>
-        <div class="value"><span id="lTotal">—</span> <span class="unit">orang</span></div>
+        <div class="label" data-i18n="lwi.totalPesertaTernilai">TOTAL PESERTA TERNILAI</div>
+        <div class="value"><span id="lTotal">—</span> <span class="unit" data-i18n="pp.orang">orang</span></div>
         <div class="sub"><span id="lTotalSub">peserta program</span></div>
       </div>
 
@@ -2237,7 +2263,7 @@
         <div class="icon" style="background:var(--primary-100);color:var(--primary-700)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
         </div>
-        <div class="label">GAYA DOMINAN PROGRAM</div>
+        <div class="label" data-i18n="l.gayaDominanProgram">GAYA DOMINAN PROGRAM</div>
         <div class="value" style="font-size:1.35rem;line-height:1.15;margin-top:12px" id="lDomStyle">—</div>
         <div class="sub"><span id="lDomSub">peserta dengan gaya ini</span></div>
       </div>
@@ -2247,7 +2273,7 @@
         <div class="icon" style="background:#FDECEC;color:var(--secondary-base)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
         </div>
-        <div class="label">RATA-RATA EFEKTIVITAS</div>
+        <div class="label" data-i18n="lwi.rataRataEfektivitas">RATA-RATA EFEKTIVITAS</div>
         <div class="value" id="lAvgEff">—</div>
         <div class="sub"><span id="lEffSub">skor rentang -1 hingga 14</span></div>
       </div>
@@ -2257,19 +2283,19 @@
         <div class="icon" style="background:#E7F6EC;color:var(--success)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
         </div>
-        <div class="label">PESERTA PALING EFEKTIF</div>
+        <div class="label" data-i18n="lwi.pesertaPalingEfektif">PESERTA PALING EFEKTIF</div>
         <div class="value" style="font-size:1.35rem;line-height:1.15;margin-top:12px" id="lTopEffName">—</div>
         <div class="sub"><span id="lTopEffSub">—</span></div>
       </div>
     </section>
 
-    <div class="overline" data-animate><span class="num">06</span> Analisis &amp; Peringkat Efektivitas</div>
+    <div class="overline" data-animate><span class="num">06</span> <span data-i18n="sec.leadership06">Analisis &amp; Peringkat Efektivitas</span></div>
     <section class="mid-grid">
       <div class="card" data-animate>
         <div class="card-head">
           <div>
-            <h2>🎖️ Peringkat Efektivitas Kepemimpinan</h2>
-            <div class="hint" style="font-size:.7rem;color:var(--n500);margin-top:2px">skor efektivitas tertinggi &amp; terendah</div>
+            <h2>🎖️ <span data-i18n="lwi.peringkatEfektivitasKepemimpinan2">Peringkat Efektivitas Kepemimpinan</span></h2>
+            <div class="hint" style="font-size:.7rem;color:var(--n500);margin-top:2px" data-i18n="lwi.skorTertinggiTerendah">skor efektivitas tertinggi &amp; terendah</div>
           </div>
         </div>
         <div class="podium-tabs">
@@ -2281,7 +2307,7 @@
 
       <div class="card" data-animate>
         <div class="card-head">
-          <h2>Distribusi Gaya Kepemimpinan</h2>
+          <h2 data-i18n="l.distribusiGayaKepemimpinan">Distribusi Gaya Kepemimpinan</h2>
           <div class="legend" id="lChartLegend"></div>
         </div>
         <div class="chart-fixed"><canvas id="lChart"></canvas></div>
@@ -2291,16 +2317,16 @@
       </div>
     </section>
 
-    <div class="overline" data-animate><span class="num">07</span> Detail per Peserta</div>
+    <div class="overline" data-animate><span class="num">07</span> <span data-i18n="sec.detailPerPeserta">Detail per Peserta</span></div>
     <section class="card" data-animate style="padding:22px;">
       <div class="card-head">
-        <h2>Rekap Gaya Kepemimpinan Peserta</h2>
-        <span class="hint">klik baris atau judul kolom untuk mengurutkan</span>
+        <h2 data-i18n="l.rekapGayaKepemimpinan">Rekap Gaya Kepemimpinan Peserta</h2>
+        <span class="hint" data-i18n="lwi.sortHintRow">klik baris atau judul kolom untuk mengurutkan</span>
       </div>
       <div class="table-tools">
         <label class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="lSearchInput" placeholder="Cari nama peserta…" autocomplete="off">
+          <input type="text" id="lSearchInput" placeholder="Cari nama peserta…" data-i18n-placeholder="pp.searchPlaceholder" autocomplete="off">
         </label>
         <span class="count-pill" id="lRowCount">0 peserta</span>
       </div>
@@ -2310,13 +2336,13 @@
           <thead>
             <tr>
               <th data-lsort="rank" style="grid-column:1">#<span class="arrow" id="lArr-rank">▲</span></th>
-              <th data-lsort="name" style="grid-column:2">Nama<span class="arrow" id="lArr-name"></span></th>
-              <th data-lsort="dominant" style="grid-column:3">Gaya Dominan<span class="arrow" id="lArr-dominant"></span></th>
+              <th data-lsort="name" style="grid-column:2"><span data-i18n="pp.colName">Nama</span><span class="arrow" id="lArr-name"></span></th>
+              <th data-lsort="dominant" style="grid-column:3"><span data-i18n="lwi.gayaDominan">Gaya Dominan</span><span class="arrow" id="lArr-dominant"></span></th>
               <th data-lsort="g1" class="lcol-num" style="grid-column:4">G1<span class="arrow" id="lArr-g1"></span></th>
               <th data-lsort="g2" class="lcol-num" style="grid-column:5">G2<span class="arrow" id="lArr-g2"></span></th>
               <th data-lsort="g3" class="lcol-num" style="grid-column:6">G3<span class="arrow" id="lArr-g3"></span></th>
               <th data-lsort="g4" class="lcol-num" style="grid-column:7">G4<span class="arrow" id="lArr-g4"></span></th>
-              <th data-lsort="eff" style="grid-column:8">Efektivitas<span class="arrow" id="lArr-eff"></span></th>
+              <th data-lsort="eff" style="grid-column:8"><span data-i18n="lwi.efektivitas">Efektivitas</span><span class="arrow" id="lArr-eff"></span></th>
             </tr>
           </thead>
           <tbody id="lTbody"></tbody>
@@ -2327,15 +2353,15 @@
 
   <!-- ============ ANALISIS WEWENANG ============ -->
   <div class="dash-pane" id="pane-wewenang">
-    <div class="overline" data-animate><span class="num">05</span> Ringkasan Analisis Wewenang</div>
+    <div class="overline" data-animate><span class="num">05</span> <span data-i18n="sec.wewenang05">Ringkasan Analisis Wewenang</span></div>
     <section class="kpi-grid" id="wKpiGrid">
       <div class="card kpi" data-animate>
         <div class="accent" style="background:var(--navy)"></div>
         <div class="icon" style="background:var(--navy-100);color:var(--navy)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
-        <div class="label">TOTAL PESERTA TERNILAI</div>
-        <div class="value"><span id="wTotal">—</span> <span class="unit">orang</span></div>
+        <div class="label" data-i18n="lwi.totalPesertaTernilai">TOTAL PESERTA TERNILAI</div>
+        <div class="value"><span id="wTotal">—</span> <span class="unit" data-i18n="pp.orang">orang</span></div>
         <div class="sub"><span id="wTotalSub">peserta program</span></div>
       </div>
 
@@ -2344,7 +2370,7 @@
         <div class="icon" style="background:var(--primary-100);color:var(--primary-700)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
-        <div class="label">TIPE WEWENANG DOMINAN</div>
+        <div class="label" data-i18n="w.tipeWewenangDominan">TIPE WEWENANG DOMINAN</div>
         <div class="value" style="font-size:1.35rem;line-height:1.15;margin-top:12px" id="wDomStyle">—</div>
         <div class="sub"><span id="wDomSub">peserta dengan tipe ini</span></div>
       </div>
@@ -2354,7 +2380,7 @@
         <div class="icon" style="background:#FDECEC;color:var(--secondary-base)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
         </div>
-        <div class="label">RATA-RATA EFEKTIVITAS</div>
+        <div class="label" data-i18n="lwi.rataRataEfektivitas">RATA-RATA EFEKTIVITAS</div>
         <div class="value" id="wAvgEff">—</div>
         <div class="sub"><span id="wEffSub">skor efektivitas kepemimpinan</span></div>
       </div>
@@ -2364,19 +2390,19 @@
         <div class="icon" style="background:#E7F6EC;color:var(--success)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
         </div>
-        <div class="label">PESERTA PALING EFEKTIF</div>
+        <div class="label" data-i18n="lwi.pesertaPalingEfektif">PESERTA PALING EFEKTIF</div>
         <div class="value" style="font-size:1.35rem;line-height:1.15;margin-top:12px" id="wTopEffName">—</div>
         <div class="sub"><span id="wTopEffSub">—</span></div>
       </div>
     </section>
 
-    <div class="overline" data-animate><span class="num">06</span> Analisis &amp; Peringkat Efektivitas Wewenang</div>
+    <div class="overline" data-animate><span class="num">06</span> <span data-i18n="sec.wewenang06">Analisis &amp; Peringkat Efektivitas Wewenang</span></div>
     <section class="mid-grid">
       <div class="card" data-animate>
         <div class="card-head">
           <div>
-            <h2>🎖️ Peringkat Efektivitas Wewenang</h2>
-            <div class="hint" style="font-size:.7rem;color:var(--n500);margin-top:2px">skor efektivitas tertinggi &amp; terendah</div>
+            <h2>🎖️ <span data-i18n="lwi.peringkatEfektivitasWewenang2">Peringkat Efektivitas Wewenang</span></h2>
+            <div class="hint" style="font-size:.7rem;color:var(--n500);margin-top:2px" data-i18n="lwi.skorTertinggiTerendah">skor efektivitas tertinggi &amp; terendah</div>
           </div>
         </div>
         <div class="podium-tabs">
@@ -2388,7 +2414,7 @@
 
       <div class="card" data-animate>
         <div class="card-head">
-          <h2>Distribusi Tipe Wewenang</h2>
+          <h2 data-i18n="w.distribusiTipeWewenang">Distribusi Tipe Wewenang</h2>
           <div class="legend" id="wChartLegend"></div>
         </div>
         <div class="chart-fixed"><canvas id="wChart"></canvas></div>
@@ -2398,16 +2424,16 @@
       </div>
     </section>
 
-    <div class="overline" data-animate><span class="num">07</span> Detail per Peserta</div>
+    <div class="overline" data-animate><span class="num">07</span> <span data-i18n="sec.detailPerPeserta">Detail per Peserta</span></div>
     <section class="card" data-animate style="padding:22px;">
       <div class="card-head">
-        <h2>Rekap Analisis Wewenang Peserta</h2>
-        <span class="hint">klik baris atau judul kolom untuk mengurutkan</span>
+        <h2 data-i18n="w.rekapAnalisisWewenang">Rekap Analisis Wewenang Peserta</h2>
+        <span class="hint" data-i18n="lwi.sortHintRow">klik baris atau judul kolom untuk mengurutkan</span>
       </div>
       <div class="table-tools">
         <label class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="wSearchInput" placeholder="Cari nama peserta…" autocomplete="off">
+          <input type="text" id="wSearchInput" placeholder="Cari nama peserta…" data-i18n-placeholder="pp.searchPlaceholder" autocomplete="off">
         </label>
         <span class="count-pill" id="wRowCount">0 peserta</span>
       </div>
@@ -2417,13 +2443,13 @@
           <thead>
             <tr>
               <th data-wsort="rank" style="grid-column:1">#<span class="arrow" id="wArr-rank">▲</span></th>
-              <th data-wsort="name" style="grid-column:2">Nama<span class="arrow" id="wArr-name"></span></th>
-              <th data-wsort="dominant" style="grid-column:3">Tipe Dominan<span class="arrow" id="wArr-dominant"></span></th>
+              <th data-wsort="name" style="grid-column:2"><span data-i18n="pp.colName">Nama</span><span class="arrow" id="wArr-name"></span></th>
+              <th data-wsort="dominant" style="grid-column:3"><span data-i18n="w.tipeDominan">Tipe Dominan</span><span class="arrow" id="wArr-dominant"></span></th>
               <th data-wsort="w1" class="lcol-num" style="grid-column:4">W1<span class="arrow" id="wArr-w1"></span></th>
               <th data-wsort="w2" class="lcol-num" style="grid-column:5">W2<span class="arrow" id="wArr-w2"></span></th>
               <th data-wsort="w3" class="lcol-num" style="grid-column:6">W3<span class="arrow" id="wArr-w3"></span></th>
               <th data-wsort="w4" class="lcol-num" style="grid-column:7">W4<span class="arrow" id="wArr-w4"></span></th>
-              <th data-wsort="eff" style="grid-column:8">Efektivitas<span class="arrow" id="wArr-eff"></span></th>
+              <th data-wsort="eff" style="grid-column:8"><span data-i18n="lwi.efektivitas">Efektivitas</span><span class="arrow" id="wArr-eff"></span></th>
             </tr>
           </thead>
           <tbody id="wTbody"></tbody>
@@ -2434,15 +2460,15 @@
 
   <!-- ============ GAYA INTERPERSONAL ============ -->
   <div class="dash-pane" id="pane-interpersonal">
-    <div class="overline" data-animate><span class="num">05</span> Ringkasan Gaya Interpersonal</div>
+    <div class="overline" data-animate><span class="num">05</span> <span data-i18n="sec.interpersonal05">Ringkasan Gaya Interpersonal</span></div>
     <section class="kpi-grid" id="iKpiGrid">
       <div class="card kpi" data-animate>
         <div class="accent" style="background:var(--navy)"></div>
         <div class="icon" style="background:var(--navy-100);color:var(--navy)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
-        <div class="label">TOTAL PESERTA TERNILAI</div>
-        <div class="value"><span id="iTotal">—</span> <span class="unit">orang</span></div>
+        <div class="label" data-i18n="lwi.totalPesertaTernilai">TOTAL PESERTA TERNILAI</div>
+        <div class="value"><span id="iTotal">—</span> <span class="unit" data-i18n="pp.orang">orang</span></div>
         <div class="sub"><span id="iTotalSub">peserta program</span></div>
       </div>
 
@@ -2451,7 +2477,7 @@
         <div class="icon" style="background:var(--primary-100);color:var(--primary-700)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
         </div>
-        <div class="label">GAYA INTERPERSONAL DOMINAN</div>
+        <div class="label" data-i18n="i.gayaInterpersonalDominan">GAYA INTERPERSONAL DOMINAN</div>
         <div class="value" style="font-size:1.35rem;line-height:1.15;margin-top:12px" id="iDomStyle">—</div>
         <div class="sub"><span id="iDomSub">peserta dengan gaya ini</span></div>
       </div>
@@ -2461,7 +2487,7 @@
         <div class="icon" style="background:#FDECEC;color:var(--secondary-base)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
         </div>
-        <div class="label">RATA-RATA SKOR GAYA DOMINAN</div>
+        <div class="label" data-i18n="i.rataRataSkorGayaDominan">RATA-RATA SKOR GAYA DOMINAN</div>
         <div class="value" id="iAvgDom">—</div>
         <div class="sub"><span id="iDomScoreSub">skor gaya paling menonjol</span></div>
       </div>
@@ -2471,16 +2497,16 @@
         <div class="icon" style="background:#E7F6EC;color:var(--success)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
         </div>
-        <div class="label">GAYA PALING MENONJOL</div>
+        <div class="label" data-i18n="i.gayaPalingMenonjol">GAYA PALING MENONJOL</div>
         <div class="value" style="font-size:1.35rem;line-height:1.15;margin-top:12px" id="iTopDomName">—</div>
         <div class="sub"><span id="iTopDomSub">—</span></div>
       </div>
     </section>
 
-    <div class="overline" data-animate><span class="num">06</span> Distribusi Gaya Interpersonal</div>
+    <div class="overline" data-animate><span class="num">06</span> <span data-i18n="sec.interpersonal06">Distribusi Gaya Interpersonal</span></div>
     <section class="card" data-animate style="padding:22px;">
       <div class="card-head">
-        <h2>Distribusi Gaya Interpersonal</h2>
+        <h2 data-i18n="i.distribusiGayaInterpersonal">Distribusi Gaya Interpersonal</h2>
         <div class="legend" id="iChartLegend"></div>
       </div>
       <div class="chart-fixed"><canvas id="iChart"></canvas></div>
@@ -2489,16 +2515,16 @@
       </div>
     </section>
 
-    <div class="overline" data-animate><span class="num">07</span> Detail per Peserta</div>
+    <div class="overline" data-animate><span class="num">07</span> <span data-i18n="sec.detailPerPeserta">Detail per Peserta</span></div>
     <section class="card" data-animate style="padding:22px;">
       <div class="card-head">
-        <h2>Rekap Gaya Interpersonal Peserta</h2>
-        <span class="hint">klik baris atau judul kolom untuk mengurutkan</span>
+        <h2 data-i18n="i.rekapGayaInterpersonal">Rekap Gaya Interpersonal Peserta</h2>
+        <span class="hint" data-i18n="lwi.sortHintRow">klik baris atau judul kolom untuk mengurutkan</span>
       </div>
       <div class="table-tools">
         <label class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="iSearchInput" placeholder="Cari nama peserta…" autocomplete="off">
+          <input type="text" id="iSearchInput" placeholder="Cari nama peserta…" data-i18n-placeholder="pp.searchPlaceholder" autocomplete="off">
         </label>
         <span class="count-pill" id="iRowCount">0 peserta</span>
       </div>
@@ -2508,8 +2534,8 @@
           <thead>
             <tr>
               <th style="grid-column:1">#<span class="arrow"></span></th>
-              <th data-isort="name" style="grid-column:2">Nama<span class="arrow" id="iArr-name">▲</span></th>
-              <th data-isort="dominant" style="grid-column:3">Gaya Dominan<span class="arrow" id="iArr-dominant"></span></th>
+              <th data-isort="name" style="grid-column:2"><span data-i18n="pp.colName">Nama</span><span class="arrow" id="iArr-name">▲</span></th>
+              <th data-isort="dominant" style="grid-column:3"><span data-i18n="lwi.gayaDominan">Gaya Dominan</span><span class="arrow" id="iArr-dominant"></span></th>
               <th data-isort="i1" class="lcol-num" style="grid-column:4">I1<span class="arrow" id="iArr-i1"></span></th>
               <th data-isort="i2" class="lcol-num" style="grid-column:5">I2<span class="arrow" id="iArr-i2"></span></th>
               <th data-isort="i3" class="lcol-num" style="grid-column:6">I3<span class="arrow" id="iArr-i3"></span></th>
@@ -2524,42 +2550,42 @@
 
   <!-- ============ ACTION PLAN ============ -->
   <div class="dash-pane" id="pane-actionplan">
-    <div class="overline" data-animate id="titleAp"><span class="num">05</span> Action Plan Tracker</div>
+    <div class="overline" data-animate id="titleAp"><span class="num">05</span> <span data-i18n="sec.actionplan05">Action Plan Tracker</span></div>
     <section id="sectAp" class="card" data-animate style="padding: 0; overflow: hidden; background: #fafcff;">
       
       <div class="body-wrap">
         <!-- Activity Card: animated rings (Completed / In Progress) + supporting stats -->
         <div class="activity-card">
           <div class="activity-rings-wrap">
-            <svg class="activity-rings" viewBox="0 0 176 176" role="img" aria-label="Ringkasan progres batch">
+            <svg class="activity-rings" viewBox="0 0 176 176" role="img" aria-label="Ringkasan progres batch" data-i18n-aria="ap.batchProgressSummary">
               <circle class="ring-track" cx="88" cy="88" r="80" stroke-width="14" onmouseenter="showApRingDetail('prog')" onmouseleave="showApRingDetail(null)"></circle>
               <circle class="ring-track" cx="88" cy="88" r="58" stroke-width="14" onmouseenter="showApRingDetail('done')" onmouseleave="showApRingDetail(null)"></circle>
               <circle id="ring-prog" class="ring-fill ring-prog" cx="88" cy="88" r="80" stroke-width="14" onmouseenter="showApRingDetail('prog')" onmouseleave="showApRingDetail(null)"></circle>
               <circle id="ring-done" class="ring-fill ring-done" cx="88" cy="88" r="58" stroke-width="14" onmouseenter="showApRingDetail('done')" onmouseleave="showApRingDetail(null)"></circle>
             </svg>
-            <div class="activity-rings-center kpi kpi-total active-filter" tabindex="0" role="button" aria-label="Tampilkan semua peserta" onclick="filterApTable('all', this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterApTable('all', this)}">
+            <div class="activity-rings-center kpi kpi-total active-filter" tabindex="0" role="button" aria-label="Tampilkan semua peserta" data-i18n-aria="ap.filterAll" onclick="filterApTable('all', this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterApTable('all', this)}">
               <div class="activity-rings-center-val" id="kpi-total-val">0</div>
-              <div class="activity-rings-center-lbl" id="activity-center-lbl">Participants</div>
+              <div class="activity-rings-center-lbl" id="activity-center-lbl" data-i18n="ap.participants">Participants</div>
             </div>
           </div>
           <div class="activity-stats">
-            <div class="activity-stat kpi kpi-prog" style="--stat-color: var(--mdi-prog)" tabindex="0" role="button" aria-label="Filter: In Progress" onclick="filterApTable('prog', this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterApTable('prog', this)}" onmouseenter="showApRingDetail('prog')" onmouseleave="showApRingDetail(null)">
+            <div class="activity-stat kpi kpi-prog" style="--stat-color: var(--mdi-prog)" tabindex="0" role="button" aria-label="Filter: In Progress" data-i18n-aria="ap.filterProg" onclick="filterApTable('prog', this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterApTable('prog', this)}" onmouseenter="showApRingDetail('prog')" onmouseleave="showApRingDetail(null)">
               <div>
-                <div class="activity-stat-lbl">In Progress</div>
+                <div class="activity-stat-lbl" data-i18n="ap.inProgress">In Progress</div>
                 <div class="activity-stat-val" id="kpi-prog-val">0</div>
                 <div class="activity-stat-sub" id="kpi-prog-sub">0% of batch</div>
               </div>
             </div>
-            <div class="activity-stat kpi kpi-done" style="--stat-color: var(--mdi-done)" tabindex="0" role="button" aria-label="Filter: Completed" onclick="filterApTable('done', this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterApTable('done', this)}" onmouseenter="showApRingDetail('done')" onmouseleave="showApRingDetail(null)">
+            <div class="activity-stat kpi kpi-done" style="--stat-color: var(--mdi-done)" tabindex="0" role="button" aria-label="Filter: Completed" data-i18n-aria="ap.filterDone" onclick="filterApTable('done', this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterApTable('done', this)}" onmouseenter="showApRingDetail('done')" onmouseleave="showApRingDetail(null)">
               <div>
-                <div class="activity-stat-lbl">Completed (Selesai)</div>
+                <div class="activity-stat-lbl" data-i18n="ap.completedSelesai">Completed (Selesai)</div>
                 <div class="activity-stat-val" id="kpi-done-val">0</div>
                 <div class="activity-stat-sub" id="kpi-done-sub">0% of batch</div>
               </div>
             </div>
             <div class="activity-stat" style="--stat-color: var(--mdi-orange)">
               <div>
-                <div class="activity-stat-lbl">Action Plans</div>
+                <div class="activity-stat-lbl" data-i18n="ap.actionPlans">Action Plans</div>
                 <div class="activity-stat-val" id="kpi-ap-val">0</div>
                 <div class="activity-stat-sub" id="kpi-ap-sub">0 per participant</div>
               </div>
@@ -2568,17 +2594,17 @@
         </div>
 
         <div class="viewer-filterbar" style="display: flex; align-items: center; gap: 16px;">
-          <div style="font-weight: 700; font-size: 13px; color: var(--mdi-ink); flex-shrink: 0;">
+          <div style="font-weight: 700; font-size: 13px; color: var(--mdi-ink); flex-shrink: 0;" data-i18n="ap.searchRecords">
             🔍 Search Participant Records
           </div>
           <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
-            <span style="font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; letter-spacing: 1px;">Dept</span>
+            <span style="font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; letter-spacing: 1px;" data-i18n="ap.dept">Dept</span>
             <select class="dept-dropdown">
-              <option value="ALL">All Departments</option>
+              <option value="ALL" data-i18n="ap.allDepartments">All Departments</option>
             </select>
           </div>
           <div class="search-wrap">
-            <input type="text" placeholder="Type name..." />
+            <input type="text" placeholder="Type name..." data-i18n-placeholder="ap.typeNamePlaceholder" />
           </div>
         </div>
 
@@ -2586,7 +2612,7 @@
         <div class="table-card">
           <div class="table-head">
             <div class="th-title">
-              <span class="th-dot"></span>Executive Participant Tracking Database
+              <span class="th-dot"></span><span data-i18n="ap.trackerTitle">Executive Participant Tracking Database</span>
             </div>
             <div class="th-count" id="table-count-label">Showing 30 of 30</div>
           </div>
@@ -2594,13 +2620,13 @@
             <table>
               <thead>
                 <tr>
-                  <th style="width: 4%">#</th>
-                  <th style="width: 18%">Participant Name</th>
-                  <th style="width: 14%">Department</th>
-                  <th style="width: 26%">Action Plan (Commitment)</th>
-                  <th style="width: 12%; text-align:center;">Status</th>
-                  <th style="width: 11%">Updates & Notes</th>
-                  <th style="width: 11%">Challenge</th>
+                  <th style="width: 4%" data-i18n="ap.colNo">#</th>
+                  <th style="width: 18%" data-i18n="ap.colName">Participant Name</th>
+                  <th style="width: 14%" data-i18n="ap.colDept">Department</th>
+                  <th style="width: 26%" data-i18n="ap.colCommitment">Action Plan (Commitment)</th>
+                  <th style="width: 12%; text-align:center;" data-i18n="ap.colStatus">Status</th>
+                  <th style="width: 11%" data-i18n="ap.colNotes">Updates & Notes</th>
+                  <th style="width: 11%" data-i18n="ap.colChallenge">Challenge</th>
                   <th style="width: 4%"></th>
                 </tr>
               </thead>
@@ -2617,11 +2643,11 @@
 </main>
 
 <footer>
-  <span>Sinkronisasi otomatis setiap 10 detik</span>
+  <span data-i18n="footer.syncNote">Sinkronisasi otomatis setiap 10 detik</span>
   <span></span>
 </footer>
 
-<div class="toast" id="toast">Data diperbarui</div>
+<div class="toast" id="toast" data-i18n="toast.dataUpdated">Data diperbarui</div>
 
 <script>
 let animate = () => {}, stagger = () => 0, inView = () => () => {};
@@ -2635,6 +2661,531 @@ window.__motionImportPromise = import("https://cdn.jsdelivr.net/npm/motion@12.0.
     console.warn("Motion animations unavailable (CDN unreachable)");
     document.documentElement.classList.add("no-motion");
   });
+
+/* ================= I18N (ID / EN) ================= */
+const I18N = {
+  id: {
+    "loader.loading": "Memuat data secara real-time...",
+    "login.welcome": "Selamat Datang!",
+    "login.instruction": "Masukkan nama perusahaan dan PIN akses untuk melanjutkan ke dashboard.",
+    "login.companyLabel": "Nama Perusahaan",
+    "login.companyPlaceholder": "contoh: PT Maju Bersama",
+    "login.pinLabel": "PIN Akses",
+    "login.pinPlaceholder": "Masukkan PIN Akses",
+    "login.rememberMe": "Remember me",
+    "login.submit": "Masuk Dashboard",
+    "login.validating": "Memvalidasi...",
+    "login.footer": "Dengan melanjutkan, Anda menyetujui kebijakan penggunaan portal MDI TACK.",
+    "login.errPinRequired": "Masukkan PIN!",
+    "login.errPin4Digit": "PIN harus 4 digit angka!",
+    "login.errWrongCred": "Nama Perusahaan atau PIN salah. Coba lagi.",
+    "header.backToHome": "Kembali ke Beranda",
+    "header.themeToggle": "Ganti tema terang/gelap",
+    "header.refreshTitle": "Muat ulang data sekarang",
+    "header.logout": "Keluar dari Akun",
+    "header.updatedPrefix": "Diperbarui",
+    "header.syncNote": "sinkronisasi otomatis tiap {{sec}} dtk",
+    "header.syncFailed": "koneksi gagal — mencoba ulang…",
+    "header.notConfigured": "BELUM DI-SET",
+    "mm.loadingDate": "Memuat tanggal...",
+    "mm.welcomePrefix": "Selamat Datang di",
+    "mm.desc": "Akses ringkasan & dashboard laporan pelatihan perusahaan anda pada kartu sesi berikut.",
+    "mm.summaryLabel": "Ringkasan Client",
+    "mm.totalSessions": "Total Sesi:",
+    "mm.sessionsUnit": "Sesi",
+    "mm.serverStatus": "Status Server:",
+    "mm.online": "ONLINE",
+    "mm.sessionListTitle": "Daftar Sesi Pelatihan",
+    "mm.sessionListHint": "Pilih sesi untuk melihat detail",
+    "mm.noSessions": "Belum ada sesi pelatihan untuk perusahaan ini.",
+    "mm.trainerNotSet": "Trainer belum diatur",
+    "mm.openSessionAria": "Buka sesi: {{title}}",
+    "nav.prepost": "Evaluasi Pre & Post",
+    "nav.actionplan": "Action Plan",
+    "nav.evaluasi": "Evaluasi",
+    "nav.komentar": "Komentar Trainer",
+    "nav.dokumentasi": "Dokumentasi Training",
+    "nav.leadership": "Gaya Kepemimpinan",
+    "nav.wewenang": "Analisis Wewenang",
+    "nav.interpersonal": "Gaya Interpersonal",
+    "sec.prepost01": "Ringkasan Program",
+    "sec.prepost02": "Performa Peserta",
+    "sec.prepost03": "Detail & Distribusi Nilai",
+    "sec.evaluasi02": "Evaluasi Pelatihan",
+    "sec.dokumentasi04": "Dokumentasi Pelatihan",
+    "sec.leadership05": "Ringkasan Gaya Kepemimpinan",
+    "sec.leadership06": "Analisis & Peringkat Efektivitas",
+    "sec.wewenang05": "Ringkasan Analisis Wewenang",
+    "sec.wewenang06": "Analisis & Peringkat Efektivitas Wewenang",
+    "sec.interpersonal05": "Ringkasan Gaya Interpersonal",
+    "sec.interpersonal06": "Distribusi Gaya Interpersonal",
+    "sec.detailPerPeserta": "Detail per Peserta",
+    "sec.actionplan05": "Action Plan Tracker",
+    "pp.totalPeserta": "Total Peserta",
+    "pp.orang": "orang",
+    "pp.avgPreLabel": "Rata-rata Nilai Pre Test",
+    "pp.avgPostLabel": "Rata-rata Nilai Post Test",
+    "pp.deltaLabel": "Peningkatan Pemahaman",
+    "pp.registeredInBatch": "terdaftar di batch ini",
+    "pp.noDataYet": "belum ada data",
+    "pp.min": "min",
+    "pp.max": "maks",
+    "pp.postSummary": "{{count}}/{{total}} peserta · min {{min}} · maks {{max}}",
+    "pp.postNotYet": "post test belum dilaksanakan",
+    "pp.vsPreTest": "vs pre test",
+    "pp.deltaAfterPost": "dihitung setelah post test terisi",
+    "pp.podiumHint": "berdasarkan Nilai Pre Test dan Post Test serta Peningkatan Pemahaman",
+    "pp.peringkatTitle": "🏆 Peringkat Peserta",
+    "pp.peringkatTitle2": "Peringkat Peserta",
+    "pp.podiumEmpty": "Memuat data…",
+    "pp.podiumNoData": "Data belum tersedia",
+    "pp.compareTitle": "Perbandingan Pre & Post Test",
+    "pp.distTitle": "Distribusi Nilai",
+    "pp.distHint": "jumlah peserta per rentang",
+    "pp.recapTitle": "Rekap Nilai Peserta",
+    "pp.sortHint": "klik judul kolom untuk mengurutkan",
+    "pp.searchPlaceholder": "Cari nama peserta…",
+    "pp.pesertaCount": "{{n}} peserta",
+    "pp.colName": "Nama",
+    "pp.colPre": "Nilai Pre",
+    "pp.colPost": "Nilai Post",
+    "pp.average": "Average",
+    "pp.tooltipPre": "Nilai Pre Test:",
+    "pp.tooltipPost": "Nilai Post Test:",
+    "pp.tooltipDelta": "Peningkatan Pemahaman:",
+    "pp.tooltipPostNone": "Post Test: belum ada",
+    "pp.podiumSubDelta": "Peningkatan:",
+    "pp.podiumSubPost": "Post:",
+    "pp.podiumSubPre": "Pre:",
+    "ev.hasilUtama": "Hasil Utama",
+    "ev.rincianKepuasan": "Rincian Kepuasan",
+    "ev.penilaianTrainer": "Penilaian Trainer",
+    "ev.topikPalingDiminati": "Topik Paling Diminati",
+    "ev.kutipanPeserta": "Kutipan Peserta",
+    "ev.topikBermanfaat": "Topik paling bermanfaat yang dibahas",
+    "ev.topikSelanjutnya": "Paling banyak diminta untuk training selanjutnya",
+    "ev.lihatDetailTrainer": "Lihat detail penilaian trainer",
+    "ev.umpanBalikPositif": "Umpan Balik Positif",
+    "ev.rataRataNilaiTrainer": "Rata-rata Nilai Trainer",
+    "ev.inginTrainingSelanjutnya": "Ingin Training Selanjutnya",
+    "doc.noDocs": "Belum ada dokumentasi pelatihan.",
+    "doc.noPhotos": "Tidak ada foto untuk hari ini.",
+    "doc.day": "Hari",
+    "lwi.totalPesertaTernilai": "TOTAL PESERTA TERNILAI",
+    "lwi.pesertaProgram": "peserta program",
+    "l.gayaDominanProgram": "GAYA DOMINAN PROGRAM",
+    "l.pesertaDenganGayaIni": "peserta dengan gaya ini",
+    "lwi.rataRataEfektivitas": "RATA-RATA EFEKTIVITAS",
+    "l.skorRentang": "skor rentang -1 hingga 14",
+    "lwi.pesertaPalingEfektif": "PESERTA PALING EFEKTIF",
+    "lwi.pesertaCountRentang": "{{n}} peserta · rentang {{min}} s/d {{max}}",
+    "lwi.pesertaCountSkor": "{{n}} peserta · skor {{min}} s/d {{max}}",
+    "l.dominantCountSub": "{{n}} peserta dengan gaya dominan ini",
+    "w.tipeWewenangDominan": "TIPE WEWENANG DOMINAN",
+    "w.pesertaDenganTipeIni": "peserta dengan tipe ini",
+    "w.dominantCountSub": "{{n}} peserta dengan tipe dominan ini",
+    "i.gayaInterpersonalDominan": "GAYA INTERPERSONAL DOMINAN",
+    "i.pesertaDenganGayaIni": "peserta dengan gaya ini",
+    "i.rataRataSkorGayaDominan": "RATA-RATA SKOR GAYA DOMINAN",
+    "i.skorGayaPalingMenonjol": "skor gaya paling menonjol",
+    "i.gayaPalingMenonjol": "GAYA PALING MENONJOL",
+    "i.dominantCountSub": "{{n}} peserta dengan gaya dominan ini",
+    "lwi.peringkatEfektivitasKepemimpinan": "🎖️ Peringkat Efektivitas Kepemimpinan",
+    "lwi.peringkatEfektivitasKepemimpinan2": "Peringkat Efektivitas Kepemimpinan",
+    "lwi.peringkatEfektivitasWewenang": "🎖️ Peringkat Efektivitas Wewenang",
+    "lwi.peringkatEfektivitasWewenang2": "Peringkat Efektivitas Wewenang",
+    "lwi.skorTertinggiTerendah": "skor efektivitas tertinggi & terendah",
+    "l.distribusiGayaKepemimpinan": "Distribusi Gaya Kepemimpinan",
+    "w.distribusiTipeWewenang": "Distribusi Tipe Wewenang",
+    "i.distribusiGayaInterpersonal": "Distribusi Gaya Interpersonal",
+    "l.rekapGayaKepemimpinan": "Rekap Gaya Kepemimpinan Peserta",
+    "w.rekapAnalisisWewenang": "Rekap Analisis Wewenang Peserta",
+    "i.rekapGayaInterpersonal": "Rekap Gaya Interpersonal Peserta",
+    "lwi.sortHintRow": "klik baris atau judul kolom untuk mengurutkan",
+    "lwi.gayaDominan": "Gaya Dominan",
+    "w.tipeDominan": "Tipe Dominan",
+    "lwi.efektivitas": "Efektivitas",
+    "ap.participants": "Participants",
+    "ap.inProgress": "In Progress",
+    "ap.completedSelesai": "Completed (Selesai)",
+    "ap.actionPlans": "Action Plans",
+    "ap.perParticipant": "{{n}} per participant",
+    "ap.pctOfBatch": "{{pct}}% of batch",
+    "ap.searchRecords": "🔍 Search Participant Records",
+    "ap.dept": "Dept",
+    "ap.allDepartments": "All Departments",
+    "ap.typeNamePlaceholder": "Type name...",
+    "ap.trackerTitle": "Executive Participant Tracking Database",
+    "ap.showingXofY": "Showing {{shown}} of {{total}}",
+    "ap.colNo": "#",
+    "ap.colName": "Participant Name",
+    "ap.colDept": "Department",
+    "ap.colCommitment": "Action Plan (Commitment)",
+    "ap.colStatus": "Status",
+    "ap.colNotes": "Updates & Notes",
+    "ap.colChallenge": "Challenge",
+    "ap.statusDone": "Selesai",
+    "ap.statusProg": "In Progress",
+    "ap.none": "None",
+    "ap.moreActions": "+{{n}} more actions",
+    "ap.noPlanForStatus": "Tidak ada action plan untuk status ini",
+    "ap.allNActionPlans": "SEMUA {{n}} RENCANA AKSI",
+    "ap.update30Day": "UPDATE 30 HARI",
+    "ap.challengeBarrier": "TANTANGAN / HAMBATAN",
+    "ap.filterAll": "Tampilkan semua peserta",
+    "ap.filterProg": "Filter: In Progress",
+    "ap.filterDone": "Filter: Completed",
+    "ap.batchProgressSummary": "Ringkasan progres batch",
+    "footer.syncNote": "Sinkronisasi otomatis setiap 10 detik",
+    "toast.dataUpdated": "Data diperbarui",
+    "common.belumAdaData": "Belum ada data",
+    "common.jumlahPeserta": "Jumlah peserta",
+    "common.hari": "hari",
+    "common.satuHari": "1 hari",
+    "ev.merasakanManfaat": "Merasakan Manfaat<br>Program Pelatihan",
+    "ev.merasakanManfaatShort": "Merasakan Manfaat Program Pelatihan",
+    "ev.sangatMenikmati": "Sangat Menikmati<br>Sesi Pelatihan",
+    "ev.sangatMenikmatiShort": "Sangat Menikmati Sesi Pelatihan",
+    "ev.materiRelevan": "Materi Relevan<br>dengan Pekerjaan",
+    "ev.materiRelevanShort": "Materi Relevan dengan Pekerjaan",
+    "ev.materiPraktikal": "Materi Praktikal<br>&amp; Aplikatif",
+    "ev.materiPraktikalShort": "Materi Praktikal &amp; Aplikatif",
+    "ev.manfaatKeseluruhan": "Manfaat keseluruhan bagi peserta",
+    "ev.tingkatKesenangan": "Tingkat kesenangan sesi",
+    "ev.relevansiMateri": "Relevansi materi dengan pekerjaan",
+    "ev.materiPraktikalApp": "Materi Praktikal dan Aplikatif",
+    "ev.nilai5": "Nilai 5 — Sangat Baik",
+    "ev.nilai4": "Nilai 4 — Baik",
+    "ev.nilai3": "Nilai 3 — Cukup",
+    "ev.nilai2": "Nilai 2 — Kurang",
+    "ev.nilai1": "Nilai 1 — Sangat Kurang",
+    "l.efektivitasKepemimpinan": "Efektivitas Kepemimpinan",
+    "lwi.noSheetConfigured": "Belum ada link/ID Google Sheet yang dimasukkan di Backend.",
+    "lwi.dataNotEnteredTitle": "Data Belum Dimasukkan",
+    "lwi.dataNotEnteredDescFor": "Silakan masukkan ID Google Sheet atau URL CSV untuk {{topic}} di menu Backend",
+    "lwi.tidakAda": "tidak ada",
+    "lwi.efektivitasLabel": "efektivitas",
+    "lwi.dominanLabel": "dominan",
+    "lwi.semua": "Semua",
+    "lwi.tidakAdaPeserta": "Tidak ada peserta",
+    "l.tidakAdaPesertaCocok": "Tidak ada peserta yang cocok dengan pencarian atau filter gaya ini",
+    "l.skorGayaKepemimpinan": "Skor Gaya Kepemimpinan · {{name}}",
+    "l.situationalHint": "Situational Leadership Model — nilai per dimensi",
+    "w.tidakAdaPesertaCocok": "Tidak ada peserta yang cocok dengan pencarian atau filter tipe ini",
+    "w.skorAnalisisWewenang": "Skor Analisis Wewenang · {{name}}",
+    "w.wewenangHint": "Analisis Wewenang — nilai per dimensi",
+    "i.tidakAdaPesertaCocok": "Tidak ada peserta yang cocok dengan pencarian atau filter gaya ini",
+    "i.skorDominanLabel": "skor dominan",
+    "i.gayaLabel": "gaya",
+    "i.skorGayaInterpersonal": "Skor Gaya Interpersonal · {{name}}",
+    "i.socialStyleHint": "Social Style Model — nilai per dimensi",
+    "ev.trainerSebelumnya": "Trainer sebelumnya",
+    "ev.trainerBerikutnya": "Trainer berikutnya",
+    "ev.keTrainerXdariY": "Ke trainer {{x}} dari {{y}}",
+    "ev.lihatRincian": "Lihat rincian:",
+    "ev.belumAdaDataSuffix": "— belum ada data",
+    "ev.dari5": "dari 5",
+    "ev.rataRataPositif": "Rata-rata {{avg}}/5 · {{pct}}% positif",
+    "ev.penilaianTrainerAvg": "Penilaian Trainer<br>(Rata-rata)",
+  },
+  en: {
+    "loader.loading": "Loading data in real time...",
+    "login.welcome": "Welcome!",
+    "login.instruction": "Enter your company name and access PIN to continue to the dashboard.",
+    "login.companyLabel": "Company Name",
+    "login.companyPlaceholder": "e.g. PT Maju Bersama",
+    "login.pinLabel": "Access PIN",
+    "login.pinPlaceholder": "Enter Access PIN",
+    "login.rememberMe": "Remember me",
+    "login.submit": "Enter Dashboard",
+    "login.validating": "Validating...",
+    "login.footer": "By continuing, you agree to the MDI TACK portal usage policy.",
+    "login.errPinRequired": "Please enter your PIN!",
+    "login.errPin4Digit": "PIN must be a 4-digit number!",
+    "login.errWrongCred": "Company name or PIN is incorrect. Please try again.",
+    "header.backToHome": "Back to Home",
+    "header.themeToggle": "Toggle light/dark theme",
+    "header.refreshTitle": "Reload data now",
+    "header.logout": "Log out",
+    "header.updatedPrefix": "Updated",
+    "header.syncNote": "auto-sync every {{sec}}s",
+    "header.syncFailed": "connection failed — retrying…",
+    "header.notConfigured": "NOT CONFIGURED",
+    "mm.loadingDate": "Loading date...",
+    "mm.welcomePrefix": "Welcome to",
+    "mm.desc": "Access your company's training report summary & dashboard from the session cards below.",
+    "mm.summaryLabel": "Client Summary",
+    "mm.totalSessions": "Total Sessions:",
+    "mm.sessionsUnit": "Sessions",
+    "mm.serverStatus": "Server Status:",
+    "mm.online": "ONLINE",
+    "mm.sessionListTitle": "Training Session List",
+    "mm.sessionListHint": "Select a session to view details",
+    "mm.noSessions": "No training sessions yet for this company.",
+    "mm.trainerNotSet": "Trainer not set",
+    "mm.openSessionAria": "Open session: {{title}}",
+    "nav.prepost": "Pre & Post Test",
+    "nav.actionplan": "Action Plan",
+    "nav.evaluasi": "Evaluation",
+    "nav.komentar": "Trainer Comments",
+    "nav.dokumentasi": "Training Documentation",
+    "nav.leadership": "Leadership Style",
+    "nav.wewenang": "Authority Analysis",
+    "nav.interpersonal": "Interpersonal Style",
+    "sec.prepost01": "Program Summary",
+    "sec.prepost02": "Participant Performance",
+    "sec.prepost03": "Score Detail & Distribution",
+    "sec.evaluasi02": "Training Evaluation",
+    "sec.dokumentasi04": "Training Documentation",
+    "sec.leadership05": "Leadership Style Summary",
+    "sec.leadership06": "Effectiveness Analysis & Ranking",
+    "sec.wewenang05": "Authority Analysis Summary",
+    "sec.wewenang06": "Authority Effectiveness Analysis & Ranking",
+    "sec.interpersonal05": "Interpersonal Style Summary",
+    "sec.interpersonal06": "Interpersonal Style Distribution",
+    "sec.detailPerPeserta": "Per-Participant Detail",
+    "sec.actionplan05": "Action Plan Tracker",
+    "pp.totalPeserta": "Total Participants",
+    "pp.orang": "people",
+    "pp.avgPreLabel": "Average Pre-Test Score",
+    "pp.avgPostLabel": "Average Post-Test Score",
+    "pp.deltaLabel": "Understanding Improvement",
+    "pp.registeredInBatch": "registered in this batch",
+    "pp.noDataYet": "no data yet",
+    "pp.min": "min",
+    "pp.max": "max",
+    "pp.postSummary": "{{count}}/{{total}} participants · min {{min}} · max {{max}}",
+    "pp.postNotYet": "post-test not yet conducted",
+    "pp.vsPreTest": "vs pre-test",
+    "pp.deltaAfterPost": "calculated once post-test is filled in",
+    "pp.podiumHint": "based on Pre-Test & Post-Test scores and Understanding Improvement",
+    "pp.peringkatTitle": "🏆 Participant Ranking",
+    "pp.peringkatTitle2": "Participant Ranking",
+    "pp.podiumEmpty": "Loading data…",
+    "pp.podiumNoData": "Data not available yet",
+    "pp.compareTitle": "Pre & Post Test Comparison",
+    "pp.distTitle": "Score Distribution",
+    "pp.distHint": "number of participants per range",
+    "pp.recapTitle": "Participant Score Recap",
+    "pp.sortHint": "click a column header to sort",
+    "pp.searchPlaceholder": "Search participant name…",
+    "pp.pesertaCount": "{{n}} participants",
+    "pp.colName": "Name",
+    "pp.colPre": "Pre Score",
+    "pp.colPost": "Post Score",
+    "pp.average": "Average",
+    "pp.tooltipPre": "Pre-Test Score:",
+    "pp.tooltipPost": "Post-Test Score:",
+    "pp.tooltipDelta": "Understanding Improvement:",
+    "pp.tooltipPostNone": "Post-Test: not available",
+    "pp.podiumSubDelta": "Improvement:",
+    "pp.podiumSubPost": "Post:",
+    "pp.podiumSubPre": "Pre:",
+    "ev.hasilUtama": "Key Results",
+    "ev.rincianKepuasan": "Satisfaction Breakdown",
+    "ev.penilaianTrainer": "Trainer Ratings",
+    "ev.topikPalingDiminati": "What Landed Best",
+    "ev.kutipanPeserta": "In Their Own Words",
+    "ev.topikBermanfaat": "Most valuable topics covered",
+    "ev.topikSelanjutnya": "Most requested for the next training",
+    "ev.lihatDetailTrainer": "See trainer rating details",
+    "ev.umpanBalikPositif": "Positive Feedback",
+    "ev.rataRataNilaiTrainer": "Average Trainer Score",
+    "ev.inginTrainingSelanjutnya": "Want Follow-up Training",
+    "doc.noDocs": "No training documentation yet.",
+    "doc.noPhotos": "No photos for this day.",
+    "doc.day": "Day",
+    "lwi.totalPesertaTernilai": "TOTAL PARTICIPANTS RATED",
+    "lwi.pesertaProgram": "program participants",
+    "l.gayaDominanProgram": "PROGRAM'S DOMINANT STYLE",
+    "l.pesertaDenganGayaIni": "participants with this style",
+    "lwi.rataRataEfektivitas": "AVERAGE EFFECTIVENESS",
+    "l.skorRentang": "score range -1 to 14",
+    "lwi.pesertaPalingEfektif": "MOST EFFECTIVE PARTICIPANT",
+    "lwi.pesertaCountRentang": "{{n}} participants · range {{min}} to {{max}}",
+    "lwi.pesertaCountSkor": "{{n}} participants · score {{min}} to {{max}}",
+    "l.dominantCountSub": "{{n}} participants with this dominant style",
+    "w.tipeWewenangDominan": "DOMINANT AUTHORITY TYPE",
+    "w.pesertaDenganTipeIni": "participants with this type",
+    "w.dominantCountSub": "{{n}} participants with this dominant type",
+    "i.gayaInterpersonalDominan": "DOMINANT INTERPERSONAL STYLE",
+    "i.pesertaDenganGayaIni": "participants with this style",
+    "i.rataRataSkorGayaDominan": "AVERAGE DOMINANT STYLE SCORE",
+    "i.skorGayaPalingMenonjol": "score of the most prominent style",
+    "i.gayaPalingMenonjol": "MOST PROMINENT STYLE",
+    "i.dominantCountSub": "{{n}} participants with this dominant style",
+    "lwi.peringkatEfektivitasKepemimpinan": "🎖️ Leadership Effectiveness Ranking",
+    "lwi.peringkatEfektivitasKepemimpinan2": "Leadership Effectiveness Ranking",
+    "lwi.peringkatEfektivitasWewenang": "🎖️ Authority Effectiveness Ranking",
+    "lwi.peringkatEfektivitasWewenang2": "Authority Effectiveness Ranking",
+    "lwi.skorTertinggiTerendah": "highest & lowest effectiveness scores",
+    "l.distribusiGayaKepemimpinan": "Leadership Style Distribution",
+    "w.distribusiTipeWewenang": "Authority Type Distribution",
+    "i.distribusiGayaInterpersonal": "Interpersonal Style Distribution",
+    "l.rekapGayaKepemimpinan": "Participant Leadership Style Recap",
+    "w.rekapAnalisisWewenang": "Participant Authority Analysis Recap",
+    "i.rekapGayaInterpersonal": "Participant Interpersonal Style Recap",
+    "lwi.sortHintRow": "click a row or column header to sort",
+    "lwi.gayaDominan": "Dominant Style",
+    "w.tipeDominan": "Dominant Type",
+    "lwi.efektivitas": "Effectiveness",
+    "ap.participants": "Participants",
+    "ap.inProgress": "In Progress",
+    "ap.completedSelesai": "Completed",
+    "ap.actionPlans": "Action Plans",
+    "ap.perParticipant": "{{n}} per participant",
+    "ap.pctOfBatch": "{{pct}}% of batch",
+    "ap.searchRecords": "🔍 Search Participant Records",
+    "ap.dept": "Dept",
+    "ap.allDepartments": "All Departments",
+    "ap.typeNamePlaceholder": "Type name...",
+    "ap.trackerTitle": "Executive Participant Tracking Database",
+    "ap.showingXofY": "Showing {{shown}} of {{total}}",
+    "ap.colNo": "#",
+    "ap.colName": "Participant Name",
+    "ap.colDept": "Department",
+    "ap.colCommitment": "Action Plan (Commitment)",
+    "ap.colStatus": "Status",
+    "ap.colNotes": "Updates & Notes",
+    "ap.colChallenge": "Challenge",
+    "ap.statusDone": "Completed",
+    "ap.statusProg": "In Progress",
+    "ap.none": "None",
+    "ap.moreActions": "+{{n}} more actions",
+    "ap.noPlanForStatus": "No action plans for this status",
+    "ap.allNActionPlans": "ALL {{n}} ACTION PLANS",
+    "ap.update30Day": "30-DAY UPDATE",
+    "ap.challengeBarrier": "CHALLENGE / BARRIER",
+    "ap.filterAll": "Show all participants",
+    "ap.filterProg": "Filter: In Progress",
+    "ap.filterDone": "Filter: Completed",
+    "ap.batchProgressSummary": "Batch progress summary",
+    "footer.syncNote": "Auto-syncing every 10 seconds",
+    "toast.dataUpdated": "Data updated",
+    "common.belumAdaData": "No data available",
+    "common.jumlahPeserta": "Number of participants",
+    "common.hari": "days",
+    "common.satuHari": "1 day",
+    "ev.merasakanManfaat": "Found the<br>Program Beneficial",
+    "ev.merasakanManfaatShort": "Found the Program Beneficial",
+    "ev.sangatMenikmati": "Really Enjoyed<br>the Training Session",
+    "ev.sangatMenikmatiShort": "Really Enjoyed the Training Session",
+    "ev.materiRelevan": "Material Relevant<br>to Their Work",
+    "ev.materiRelevanShort": "Material Relevant to Their Work",
+    "ev.materiPraktikal": "Practical &amp;<br>Applicable Material",
+    "ev.materiPraktikalShort": "Practical &amp; Applicable Material",
+    "ev.manfaatKeseluruhan": "Overall benefit to participants",
+    "ev.tingkatKesenangan": "Session enjoyment level",
+    "ev.relevansiMateri": "Relevance of material to their work",
+    "ev.materiPraktikalApp": "Practical and Applicable Material",
+    "ev.nilai5": "Score 5 — Excellent",
+    "ev.nilai4": "Score 4 — Good",
+    "ev.nilai3": "Score 3 — Fair",
+    "ev.nilai2": "Score 2 — Poor",
+    "ev.nilai1": "Score 1 — Very Poor",
+    "l.efektivitasKepemimpinan": "Leadership Effectiveness",
+    "lwi.noSheetConfigured": "No Google Sheet link/ID has been entered in the Backend yet.",
+    "lwi.dataNotEnteredTitle": "Data Not Entered",
+    "lwi.dataNotEnteredDescFor": "Please enter a Google Sheet ID or CSV URL for {{topic}} in the Backend menu",
+    "lwi.tidakAda": "none",
+    "lwi.efektivitasLabel": "effectiveness",
+    "lwi.dominanLabel": "dominant",
+    "lwi.semua": "All",
+    "lwi.tidakAdaPeserta": "No participants",
+    "l.tidakAdaPesertaCocok": "No participants match this search or style filter",
+    "l.skorGayaKepemimpinan": "Leadership Style Score · {{name}}",
+    "l.situationalHint": "Situational Leadership Model — score per dimension",
+    "w.tidakAdaPesertaCocok": "No participants match this search or type filter",
+    "w.skorAnalisisWewenang": "Authority Analysis Score · {{name}}",
+    "w.wewenangHint": "Authority Analysis — score per dimension",
+    "i.tidakAdaPesertaCocok": "No participants match this search or style filter",
+    "i.skorDominanLabel": "dominant score",
+    "i.gayaLabel": "style",
+    "i.skorGayaInterpersonal": "Interpersonal Style Score · {{name}}",
+    "i.socialStyleHint": "Social Style Model — score per dimension",
+    "ev.trainerSebelumnya": "Previous trainer",
+    "ev.trainerBerikutnya": "Next trainer",
+    "ev.keTrainerXdariY": "Go to trainer {{x}} of {{y}}",
+    "ev.lihatRincian": "View details:",
+    "ev.belumAdaDataSuffix": "— no data yet",
+    "ev.dari5": "out of 5",
+    "ev.rataRataPositif": "Average {{avg}}/5 · {{pct}}% positive",
+    "ev.penilaianTrainerAvg": "Trainer Rating<br>(Average)",
+  }
+};
+
+let currentLang = localStorage.getItem("mdp-lang") || "id";
+
+function t(key, vars) {
+  const dict = I18N[currentLang] || I18N.id;
+  let str = (dict && dict[key] !== undefined) ? dict[key] : (I18N.id[key] !== undefined ? I18N.id[key] : key);
+  if (vars) {
+    Object.keys(vars).forEach(k => { str = str.split(`{{${k}}}`).join(vars[k]); });
+  }
+  return str;
+}
+function tf(key, vars) { return t(key, vars); }
+function dateLocale() { return currentLang === "en" ? "en-US" : "id-ID"; }
+
+function applyI18n(root) {
+  const scope = root || document;
+  scope.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.getAttribute("data-i18n")); });
+  scope.querySelectorAll("[data-i18n-placeholder]").forEach(el => { el.placeholder = t(el.getAttribute("data-i18n-placeholder")); });
+  scope.querySelectorAll("[data-i18n-title]").forEach(el => { el.title = t(el.getAttribute("data-i18n-title")); });
+  scope.querySelectorAll("[data-i18n-aria]").forEach(el => { el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria"))); });
+}
+
+function setLang(lang) {
+  if (lang !== "id" && lang !== "en") return;
+  currentLang = lang;
+  try { localStorage.setItem("mdp-lang", lang); } catch(e) {}
+  document.documentElement.lang = lang;
+  document.querySelectorAll(".lang-toggle").forEach(box => {
+    box.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
+  });
+  applyI18n();
+  // These get their real value from fetchData()/setOnline(), which may not have
+  // run yet (or may have failed) — refresh them immediately so the toggle is
+  // never left showing the other language's leftover text.
+  try {
+    const nextInEl = document.getElementById("nextIn");
+    if (nextInEl && typeof POLL_MS !== "undefined") nextInEl.textContent = tf("header.syncNote", {sec: Math.round(POLL_MS/1000)});
+  } catch(e) {}
+  // Re-run whichever renderers are currently relevant so JS-generated text picks up the new language
+  if (typeof activeTrainingId !== "undefined" && activeTrainingId) {
+    try { if (typeof render === "function") render(false); } catch(e) {}
+    try { if (typeof renderLeadership === "function") renderLeadership(); } catch(e) {}
+    try { if (typeof renderWewenang === "function") renderWewenang(); } catch(e) {}
+    try { if (typeof renderInterpersonal === "function") renderInterpersonal(); } catch(e) {}
+    try { if (typeof renderDynamicEvaluation === "function" && typeof currentEvalData !== "undefined") renderDynamicEvaluation(currentEvalData); } catch(e) {}
+    try { if (typeof renderActiveClientSections === "function") renderActiveClientSections(); } catch(e) {}
+  } else {
+    try {
+      if (typeof loggedClient !== "undefined" && loggedClient) {
+        mainMenuLastRenderedKey = null;
+        if (typeof window.showMainMenu === "function") window.showMainMenu(true);
+        else if (typeof renderMainMenu === "function") renderMainMenu(loggedClient.trainings || [], false);
+      }
+    } catch(e) {}
+  }
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".lang-toggle button");
+  if (btn) setLang(btn.dataset.lang);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.documentElement.lang = currentLang;
+  applyI18n();
+  document.querySelectorAll(".lang-toggle").forEach(box => {
+    box.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.lang === currentLang));
+  });
+  try {
+    const nextInEl = document.getElementById("nextIn");
+    if (nextInEl && typeof POLL_MS !== "undefined") nextInEl.textContent = tf("header.syncNote", {sec: Math.round(POLL_MS/1000)});
+  } catch(e) {}
+});
 
 /* ================= GLOBAL STATE & ROUTING ================= */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCAAAkpGxp0tq4MwL2xz8Uq9DjYJS-Jlj9GdnEUPx2zXy5RP6q2vLj8NEXa-Bb--tr2g/exec";
@@ -2825,7 +3376,7 @@ function showPinGate() {
     }
 
     if (!pinInput) {
-      err.textContent = "Masukkan PIN!";
+      err.textContent = t("login.errPinRequired");
       err.classList.add("show");
       box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
       setTimeout(() => { err.classList.remove("show"); }, 2000);
@@ -2834,7 +3385,7 @@ function showPinGate() {
     
     // Validasi PIN tepat 4 digit
     if (!/^\d{4}$/.test(pinInput)) {
-      err.textContent = "PIN harus 4 digit angka!";
+      err.textContent = t("login.errPin4Digit");
       err.classList.add("show");
       box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
       setTimeout(() => { err.classList.remove("show"); }, 2500);
@@ -2846,7 +3397,7 @@ function showPinGate() {
       isChecking = true;
       btnSubmitLogin.disabled = true;
       const originalText = btnSubmitLogin.textContent;
-      btnSubmitLogin.textContent = "Memvalidasi...";
+      btnSubmitLogin.textContent = t("login.validating");
       try {
         await window.__loadClientsPromise;
       } catch(e) {
@@ -2883,7 +3434,7 @@ function showPinGate() {
       }, 50);
     } else {
       companyPinInput.value = "";
-      err.textContent = "Nama Perusahaan atau PIN salah. Coba lagi.";
+      err.textContent = t("login.errWrongCred");
       err.classList.add("show");
       box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
       setTimeout(() => { err.classList.remove("show"); }, 2500);
@@ -2946,7 +3497,7 @@ window.showMainMenu = function(skipHistory = false) {
       const now = new Date();
       const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       const dateEl = document.getElementById("mmRealtimeDate");
-      if(dateEl) dateEl.textContent = now.toLocaleDateString('id-ID', dateOptions);
+      if(dateEl) dateEl.textContent = now.toLocaleDateString(dateLocale(), dateOptions);
     } catch(e) {
       console.warn("Failed to format localized date:", e);
       const dateEl = document.getElementById("mmRealtimeDate");
@@ -2955,7 +3506,7 @@ window.showMainMenu = function(skipHistory = false) {
 
     const trainingsList = loggedClient.trainings || [];
     const countEl = document.getElementById("mmTotalSessionsCount");
-    if(countEl) countEl.textContent = trainingsList.length + " Sesi";
+    if(countEl) countEl.textContent = trainingsList.length + " " + t("mm.sessionsUnit");
     if (isFirstArrival) {
       const hero = mm.querySelector(".mm-hero-card");
       if (hero) hero.classList.add("animate-in");
@@ -2972,7 +3523,7 @@ window.showMainMenu = function(skipHistory = false) {
         document.getElementById("mmClientName").textContent = loggedClient.name;
         const trainingsList = loggedClient.trainings || [];
         const countEl = document.getElementById("mmTotalSessionsCount");
-        if(countEl) countEl.textContent = trainingsList.length + " Sesi";
+        if(countEl) countEl.textContent = trainingsList.length + " " + t("mm.sessionsUnit");
         renderMainMenu(trainingsList, isFirstArrival);
       }
     }
@@ -3287,16 +3838,16 @@ function renderMainMenu(trainings, animateEntrance) {
   if (renderKey === mainMenuLastRenderedKey) return;
   mainMenuLastRenderedKey = renderKey;
   if(trainings.length === 0) {
-    grid.innerHTML = `<div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--n500); background:var(--card-bg); border-radius:var(--radius-lg); border:1px solid var(--card-border);">Belum ada sesi pelatihan untuk perusahaan ini.</div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--n500); background:var(--card-bg); border-radius:var(--radius-lg); border:1px solid var(--card-border);">${t("mm.noSessions")}</div>`;
     return;
   }
 
   const formatRange = (start, end) => {
     if (!start) return "—";
     const opt = { day: "numeric", month: "short", year: "numeric" };
-    const dStart = new Date(start).toLocaleDateString("id-ID", opt);
+    const dStart = new Date(start).toLocaleDateString(dateLocale(), opt);
     if (!end || start === end) return dStart;
-    const dEnd = new Date(end).toLocaleDateString("id-ID", opt);
+    const dEnd = new Date(end).toLocaleDateString(dateLocale(), opt);
     return `${dStart} – ${dEnd}`;
   };
 
@@ -3304,7 +3855,7 @@ function renderMainMenu(trainings, animateEntrance) {
     const entranceClass = animateEntrance ? " animate-in" : "";
     const entranceStyle = animateEntrance ? ` style="animation-delay:${180 + Math.min(idx, 5) * 70}ms"` : "";
     return `
-    <div class="mm-card-item${entranceClass}"${entranceStyle} tabindex="0" role="button" aria-label="Buka sesi: ${esc(t.title)}" onclick="openTraining('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.add('is-activating');setTimeout(()=>openTraining('${t.id}'),100)}" onanimationend="this.classList.remove('animate-in')">
+    <div class="mm-card-item${entranceClass}"${entranceStyle} tabindex="0" role="button" aria-label="${window.t("mm.openSessionAria",{title:t.title})}" onclick="openTraining('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.add('is-activating');setTimeout(()=>openTraining('${t.id}'),100)}" onanimationend="this.classList.remove('animate-in')">
       <div class="mm-card-banner">
         <div class="mm-card-title">${t.title}</div>
       </div>
@@ -3318,7 +3869,7 @@ function renderMainMenu(trainings, animateEntrance) {
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           ${t.trainerNames
             ? `<span>${esc(t.trainerNames)}</span>`
-            : `<span class="mm-trainer-missing"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Trainer belum diatur</span>`}
+            : `<span class="mm-trainer-missing"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>${window.t("mm.trainerNotSet")}</span>`}
         </div>
       </div>
     </div>`;
@@ -3851,16 +4402,16 @@ function renderDynamicEvaluation(evalData) {
     const formatRange = (start, end) => {
       if (!start) return "—";
       const opt = { day: "numeric", month: "short", year: "numeric" };
-      const dStart = new Date(start).toLocaleDateString("id-ID", opt);
+      const dStart = new Date(start).toLocaleDateString(dateLocale(), opt);
       if (!end || start === end) return dStart;
-      const dEnd = new Date(end).toLocaleDateString("id-ID", opt);
+      const dEnd = new Date(end).toLocaleDateString(dateLocale(), opt);
       return `${dStart} – ${dEnd}`;
     };
     const calcDur = (start, end) => {
       if (!start) return "—";
-      if (!end || start === end) return "1 hari";
+      if (!end || start === end) return t("common.satuHari");
       const diff = Math.abs(new Date(end) - new Date(start));
-      return `${Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1} hari`;
+      return `${Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1} ${t("common.hari")}`;
     };
 
     // Header metadata
@@ -3922,38 +4473,38 @@ function renderDynamicEvaluation(evalData) {
     const evalKpisEl = document.getElementById("evalKpis");
     if(evalKpisEl) {
       const kpiDefs = [
-        { hasData: benHasData,  data: ben,  label: "Merasakan Manfaat<br>Program Pelatihan", short: "Merasakan Manfaat Program Pelatihan" },
-        { hasData: enjHasData,  data: enj,  label: "Sangat Menikmati<br>Sesi Pelatihan", short: "Sangat Menikmati Sesi Pelatihan" },
-        { hasData: relHasData,  data: rel,  label: "Materi Relevan<br>dengan Pekerjaan", short: "Materi Relevan dengan Pekerjaan" },
-        { hasData: pracHasData, data: prac, label: "Materi Praktikal<br>& Aplikatif", short: "Materi Praktikal & Aplikatif" }
+        { hasData: benHasData,  data: ben,  label: t("ev.merasakanManfaat"), short: t("ev.merasakanManfaatShort") },
+        { hasData: enjHasData,  data: enj,  label: t("ev.sangatMenikmati"), short: t("ev.sangatMenikmatiShort") },
+        { hasData: relHasData,  data: rel,  label: t("ev.materiRelevan"), short: t("ev.materiRelevanShort") },
+        { hasData: pracHasData, data: prac, label: t("ev.materiPraktikal"), short: t("ev.materiPraktikalShort") }
       ];
       evalKpisEl.innerHTML = kpiDefs.map((k, idx) => k.hasData ? `
-        <button type="button" class="eval-kpi" data-scroll-target="evalBarRow-${idx}" aria-label="Lihat rincian: ${k.short}">
+        <button type="button" class="eval-kpi" data-scroll-target="evalBarRow-${idx}" aria-label="${t("ev.lihatRincian")} ${k.short}">
           ${gaugeMarkup(`evalGaugeVal-${idx}`, k.data.pct54, k.data.pct54, "pct", false)}
           <div class="label">${k.label}</div>
           <div class="score">${fmtID(k.data.avg, 2)} / 5 avg</div>
         </button>
       ` : `
-        <button type="button" class="eval-kpi eval-kpi-empty" data-scroll-target="evalBarRow-${idx}" aria-label="${k.short} — belum ada data">
+        <button type="button" class="eval-kpi eval-kpi-empty" data-scroll-target="evalBarRow-${idx}" aria-label="${k.short} ${t("ev.belumAdaDataSuffix")}">
           ${gaugeMarkup(`evalGaugeVal-${idx}`, 0, 0, "pct", true)}
           <div class="label">${k.label}</div>
-          <div class="score eval-kpi-empty-note">Belum ada data</div>
+          <div class="score eval-kpi-empty-note">${t("common.belumAdaData")}</div>
         </button>
       `).join('');
     }
     const evalKpiTrainerEl = document.getElementById("evalKpiTrainer");
     if(evalKpiTrainerEl) {
       evalKpiTrainerEl.classList.toggle("eval-kpi-empty", !trainerHasData);
-      evalKpiTrainerEl.setAttribute("aria-label", trainerHasData ? "Lihat detail penilaian trainer" : "Penilaian Trainer — belum ada data");
+      evalKpiTrainerEl.setAttribute("aria-label", trainerHasData ? t("ev.lihatDetailTrainer") : `${t("ev.penilaianTrainer")} ${t("ev.belumAdaDataSuffix")}`);
       const trainerPct = Math.round((trainerAvg / 5) * 100);
       evalKpiTrainerEl.innerHTML = trainerHasData ? `
         ${gaugeMarkup("evalGaugeValTrainer", trainerPct, trainerAvg, "avg", false)}
-        <div class="label">Penilaian Trainer<br>(Rata-rata)</div>
-        <div class="score">dari 5</div>
+        <div class="label">${t("ev.penilaianTrainerAvg")}</div>
+        <div class="score">${t("ev.dari5")}</div>
       ` : `
         ${gaugeMarkup("evalGaugeValTrainer", 0, 0, "avg", true)}
-        <div class="label">Penilaian Trainer<br>(Rata-rata)</div>
-        <div class="score eval-kpi-empty-note">Belum ada data</div>
+        <div class="label">${t("ev.penilaianTrainerAvg")}</div>
+        <div class="score eval-kpi-empty-note">${t("common.belumAdaData")}</div>
       `;
     }
     initEvalGauges(document.querySelector(".eval-kpi-row"));
@@ -3962,17 +4513,17 @@ function renderDynamicEvaluation(evalData) {
     const evalBarsEl = document.getElementById("evalBars");
     if(evalBarsEl) {
       const barData = [
-        { label: "Manfaat keseluruhan bagi peserta", scores: ben, hasData: benHasData },
-        { label: "Tingkat kesenangan sesi", scores: enj, hasData: enjHasData },
-        { label: "Relevansi materi dengan pekerjaan", scores: rel, hasData: relHasData },
-        { label: "Materi Praktikal dan Aplikatif", scores: prac, hasData: pracHasData }
+        { label: t("ev.manfaatKeseluruhan"), scores: ben, hasData: benHasData },
+        { label: t("ev.tingkatKesenangan"), scores: enj, hasData: enjHasData },
+        { label: t("ev.relevansiMateri"), scores: rel, hasData: relHasData },
+        { label: t("ev.materiPraktikalApp"), scores: prac, hasData: pracHasData }
       ];
       const barColors = [
-        { cls: "bar-fill-5", lbl: "Nilai 5 — Sangat Baik", color: "#2ecc71" },
-        { cls: "bar-fill-4", lbl: "Nilai 4 — Baik", color: "#3498db" },
-        { cls: "bar-fill-3", lbl: "Nilai 3 — Cukup", color: "#9b59b6" },
-        { cls: "bar-fill-2", lbl: "Nilai 2 — Kurang", color: "#f1c40f" },
-        { cls: "bar-fill-1", lbl: "Nilai 1 — Sangat Kurang", color: "#e74c3c" }
+        { cls: "bar-fill-5", lbl: t("ev.nilai5"), color: "#2ecc71" },
+        { cls: "bar-fill-4", lbl: t("ev.nilai4"), color: "#3498db" },
+        { cls: "bar-fill-3", lbl: t("ev.nilai3"), color: "#9b59b6" },
+        { cls: "bar-fill-2", lbl: t("ev.nilai2"), color: "#f1c40f" },
+        { cls: "bar-fill-1", lbl: t("ev.nilai1"), color: "#e74c3c" }
       ];
       const pctKeys = ["pct5","pct4","pct3","pct2","pct1"];
 
@@ -3980,7 +4531,7 @@ function renderDynamicEvaluation(evalData) {
         <div class="bar-row" id="evalBarRow-${idx}">
           <div class="bar-label">
             <span>${b.label}</span>
-            ${b.hasData ? `<span class="bar-summary">Rata-rata <b>${fmtID(b.scores.avg, 2)}</b>/5 · <b>${b.scores.pct54}%</b> positif</span>` : ''}
+            ${b.hasData ? `<span class="bar-summary">${tf("ev.rataRataPositif",{avg:`<b>${fmtID(b.scores.avg, 2)}</b>`,pct:`<b>${b.scores.pct54}</b>`})}</span>` : ''}
           </div>
           ${b.hasData ? `
           <div class="bar-track">
@@ -3989,7 +4540,7 @@ function renderDynamicEvaluation(evalData) {
               return `<div class="${barColors[pi].cls}" style="width:${b.scores[pk]||0}%" data-pct="${pct}" data-lbl="${barColors[pi].lbl}">${pct >= 8 ? pct + '%' : ''}</div>`;
             }).join('')}
           </div>` : `
-          <div class="bar-track bar-track-empty">Belum ada data</div>`}
+          <div class="bar-track bar-track-empty">${t("common.belumAdaData")}</div>`}
         </div>
       `).join('') + `
         <div class="legend" style="display:flex;gap:16px;font-size:11.5px;color:var(--n500,var(--muted));margin-top:14px;flex-wrap:wrap;">
@@ -4031,7 +4582,7 @@ function renderDynamicEvaluation(evalData) {
               <div class="name">${esc(t.name)}</div>
               ${trainerHasData
                 ? `<div class="score-big${Number(t.avg) < 4 ? " score-big-low" : ""}">${fmtID(t.avg, 2)}</div>`
-                : `<div class="score-big score-big-empty">Belum ada data</div>`}
+                : `<div class="score-big score-big-empty">${t("common.belumAdaData")}</div>`}
             </div>
           </div>
         `;
@@ -4041,11 +4592,11 @@ function renderDynamicEvaluation(evalData) {
       const dotsEl = document.getElementById("evalTrainersDots");
       if (dotsEl) {
         dotsEl.innerHTML = trainers.length > 1
-          ? `<button type="button" class="trainer-carousel-nav trainer-carousel-nav--dot prev" aria-label="Trainer sebelumnya">
+          ? `<button type="button" class="trainer-carousel-nav trainer-carousel-nav--dot prev" aria-label="${t("ev.trainerSebelumnya")}">
                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
              </button>` +
-            trainers.map((_, i) => `<button type="button" class="trainer-carousel-dot${i === 0 ? " active" : ""}" data-dot-index="${i}" aria-label="Ke trainer ${i + 1} dari ${trainers.length}"></button>`).join("") +
-            `<button type="button" class="trainer-carousel-nav trainer-carousel-nav--dot next" aria-label="Trainer berikutnya">
+            trainers.map((_, i) => `<button type="button" class="trainer-carousel-dot${i === 0 ? " active" : ""}" data-dot-index="${i}" aria-label="${tf("ev.keTrainerXdariY",{x:i+1,y:trainers.length})}"></button>`).join("") +
+            `<button type="button" class="trainer-carousel-nav trainer-carousel-nav--dot next" aria-label="${t("ev.trainerBerikutnya")}">
                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
              </button>`
           : "";
@@ -4287,9 +4838,9 @@ async function fetchData(manual=false){
   if(!targetMainId && !hasEvalSheet) {
     render(false);
     setOnline(false);
-    document.getElementById("liveText").textContent = "BELUM DI-SET";
+    document.getElementById("liveText").textContent = t("header.notConfigured");
     const nextIn = document.getElementById("nextIn");
-    if(nextIn) nextIn.textContent = "sinkronisasi otomatis tiap 10 dtk";
+    if(nextIn) nextIn.textContent = tf("header.syncNote", {sec: 10});
     firstLoad = false;
     return;
   }
@@ -4488,8 +5039,8 @@ function setOnline(ok){
   document.getElementById("liveText").textContent= ok ? "LIVE" : "OFFLINE";
   const pollSec = Math.round(POLL_MS/1000);
   document.getElementById("nextIn").textContent= ok
-    ? `sinkronisasi otomatis tiap ${pollSec} dtk`
-    : "koneksi gagal — mencoba ulang…";
+    ? tf("header.syncNote", {sec: pollSec})
+    : t("header.syncFailed");
 }
 
 function showToast(msg){
@@ -4549,22 +5100,22 @@ function render(flash){
 
   /* --- KPI --- */
   countUp("vPeserta",s.total,fmtInt);
-  document.getElementById("sPeserta").textContent=`terdaftar di batch ini`;
+  document.getElementById("sPeserta").textContent=t("pp.registeredInBatch");
 
   countUp("vPre",s.avgPre,v=>fmtID(v,1));
   document.getElementById("sPre").textContent=
-    s.avgPre!=null?`min ${fmtInt(s.minPre)} · maks ${fmtInt(s.maxPre)}`:"belum ada data";
+    s.avgPre!=null?`${t("pp.min")} ${fmtInt(s.minPre)} · ${t("pp.max")} ${fmtInt(s.maxPre)}`:t("pp.noDataYet");
 
   const kPost=document.getElementById("kpiPost");
   if(s.avgPost!=null){
     kPost.classList.remove("pending");
     countUp("vPost",s.avgPost,v=>fmtID(v,1));
     document.getElementById("sPost").textContent=
-      `${s.postCount}/${s.total} peserta · min ${fmtInt(s.minPost)} · maks ${fmtInt(s.maxPost)}`;
+      tf("pp.postSummary",{count:s.postCount,total:s.total,min:fmtInt(s.minPost),max:fmtInt(s.maxPost)});
   }else{
     kPost.classList.add("pending");
     const el=document.getElementById("vPost"); el.classList.remove("skeleton"); el.textContent="—";
-    document.getElementById("sPost").textContent="post test belum dilaksanakan";
+    document.getElementById("sPost").textContent=t("pp.postNotYet");
   }
 
   const kDelta=document.getElementById("kpiDelta");
@@ -4573,15 +5124,15 @@ function render(flash){
     kDelta.classList.remove("pending");
     countUp("vDelta",s.avgDelta,v=>`${v>0?"+":""}${fmtID(v,1)}%`);
     document.getElementById("sDelta").innerHTML=
-      `<span class="chip ${s.avgDelta>=0?"up":"down"}">${s.avgDelta>0?"+":""}${fmtID(s.avgDelta,1)}%</span> vs pre test`;
+      `<span class="chip ${s.avgDelta>=0?"up":"down"}">${s.avgDelta>0?"+":""}${fmtID(s.avgDelta,1)}%</span> ${t("pp.vsPreTest")}`;
   }else{
     kDelta.classList.add("pending");
     dEl.textContent="—"; counters["vDelta"]=null;
-    document.getElementById("sDelta").textContent="dihitung setelah post test terisi";
+    document.getElementById("sDelta").textContent=t("pp.deltaAfterPost");
   }
 
   /* --- Podium --- */
-  document.getElementById("podiumHint").textContent="berdasarkan Nilai Pre Test dan Post Test serta Peningkatan Pemahaman";
+  document.getElementById("podiumHint").textContent=t("pp.podiumHint");
   renderPodium(activeTab);
 
   renderCharts();
@@ -4592,6 +5143,13 @@ function render(flash){
 }
 
 function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+function emptyStateHTML(title, desc){
+  return `<div style="text-align:center;padding:40px 20px;color:var(--n500);">
+    <div style="font-weight:700;font-size:14px;color:var(--n700);margin-bottom:6px;">${esc(title)}</div>
+    <div style="font-size:12.5px;">${esc(desc)}</div>
+  </div>`;
+}
 
 // Fallback: derive Action Plan commitments straight from answers + form config
 // when a participant has no precomputed extractedPlans (e.g. imported before
@@ -4631,14 +5189,14 @@ function deriveApPlansFromAnswers(answers, formConfig) {
 function renderPodium(tab){
   const list = tab==="top" ? (stats?.top3 || []) : (stats?.bottom3 || []);
   const el = document.getElementById("podiumList");
-  if(!list||!list.length){el.innerHTML='<div class="podium-empty">Data belum tersedia</div>';return;}
+  if(!list||!list.length){el.innerHTML=`<div class="podium-empty">${t("pp.podiumNoData")}</div>`;return;}
   const isBottom = tab==="bottom";
   el.innerHTML = list.map((p,i)=>{
     const cls = isBottom ? "last" : (i===0?"first":"");
     const medalCls = i===0?"m1":i===1?"m2":"m3";
     const pos = i + 1; // posisi urutan selalu 1, 2, 3
     const score = p.rankScore!=null ? fmtID(p.rankScore,1) : (p.post!=null ? fmtID(p.post,1) : (p.pre!=null ? fmtID(p.pre,1) : "—"));
-    const sub = p.delta!=null ? `Peningkatan: ${p.delta>0?"+":""}${fmtID(p.delta,1)}%` : (p.post!=null ? `Post: ${fmtID(p.post,1)}` : `Pre: ${fmtID(p.pre,1)}`);
+    const sub = p.delta!=null ? `${t("pp.podiumSubDelta")} ${p.delta>0?"+":""}${fmtID(p.delta,1)}%` : (p.post!=null ? `${t("pp.podiumSubPost")} ${fmtID(p.post,1)}` : `${t("pp.podiumSubPre")} ${fmtID(p.pre,1)}`);
     return `<div class="podium-item ${cls}"><span class="medal ${medalCls}">${pos}</span><div><div class="p-name">${esc(p.name)}</div><div class="p-sub">${sub}</div></div><span class="p-score">${score}</span></div>`;
   }).join("");
 }
@@ -4690,12 +5248,12 @@ function renderCharts(){
               label:()=>null,
               afterBody:items=>{
                 const i=items[0].dataIndex, p=participants[i];
-                const lines=[`Nilai Pre Test:  ${p.pre!=null?fmtInt(p.pre):"—"}`];
+                const lines=[`${t("pp.tooltipPre")}  ${p.pre!=null?fmtInt(p.pre):"—"}`];
                 if(p.post!=null){
-                  lines.push(`Nilai Post Test: ${fmtInt(p.post)}`);
+                  lines.push(`${t("pp.tooltipPost")} ${fmtInt(p.post)}`);
                   const d=p.post-p.pre;
-                  lines.push(`Peningkatan Pemahaman:   ${d>=0?"+":""}${fmtInt(d)} (${p.delta!=null?(p.delta>=0?"+":"")+fmtID(p.delta,1)+"%":"—"})`);
-                } else lines.push("Post Test: belum ada");
+                  lines.push(`${t("pp.tooltipDelta")}   ${d>=0?"+":""}${fmtInt(d)} (${p.delta!=null?(p.delta>=0?"+":"")+fmtID(p.delta,1)+"%":"—"})`);
+                } else lines.push(t("pp.tooltipPostNone"));
                 return lines;
               }
             }
@@ -4764,7 +5322,7 @@ function renderTable(flash){
     return (va<vb?-1:va>vb?1:0)*sortDir;
   });
 
-  document.getElementById("rowCount").textContent=`${rows.length} peserta`;
+  document.getElementById("rowCount").textContent=tf("pp.pesertaCount",{n:rows.length});
   const tb=document.getElementById("tableBody");
   tb.innerHTML=rows.map((p,i)=>{
     const pos = i + 1; // posisi urutan sekuensial 1,2,3,...
@@ -5151,37 +5709,39 @@ function computeInterpersonalStats(list){
 function renderLeadership(){
   if(!lStats){
     const lTot = document.getElementById("lTotal"); if(lTot) lTot.textContent="—";
+    const lTotSub = document.getElementById("lTotalSub"); if(lTotSub) lTotSub.textContent="—";
     const lDom = document.getElementById("lDomStyle"); if(lDom) lDom.textContent="—";
-    const lDomSub = document.getElementById("lDomSub"); if(lDomSub) lDomSub.textContent="peserta dengan gaya ini";
+    const lDomSub = document.getElementById("lDomSub"); if(lDomSub) lDomSub.textContent=t("l.pesertaDenganGayaIni");
     const lAvg = document.getElementById("lAvgEff"); if(lAvg) lAvg.textContent="—";
+    const lEffS = document.getElementById("lEffSub"); if(lEffS) lEffS.textContent="—";
     const lTop = document.getElementById("lTopEffName"); if(lTop) lTop.textContent="—";
     const lTopSub = document.getElementById("lTopEffSub"); if(lTopSub) lTopSub.textContent="—";
 
     const podList = document.getElementById("lPodiumList");
-    if(podList) podList.innerHTML = `<div style="text-align:center;padding:30px;color:var(--n500);font-size:.82rem">Belum ada link/ID Google Sheet yang dimasukkan di Backend.</div>`;
+    if(podList) podList.innerHTML = `<div style="text-align:center;padding:30px;color:var(--n500);font-size:.82rem">${t("lwi.noSheetConfigured")}</div>`;
 
     const tbody = document.getElementById("lTbody");
     if(tbody) {
       tbody.innerHTML = `<tr style="display:grid;grid-template-columns:1fr">
         <td style="padding:0;border-bottom:none">${emptyStateHTML(
-          "Data Belum Dimasukkan",
-          "Silakan masukkan ID Google Sheet atau URL CSV untuk Gaya Kepemimpinan di menu Backend",
+          t("lwi.dataNotEnteredTitle"),
+          tf("lwi.dataNotEnteredDescFor",{topic:t("nav.leadership")}),
           "ltable"
         )}</td>
       </tr>`;
     }
     const countEl = document.getElementById("lRowCount");
-    if(countEl) countEl.textContent = `0 peserta`;
+    if(countEl) countEl.textContent = tf("pp.pesertaCount",{n:0});
     return;
   }
   document.getElementById("lTotal").textContent = lStats.total;
-  document.getElementById("lTotalSub").textContent = `peserta program`;
+  document.getElementById("lTotalSub").textContent = t("lwi.pesertaProgram");
   document.getElementById("lDomStyle").innerHTML = badgeFullHTML(lStats.dominantStyle);
-  document.getElementById("lDomSub").textContent = `${lStats.dominantCount} peserta dengan gaya dominan ini`;
+  document.getElementById("lDomSub").textContent = tf("l.dominantCountSub",{n:lStats.dominantCount});
   document.getElementById("lAvgEff").textContent = fmtID(lStats.avgEff);
-  document.getElementById("lEffSub").textContent = `${lStats.total} peserta · rentang -1 s/d 14`;
+  document.getElementById("lEffSub").textContent = tf("lwi.pesertaCountRentang",{n:lStats.total,min:-1,max:14});
   document.getElementById("lTopEffName").textContent = lStats.topEff.name;
-  document.getElementById("lTopEffSub").innerHTML = `efektivitas <b>${lStats.topEff.eff}</b> · dominan ${lStats.topEff.dominant.map(c=>STYLE_META[c].code).join(", ")||"—"}`;
+  document.getElementById("lTopEffSub").innerHTML = `${t("lwi.efektivitasLabel")} <b>${lStats.topEff.eff}</b> · ${t("lwi.dominanLabel")} ${lStats.topEff.dominant.map(c=>STYLE_META[c].code).join(", ")||"—"}`;
 
   renderLeadershipPodium(lPodiumTab);
   renderLeadershipChart();
@@ -5197,7 +5757,7 @@ function renderLeadershipPodium(tab){
     const isLast  = tab==="bottom" && i===0;
     const medalCls = tab==="top" ? ["m1","m2","m3"][i] : "low";
     const num = tab==="top" ? (i+1) : (lStats.total - (list.length-1-i));
-    const domHtml = p.dominant.length ? p.dominant.map(c=>badgeHTML(c)).join(" ") : `<span style="color:var(--n400);font-size:.7rem">tidak ada</span>`;
+    const domHtml = p.dominant.length ? p.dominant.map(c=>badgeHTML(c)).join(" ") : `<span style="color:var(--n400);font-size:.7rem">${t("lwi.tidakAda")}</span>`;
     return `
       <div class="podium-item ${isFirst?"first":""} ${isLast?"last":""}" data-lpod>
         <span class="medal ${medalCls}">${num}</span>
@@ -5209,7 +5769,7 @@ function renderLeadershipPodium(tab){
       </div>`;
   }).join("");
   const container = document.getElementById("lPodiumList");
-  if(container) container.innerHTML = html || `<div class="podium-empty">Belum ada data</div>`;
+  if(container) container.innerHTML = html || `<div class="podium-empty">${t("common.belumAdaData")}</div>`;
 }
 
 function renderLeadershipChart(){
@@ -5264,7 +5824,7 @@ function renderLeadershipChart(){
               const m=STYLE_META[labels[idx]];
               return `${m.code} · ${m.label}`;
             },
-            label:(item)=>`${item.parsed.y} peserta`,
+            label:(item)=>tf("pp.pesertaCount",{n:item.parsed.y}),
           }
         }
       },
@@ -5285,7 +5845,7 @@ function replayLeadershipChartAnim(){
 function renderLeadershipFilter(){
   if(!lStats) return;
   const chips=[
-    {k:"all",lbl:"Semua",count:leadership.length},
+    {k:"all",lbl:t("lwi.semua"),count:leadership.length},
     ...["G1","G2","G3","G4"].map(c=>({k:c,lbl:c,count:lStats.distribution[c]||0}))
   ];
   const container = document.getElementById("lFilter");
@@ -5345,8 +5905,8 @@ function renderLeadershipTable(){
         <td>
           <div class="ldetail-inner">
             <div class="ldetail-header">
-              <span class="ldh-name">Skor Gaya Kepemimpinan · ${esc(p.name)}</span>
-              <span class="ldh-hint">Situational Leadership Model — nilai per dimensi</span>
+              <span class="ldh-name">${tf("l.skorGayaKepemimpinan",{name:esc(p.name)})}</span>
+              <span class="ldh-hint">${t("l.situationalHint")}</span>
             </div>
             <div class="ldetail-chart"><canvas id="${safeId}"></canvas></div>
           </div>
@@ -5357,14 +5917,14 @@ function renderLeadershipTable(){
   if(tbody) {
     tbody.innerHTML = rows || `<tr style="display:grid;grid-template-columns:1fr">
         <td style="padding:0;border-bottom:none">${emptyStateHTML(
-          "Tidak ada peserta",
-          "Tidak ada peserta yang cocok dengan pencarian atau filter gaya ini",
+          t("lwi.tidakAdaPeserta"),
+          t("l.tidakAdaPesertaCocok"),
           "ltable"
         )}</td>
       </tr>`;
   }
   const countEl = document.getElementById("lRowCount");
-  if(countEl) countEl.textContent = `${sorted.length} peserta`;
+  if(countEl) countEl.textContent = tf("pp.pesertaCount",{n:sorted.length});
   document.querySelectorAll('[id^="lArr-"]').forEach(el=>el.textContent="");
   const arr=document.getElementById(`lArr-${lSort.key}`);
   if(arr) arr.textContent = lSort.dir>0 ? "▲" : "▼";
@@ -5488,37 +6048,39 @@ function drawLeadershipDetailChart(canvas, p){
 function renderWewenang(){
   if(!wStats){
     const wTot = document.getElementById("wTotal"); if(wTot) wTot.textContent="—";
+    const wTotSub = document.getElementById("wTotalSub"); if(wTotSub) wTotSub.textContent="—";
     const wDom = document.getElementById("wDomStyle"); if(wDom) wDom.textContent="—";
-    const wDomSub = document.getElementById("wDomSub"); if(wDomSub) wDomSub.textContent="peserta dengan tipe ini";
+    const wDomSub = document.getElementById("wDomSub"); if(wDomSub) wDomSub.textContent=t("w.pesertaDenganTipeIni");
     const wAvg = document.getElementById("wAvgEff"); if(wAvg) wAvg.textContent="—";
+    const wEffS = document.getElementById("wEffSub"); if(wEffS) wEffS.textContent="—";
     const wTop = document.getElementById("wTopEffName"); if(wTop) wTop.textContent="—";
     const wTopSub = document.getElementById("wTopEffSub"); if(wTopSub) wTopSub.textContent="—";
 
     const podList = document.getElementById("wPodiumList");
-    if(podList) podList.innerHTML = `<div style="text-align:center;padding:30px;color:var(--n500);font-size:.85rem">Belum ada link/ID Google Sheet yang dimasukkan di Backend.</div>`;
+    if(podList) podList.innerHTML = `<div style="text-align:center;padding:30px;color:var(--n500);font-size:.85rem">${t("lwi.noSheetConfigured")}</div>`;
 
     const tbody = document.getElementById("wTbody");
     if(tbody) {
       tbody.innerHTML = `<tr style="display:grid;grid-template-columns:1fr">
         <td style="padding:0;border-bottom:none">${emptyStateHTML(
-          "Data Belum Dimasukkan",
-          "Silakan masukkan ID Google Sheet atau URL CSV untuk Analisis Wewenang di menu Backend",
+          t("lwi.dataNotEnteredTitle"),
+          tf("lwi.dataNotEnteredDescFor",{topic:t("nav.wewenang")}),
           "wtable"
         )}</td>
       </tr>`;
     }
     const countEl = document.getElementById("wRowCount");
-    if(countEl) countEl.textContent = `0 peserta`;
+    if(countEl) countEl.textContent = tf("pp.pesertaCount",{n:0});
     return;
   }
   document.getElementById("wTotal").textContent = wStats.total;
-  document.getElementById("wTotalSub").textContent = `peserta program`;
+  document.getElementById("wTotalSub").textContent = t("lwi.pesertaProgram");
   document.getElementById("wDomStyle").innerHTML = wBadgeFullHTML(wStats.dominantStyle);
-  document.getElementById("wDomSub").textContent = `${wStats.dominantCount} peserta dengan tipe dominan ini`;
+  document.getElementById("wDomSub").textContent = tf("w.dominantCountSub",{n:wStats.dominantCount});
   document.getElementById("wAvgEff").textContent = fmtID(wStats.avgEff);
-  document.getElementById("wEffSub").textContent = `${wStats.total} peserta · skor ${wStats.minEff} s/d ${wStats.maxEff}`;
+  document.getElementById("wEffSub").textContent = tf("lwi.pesertaCountSkor",{n:wStats.total,min:wStats.minEff,max:wStats.maxEff});
   document.getElementById("wTopEffName").textContent = wStats.topEff.name;
-  document.getElementById("wTopEffSub").innerHTML = `efektivitas <b>${wStats.topEff.eff}</b> · dominan ${wStats.topEff.dominant.map(c=>WEWENANG_META[c].code).join(", ")||"—"}`;
+  document.getElementById("wTopEffSub").innerHTML = `${t("lwi.efektivitasLabel")} <b>${wStats.topEff.eff}</b> · ${t("lwi.dominanLabel")} ${wStats.topEff.dominant.map(c=>WEWENANG_META[c].code).join(", ")||"—"}`;
 
   renderWewenangPodium(wPodiumTab);
   renderWewenangChart();
@@ -5534,7 +6096,7 @@ function renderWewenangPodium(tab){
     const isLast  = tab==="bottom" && i===0;
     const medalCls = tab==="top" ? ["m1","m2","m3"][i] : "low";
     const num = tab==="top" ? (i+1) : (wStats.total - (list.length-1-i));
-    const domHtml = p.dominant.length ? p.dominant.map(c=>wBadgeHTML(c)).join(" ") : `<span style="color:var(--n400);font-size:.7rem">tidak ada</span>`;
+    const domHtml = p.dominant.length ? p.dominant.map(c=>wBadgeHTML(c)).join(" ") : `<span style="color:var(--n400);font-size:.7rem">${t("lwi.tidakAda")}</span>`;
     return `
       <div class="podium-item ${isFirst?"first":""} ${isLast?"last":""}" data-wpod>
         <span class="medal ${medalCls}">${num}</span>
@@ -5546,7 +6108,7 @@ function renderWewenangPodium(tab){
       </div>`;
   }).join("");
   const container = document.getElementById("wPodiumList");
-  if(container) container.innerHTML = html || `<div class="podium-empty">Belum ada data</div>`;
+  if(container) container.innerHTML = html || `<div class="podium-empty">${t("common.belumAdaData")}</div>`;
 }
 
 function renderWewenangChart(){
@@ -5601,7 +6163,7 @@ function renderWewenangChart(){
               const m=WEWENANG_META[labels[idx]];
               return `${m.code} · ${m.label}`;
             },
-            label:(item)=>`${item.parsed.y} peserta`,
+            label:(item)=>tf("pp.pesertaCount",{n:item.parsed.y}),
           }
         }
       },
@@ -5622,7 +6184,7 @@ function replayWewenangChartAnim(){
 function renderWewenangFilter(){
   if(!wStats) return;
   const chips=[
-    {k:"all",lbl:"Semua",count:wewenang.length},
+    {k:"all",lbl:t("lwi.semua"),count:wewenang.length},
     ...["W1","W2","W3","W4"].map(c=>({k:c,lbl:c,count:wStats.distribution[c]||0}))
   ];
   const container = document.getElementById("wFilter");
@@ -5682,8 +6244,8 @@ function renderWewenangTable(){
         <td>
           <div class="ldetail-inner">
             <div class="ldetail-header">
-              <span class="ldh-name">Skor Analisis Wewenang · ${esc(p.name)}</span>
-              <span class="ldh-hint">Analisis Wewenang — nilai per dimensi</span>
+              <span class="ldh-name">${tf("w.skorAnalisisWewenang",{name:esc(p.name)})}</span>
+              <span class="ldh-hint">${t("w.wewenangHint")}</span>
             </div>
             <div class="ldetail-chart"><canvas id="${safeId}"></canvas></div>
           </div>
@@ -5694,14 +6256,14 @@ function renderWewenangTable(){
   if(tbody) {
     tbody.innerHTML = rows || `<tr style="display:grid;grid-template-columns:1fr">
         <td style="padding:0;border-bottom:none">${emptyStateHTML(
-          "Tidak ada peserta",
-          "Tidak ada peserta yang cocok dengan pencarian atau filter tipe ini",
+          t("lwi.tidakAdaPeserta"),
+          t("w.tidakAdaPesertaCocok"),
           "wtable"
         )}</td>
       </tr>`;
   }
   const countEl = document.getElementById("wRowCount");
-  if(countEl) countEl.textContent = `${sorted.length} peserta`;
+  if(countEl) countEl.textContent = tf("pp.pesertaCount",{n:sorted.length});
   document.querySelectorAll('[id^="wArr-"]').forEach(el=>el.textContent="");
   const arr=document.getElementById(`wArr-${wSort.key}`);
   if(arr) arr.textContent = wSort.dir>0 ? "▲" : "▼";
@@ -5825,9 +6387,11 @@ function drawWewenangDetailChart(canvas, p){
 function renderInterpersonal(){
   if(!iStats){
     const iTot = document.getElementById("iTotal"); if(iTot) iTot.textContent="—";
+    const iTotSub = document.getElementById("iTotalSub"); if(iTotSub) iTotSub.textContent="—";
     const iDom = document.getElementById("iDomStyle"); if(iDom) iDom.textContent="—";
-    const iDomSub = document.getElementById("iDomSub"); if(iDomSub) iDomSub.textContent="peserta dengan gaya ini";
+    const iDomSub = document.getElementById("iDomSub"); if(iDomSub) iDomSub.textContent=t("i.pesertaDenganGayaIni");
     const iAvg = document.getElementById("iAvgDom"); if(iAvg) iAvg.textContent="—";
+    const iDomScoreS = document.getElementById("iDomScoreSub"); if(iDomScoreS) iDomScoreS.textContent="—";
     const iTop = document.getElementById("iTopDomName"); if(iTop) iTop.textContent="—";
     const iTopSub = document.getElementById("iTopDomSub"); if(iTopSub) iTopSub.textContent="—";
 
@@ -5835,24 +6399,24 @@ function renderInterpersonal(){
     if(tbody) {
       tbody.innerHTML = `<tr style="display:grid;grid-template-columns:1fr">
         <td style="padding:0;border-bottom:none">${emptyStateHTML(
-          "Data Belum Dimasukkan",
-          "Silakan masukkan ID Google Sheet atau URL CSV untuk Gaya Interpersonal di menu Backend",
+          t("lwi.dataNotEnteredTitle"),
+          tf("lwi.dataNotEnteredDescFor",{topic:t("nav.interpersonal")}),
           "itable"
         )}</td>
       </tr>`;
     }
     const countEl = document.getElementById("iRowCount");
-    if(countEl) countEl.textContent = `0 peserta`;
+    if(countEl) countEl.textContent = tf("pp.pesertaCount",{n:0});
     return;
   }
   document.getElementById("iTotal").textContent = iStats.total;
-  document.getElementById("iTotalSub").textContent = `peserta program`;
+  document.getElementById("iTotalSub").textContent = t("lwi.pesertaProgram");
   document.getElementById("iDomStyle").innerHTML = iBadgeFullHTML(iStats.dominantStyle);
-  document.getElementById("iDomSub").textContent = `${iStats.dominantCount} peserta dengan gaya dominan ini`;
+  document.getElementById("iDomSub").textContent = tf("i.dominantCountSub",{n:iStats.dominantCount});
   document.getElementById("iAvgDom").textContent = fmtID(iStats.avgDom);
-  document.getElementById("iDomScoreSub").textContent = `${iStats.total} peserta · skor ${iStats.minDom} s/d ${iStats.maxDom}`;
+  document.getElementById("iDomScoreSub").textContent = tf("lwi.pesertaCountSkor",{n:iStats.total,min:iStats.minDom,max:iStats.maxDom});
   document.getElementById("iTopDomName").textContent = iStats.topDom.name;
-  document.getElementById("iTopDomSub").innerHTML = `skor dominan <b>${iStats.topDom.dom}</b> · gaya ${iStats.topDom.dominant.map(c=>INTERPERSONAL_META[c].code).join(", ")||"—"}`;
+  document.getElementById("iTopDomSub").innerHTML = `${t("i.skorDominanLabel")} <b>${iStats.topDom.dom}</b> · ${t("i.gayaLabel")} ${iStats.topDom.dominant.map(c=>INTERPERSONAL_META[c].code).join(", ")||"—"}`;
 
   renderInterpersonalChart();
   renderInterpersonalFilter();
@@ -5911,7 +6475,7 @@ function renderInterpersonalChart(){
               const m=INTERPERSONAL_META[labels[idx]];
               return `${m.code} · ${m.label}`;
             },
-            label:(item)=>`${item.parsed.y} peserta`,
+            label:(item)=>tf("pp.pesertaCount",{n:item.parsed.y}),
           }
         }
       },
@@ -5932,7 +6496,7 @@ function replayInterpersonalChartAnim(){
 function renderInterpersonalFilter(){
   if(!iStats) return;
   const chips=[
-    {k:"all",lbl:"Semua",count:interpersonal.length},
+    {k:"all",lbl:t("lwi.semua"),count:interpersonal.length},
     ...["I1","I2","I3","I4"].map(c=>({k:c,lbl:c,count:iStats.distribution[c]||0}))
   ];
   const container = document.getElementById("iFilter");
@@ -5982,8 +6546,8 @@ function renderInterpersonalTable(){
         <td>
           <div class="ldetail-inner">
             <div class="ldetail-header">
-              <span class="ldh-name">Skor Gaya Interpersonal · ${esc(p.name)}</span>
-              <span class="ldh-hint">Social Style — nilai per dimensi</span>
+              <span class="ldh-name">${tf("i.skorGayaInterpersonal",{name:esc(p.name)})}</span>
+              <span class="ldh-hint">${t("i.socialStyleHint")}</span>
             </div>
             <div class="ldetail-chart"><canvas id="${safeId}"></canvas></div>
           </div>
@@ -5994,14 +6558,14 @@ function renderInterpersonalTable(){
   if(tbody) {
     tbody.innerHTML = rows || `<tr style="display:grid;grid-template-columns:1fr">
         <td style="padding:0;border-bottom:none">${emptyStateHTML(
-          "Tidak ada peserta",
-          "Tidak ada peserta yang cocok dengan pencarian atau filter gaya ini",
+          t("lwi.tidakAdaPeserta"),
+          t("i.tidakAdaPesertaCocok"),
           "itable"
         )}</td>
       </tr>`;
   }
   const countEl = document.getElementById("iRowCount");
-  if(countEl) countEl.textContent = `${sorted.length} peserta`;
+  if(countEl) countEl.textContent = tf("pp.pesertaCount",{n:sorted.length});
   document.querySelectorAll('[id^="iArr-"]').forEach(el=>el.textContent="");
   const arr=document.getElementById(`iArr-${iSort.key}`);
   if(arr) arr.textContent = iSort.dir>0 ? "▲" : "▼";
@@ -6259,15 +6823,15 @@ window.showApRingDetail = function(kind) {
   if (kind === "prog") {
     centerVal.textContent = s.prog;
     centerVal.style.color = "var(--mdi-prog)";
-    centerLbl.textContent = `In Progress · ${s.progPct}%`;
+    centerLbl.textContent = `${t("ap.inProgress")} · ${s.progPct}%`;
   } else if (kind === "done") {
     centerVal.textContent = s.done;
     centerVal.style.color = "var(--mdi-done)";
-    centerLbl.textContent = `Completed · ${s.donePct}%`;
+    centerLbl.textContent = `${t("ap.statusDone")} · ${s.donePct}%`;
   } else {
     centerVal.textContent = s.total;
     centerVal.style.color = "";
-    centerLbl.textContent = "Participants";
+    centerLbl.textContent = t("ap.participants");
   }
 };
 function fillActivityRing(id, radius, pct) {
@@ -6453,11 +7017,11 @@ function renderActiveClientSections(){
                   <img src="${esc(pUrl)}" alt="Foto Dokumentasi" onerror="this.parentElement.style.display='none'">
                 </div>`;
               }).join("")}</div>`
-            : `<div style="text-align:center;padding:12px;color:var(--n500);font-size:.8rem">Tidak ada foto untuk hari ini.</div>`;
+            : `<div style="text-align:center;padding:12px;color:var(--n500);font-size:.8rem">${t("doc.noPhotos")}</div>`;
 
           return `<div class="day-acc-item" id="day-acc-${di}">
             <div class="day-acc-head" onclick="toggleDayAcc(${di})">
-              <span>${esc(day.label || `Hari ${di+1}`)}</span>
+              <span>${esc(day.label || `${t("doc.day")} ${di+1}`)}</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </div>
             <div class="day-acc-body">
@@ -6466,7 +7030,7 @@ function renderActiveClientSections(){
           </div>`;
         }).join("");
       } else {
-        accordion.innerHTML = `<div style="text-align:center;padding:20px;color:var(--n500);font-size:.85rem">Belum ada dokumentasi pelatihan.</div>`;
+        accordion.innerHTML = `<div style="text-align:center;padding:20px;color:var(--n500);font-size:.85rem">${t("doc.noDocs")}</div>`;
       }
       accordion.dataset.renderedHash = currentDocHash;
     }
@@ -6551,38 +7115,38 @@ function renderActiveClientSections(){
     const elKpiAp = document.getElementById("kpi-ap-val");
     if(elKpiAp) elKpiAp.textContent = totalPlans;
     const elKpiApSub = document.getElementById("kpi-ap-sub");
-    if(elKpiApSub) elKpiApSub.textContent = totalParticipants > 0 ? Math.round(totalPlans / totalParticipants) + " per participant" : "0 per participant";
-    
+    if(elKpiApSub) elKpiApSub.textContent = totalParticipants > 0 ? tf("ap.perParticipant",{n:Math.round(totalPlans / totalParticipants)}) : tf("ap.perParticipant",{n:0});
+
     const elKpiDone = document.getElementById("kpi-done-val");
     if(elKpiDone) elKpiDone.textContent = completed;
     const elKpiDoneSub = document.getElementById("kpi-done-sub");
-    if(elKpiDoneSub) elKpiDoneSub.textContent = donePct + "% of batch";
-    
+    if(elKpiDoneSub) elKpiDoneSub.textContent = tf("ap.pctOfBatch",{pct:donePct});
+
     const elKpiProg = document.getElementById("kpi-prog-val");
     if(elKpiProg) elKpiProg.textContent = inProgress;
     const elKpiProgSub = document.getElementById("kpi-prog-sub");
-    if(elKpiProgSub) elKpiProgSub.textContent = progPct + "% of batch";
+    if(elKpiProgSub) elKpiProgSub.textContent = tf("ap.pctOfBatch",{pct:progPct});
 
     setActivityRings(progPct, donePct);
 
     const tableCount = document.getElementById("table-count-label");
-    if(tableCount) tableCount.textContent = `Showing ${filteredApList.length} of ${totalParticipants}`;
+    if(tableCount) tableCount.textContent = tf("ap.showingXofY",{shown:filteredApList.length,total:totalParticipants});
 
     const tbody = document.getElementById("apTableBody");
     if (tbody) {
       if (filteredApList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 48px; color: var(--mdi-muted);">Tidak ada action plan untuk status ini</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 48px; color: var(--mdi-muted);">${t("ap.noPlanForStatus")}</td></tr>`;
       } else {
       const renderHtml = filteredApList.map((p, index) => {
           const firstPlan = p.plans.length > 0 ? esc(p.plans[0]) : "-";
-          const moreText = p.plans.length > 1 ? `<div style="font-size:11px; color:var(--mdi-orange); margin-top:4px;">+${p.plans.length - 1} more actions</div>` : "";
-          const statusHtml = p.status === 'done' ? `<span class="status-pill s-done">● Selesai</span>` : `<span class="status-pill s-prog">● In Progress</span>`;
-          
+          const moreText = p.plans.length > 1 ? `<div style="font-size:11px; color:var(--mdi-orange); margin-top:4px;">${tf("ap.moreActions",{n:p.plans.length - 1})}</div>` : "";
+          const statusHtml = p.status === 'done' ? `<span class="status-pill s-done">● ${t("ap.statusDone")}</span>` : `<span class="status-pill s-prog">● ${t("ap.statusProg")}</span>`;
+
           const s2UpdateVal = (p.s2Update || "").trim();
-          const s2Update = s2UpdateVal ? esc(s2UpdateVal) : `<span style="color:var(--mdi-muted); font-size:12px; font-style: italic;">None</span>`;
-          
+          const s2Update = s2UpdateVal ? esc(s2UpdateVal) : `<span style="color:var(--mdi-muted); font-size:12px; font-style: italic;">${t("ap.none")}</span>`;
+
           const s2ChallengeVal = (p.s2Challenge || "").trim();
-          const s2Challenge = s2ChallengeVal ? esc(s2ChallengeVal) : `<span style="color:var(--mdi-danger); font-size:12px;">⚠️ None</span>`;
+          const s2Challenge = s2ChallengeVal ? esc(s2ChallengeVal) : `<span style="color:var(--mdi-danger); font-size:12px;">⚠️ ${t("ap.none")}</span>`;
 
           return `
             <tr onclick="toggleApRow('${p.no}')" id="ap-row-${p.no}">
@@ -6603,18 +7167,18 @@ function renderActiveClientSections(){
                 <div class="detail-inner">
                   <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
                     <div>
-                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">ALL ${p.plans.length} ACTION PLANS</div>
+                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">${tf("ap.allNActionPlans",{n:p.plans.length})}</div>
                       <ol style="margin:0; padding-left:16px; font-size:13px; color:var(--mdi-ink); line-height:1.6; font-weight:600;">
                         ${p.plans.map(pl => `<li style="margin-bottom:8px;"><span style="color:var(--mdi-ink); font-weight:400;">${esc(pl)}</span></li>`).join("")}
                       </ol>
                     </div>
                     <div>
-                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">30-DAY UPDATE</div>
-                      <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${s2UpdateVal ? esc(s2UpdateVal) : `<span style="color:var(--mdi-muted); font-style: italic;">None</span>`}</div>
+                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">${t("ap.update30Day")}</div>
+                      <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${s2UpdateVal ? esc(s2UpdateVal) : `<span style="color:var(--mdi-muted); font-style: italic;">${t("ap.none")}</span>`}</div>
                     </div>
                     <div>
-                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">CHALLENGE / BARRIER</div>
-                      <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${s2ChallengeVal ? esc(s2ChallengeVal) : `<span style="color:var(--mdi-danger);">⚠️ None</span>`}</div>
+                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">${t("ap.challengeBarrier")}</div>
+                      <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${s2ChallengeVal ? esc(s2ChallengeVal) : `<span style="color:var(--mdi-danger);">⚠️ ${t("ap.none")}</span>`}</div>
                     </div>
                   </div>
                 </div>
@@ -6956,7 +7520,7 @@ async function bootApp() {
               if (nameEl) nameEl.textContent = loggedClient.name;
               const trainingsList = loggedClient.trainings || [];
               const countEl = document.getElementById("mmTotalSessionsCount");
-              if(countEl) countEl.textContent = trainingsList.length + " Sesi";
+              if(countEl) countEl.textContent = trainingsList.length + " " + t("mm.sessionsUnit");
               if (typeof renderMainMenu === "function") renderMainMenu(trainingsList, true);
             }
           }
