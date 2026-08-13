@@ -7341,9 +7341,10 @@ function initNavScroll(){
         // Scroll smoothly to the top of the tab container to make all tabs behave consistently
         const main = document.getElementById("mainMain");
         if (main) {
-          const yOffset = -90; // sticky header compensation
+          const headerEl = document.querySelector("header");
+          const yOffset = -((headerEl ? headerEl.offsetHeight : 90) + 10); // clear the sticky header, whatever its current (desktop/mobile) height is
           const y = main.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: "smooth" });
+          window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
         }
       }
     });
