@@ -1118,7 +1118,7 @@
                 <button class="btn btn-primary" style="font-size:12px; padding:8px 14px;" onclick="openApAddPICModal()">➕ Add PIC</button>
                 <button class="btn" style="background:#107c41; color:#fff; border-color:#107c41; font-weight:600; font-size:12px; padding:8px 12px;" onclick="document.getElementById('ap-excel-file-input').click()">📥 Import Action Plan (Tahap 1)</button>
                 <button class="btn" style="background:#1a73e8; color:#fff; border-color:#1a73e8; font-weight:600; font-size:12px; padding:8px 12px;" onclick="document.getElementById('ap-stage2ExcelUpload').click()">📥 Import Penyelesaian (Tahap 2)</button>
-                <input type="file" id="ap-excel-file-input" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleApExcelUpload(event)">
+                <input type="file" id="ap-excel-file-input" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleApStage1ExcelUpload(event)">
                 <input type="file" id="ap-stage2ExcelUpload" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleApStage2ExcelUpload(event)">
                 <button class="btn btn-danger" id="ap-btn-delete-selected" style="display:none; font-size:12px; padding:8px 14px;" onclick="deleteApSelectedPIC()">🗑️ Hapus Terpilih</button>
               </div>
