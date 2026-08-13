@@ -3233,19 +3233,32 @@ async function loadClientsDbAsync() {
   }
 
   loadClientsActivePromise = (async () => {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // never let a stalled network hang the login button forever
-    try {
-      const res = await fetch(WEB_APP_URL + "?action=getClients", { signal: controller.signal });
-      const json = await res.json();
-      if(json && json.success && Array.isArray(json.data)) {
-        clientsDb = json.data;
-        try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
+    // One attempt with a hard timeout, so a stalled network never hangs the login
+    // button forever. A single attempt often loses to a cold-started Apps Script
+    // backend (first hit after idle can take a while to spin up), so retry once
+    // automatically instead of making the user notice and refresh the page themselves.
+    const attempt = async (timeoutMs) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(WEB_APP_URL + "?action=getClients", { signal: controller.signal });
+        const json = await res.json();
+        if (json && json.success && Array.isArray(json.data)) return json.data;
+        return null;
+      } catch(e) {
+        console.error("Failed to load clients database:", e);
+        return null;
+      } finally {
+        clearTimeout(timeoutId);
       }
-    } catch(e) {
-      console.error("Failed to load clients database:", e);
-    } finally {
-      clearTimeout(timeoutId);
+    };
+
+    let data = await attempt(15000);
+    if (!data) data = await attempt(15000); // likely cold start on the first hit — one retry
+
+    if (data) {
+      clientsDb = data;
+      try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
     }
   })();
 

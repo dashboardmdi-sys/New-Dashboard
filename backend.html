@@ -1604,22 +1604,37 @@ async function fetchDatabase() {
     if(cached) { const parsed = JSON.parse(cached); if(Array.isArray(parsed)) clientsDb = parsed; }
   } catch(e) {}
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // never let a stalled network leave the loader stuck forever
+  // One attempt with a hard timeout, so a stalled network never leaves the loader
+  // stuck forever. A single attempt often loses to a cold-started Apps Script
+  // backend (first hit after idle can take a while to spin up), so retry once
+  // automatically instead of making the user notice and refresh the page themselves.
+  const attemptFetchClients = async (timeoutMs) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(WEB_APP_URL + "?action=getClients", { signal: controller.signal });
+      const json = await res.json();
+      if (json && json.success && Array.isArray(json.data)) return json.data;
+      return null;
+    } catch(e) {
+      console.error("fetchDatabase error:", e);
+      return null;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+
   try {
-    const res = await fetch(WEB_APP_URL + "?action=getClients", { signal: controller.signal });
-    const json = await res.json();
-    if(json.success && Array.isArray(json.data)) {
-      clientsDb = json.data;
+    let data = await attemptFetchClients(15000);
+    if (!data) data = await attemptFetchClients(15000); // likely cold start on the first hit — one retry
+
+    if (data) {
+      clientsDb = data;
       try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
     } else {
-      toast("⚠️ Gagal mengambil database dari server");
+      toast(clientsDb.length === 0 ? "⚠️ Tidak dapat terhubung ke server. Pastikan terhubung ke internet." : "⚠️ Gagal mengambil database dari server");
     }
-  } catch(e) {
-    console.error("fetchDatabase error:", e);
-    if(clientsDb.length === 0) toast("⚠️ Tidak dapat terhubung ke server. Pastikan terhubung ke internet.");
   } finally {
-    clearTimeout(timeoutId);
     hideLoader();
     initApp();
   }
