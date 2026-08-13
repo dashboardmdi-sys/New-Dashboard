@@ -2906,6 +2906,7 @@ const I18N = {
     "ev.trainerSebelumnya": "Trainer sebelumnya",
     "ev.trainerBerikutnya": "Trainer berikutnya",
     "ev.keTrainerXdariY": "Ke trainer {{x}} dari {{y}}",
+    "komentar.difasilitasiOleh": "Difasilitasi oleh {{n}} trainer",
     "ev.lihatRincian": "Lihat rincian:",
     "ev.belumAdaDataSuffix": "— belum ada data",
     "ev.dari5": "dari 5",
@@ -3130,6 +3131,7 @@ const I18N = {
     "ev.trainerSebelumnya": "Previous trainer",
     "ev.trainerBerikutnya": "Next trainer",
     "ev.keTrainerXdariY": "Go to trainer {{x}} of {{y}}",
+    "komentar.difasilitasiOleh": "Facilitated by {{n}} trainer(s)",
     "ev.lihatRincian": "View details:",
     "ev.belumAdaDataSuffix": "— no data yet",
     "ev.dari5": "out of 5",
@@ -3159,6 +3161,15 @@ function applyI18n(root) {
   scope.querySelectorAll("[data-i18n-aria]").forEach(el => { el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria"))); });
 }
 
+function updateHeaderSubtitleFromActivePill() {
+  const subtitleEl = document.getElementById("headerSubtitle");
+  const activePill = document.querySelector(".nav-pill.active");
+  if (subtitleEl && activePill) {
+    const pillText = activePill.innerText.replace(/[\n\r]/g, " ").trim();
+    subtitleEl.innerHTML = `Dashboard Report &middot; ${pillText}`;
+  }
+}
+
 function setLang(lang) {
   if (lang !== "id" && lang !== "en") return;
   currentLang = lang;
@@ -3168,6 +3179,7 @@ function setLang(lang) {
     box.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
   });
   applyI18n();
+  try { updateHeaderSubtitleFromActivePill(); } catch(e) {}
   // These get their real value from fetchData()/setOnline(), which may not have
   // run yet (or may have failed) — refresh them immediately so the toggle is
   // never left showing the other language's leftover text.
@@ -6990,7 +7002,7 @@ function renderActiveClientSections(){
         ktArr = [ktArr];
       }
       
-      const currentHash = JSON.stringify(ktArr);
+      const currentHash = currentLang + "|" + JSON.stringify(ktArr);
       if (container.dataset.renderedHash !== currentHash) {
         let allHtml = "";
         
@@ -7009,19 +7021,19 @@ function renderActiveClientSections(){
           allHtml += `
             <div class="kt-meta">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              Difasilitasi oleh ${ktArr.length} trainer
+              ${tf("komentar.difasilitasiOleh", {n: ktArr.length})}
             </div>
           `;
         }
 
         allHtml += ktArr.map((kt) => {
           const initial = ((kt.name || "T").trim().charAt(0) || "T").toUpperCase();
-          const title = kt.apresiasi ? kt.apresiasi : "Komentar Trainer";
+          const title = kt.apresiasi ? kt.apresiasi : t("nav.komentar");
           const photo = kt.photoUrl ? formatDriveImageUrl(kt.photoUrl) : "";
           const daysHtml = (kt.days && kt.days.length > 0)
             ? `<div class="kt-days">` + kt.days.map((d, i) => `
                 <section class="kt-day">
-                  <h4 class="kt-day-title">${esc(d.title || `Hari ${i+1}`)}</h4>
+                  <h4 class="kt-day-title">${esc(d.title || `${t("doc.day")} ${i+1}`)}</h4>
                   ${ktParas(d.text)}
                 </section>`).join("") + `</div>`
             : "";
@@ -7058,7 +7070,7 @@ function renderActiveClientSections(){
   const docs = Array.isArray(CONFIG.dokumentasi) ? CONFIG.dokumentasi : [];
   const accordion = document.getElementById("docAccordion");
   if (accordion) {
-    const currentDocHash = JSON.stringify(docs);
+    const currentDocHash = currentLang + "|" + JSON.stringify(docs);
     if (accordion.dataset.renderedHash !== currentDocHash) {
       if (docs && docs.length > 0) {
         accordion.innerHTML = docs.map((day, di)=>{
@@ -7385,11 +7397,7 @@ function initNavScroll(){
         }
 
         // Dynamically update header subtitle to match current tab name
-        const subtitleEl = document.getElementById("headerSubtitle");
-        if (subtitleEl) {
-          const pillText = pill.innerText.replace(/[\n\r]/g, " ").trim();
-          subtitleEl.innerHTML = `Dashboard Report &middot; ${pillText}`;
-        }
+        updateHeaderSubtitleFromActivePill();
 
         // Scroll smoothly to the top of the tab container to make all tabs behave consistently
         const main = document.getElementById("mainMain");
