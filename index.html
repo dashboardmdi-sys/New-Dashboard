@@ -2623,12 +2623,12 @@
           </div>
           <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
             <span style="font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; letter-spacing: 1px;" data-i18n="ap.dept">Dept</span>
-            <select class="dept-dropdown">
+            <select class="dept-dropdown" id="apDeptFilter">
               <option value="ALL" data-i18n="ap.allDepartments">All Departments</option>
             </select>
           </div>
           <div class="search-wrap">
-            <input type="text" placeholder="Type name..." data-i18n-placeholder="ap.typeNamePlaceholder" />
+            <input type="text" id="apSearchInput" placeholder="Type name..." data-i18n-placeholder="ap.typeNamePlaceholder" />
           </div>
         </div>
 
@@ -5415,6 +5415,14 @@ document.querySelectorAll("#pane-prepost thead th[data-sort]").forEach(th=>{
   });
 });
 document.getElementById("searchInput").addEventListener("input",()=>renderTable(false));
+
+// Action Plan pane: name search + department filter
+document.getElementById("apSearchInput")?.addEventListener("input", () => {
+  try { renderActiveClientSections(); } catch(e) { console.error("Failed to filter Action Plan table:", e); }
+});
+document.getElementById("apDeptFilter")?.addEventListener("change", () => {
+  try { renderActiveClientSections(); } catch(e) { console.error("Failed to filter Action Plan table:", e); }
+});
 document.getElementById("refreshBtn").addEventListener("click",()=>fetchData(true));
 
 /* ============ THEME TOGGLE ============ */
@@ -7132,13 +7140,38 @@ function renderActiveClientSections(){
       return 0;
     });
 
-    // Filter apList based on active status filter
+    // Populate the department dropdown from whatever departments actually exist,
+    // preserving the current selection across re-renders.
+    const apDeptSelect = document.getElementById("apDeptFilter");
+    if (apDeptSelect) {
+      const depts = [...new Set(apList.map(p => (p.dept || "").trim()).filter(Boolean))].sort();
+      const currentDeptVal = apDeptSelect.value || "ALL";
+      const optionsHtml = `<option value="ALL">${t("ap.allDepartments")}</option>` +
+        depts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join("");
+      if (apDeptSelect.dataset.optionsKey !== JSON.stringify(depts)) {
+        apDeptSelect.innerHTML = optionsHtml;
+        apDeptSelect.dataset.optionsKey = JSON.stringify(depts);
+        apDeptSelect.value = depts.includes(currentDeptVal) || currentDeptVal === "ALL" ? currentDeptVal : "ALL";
+      }
+    }
+
+    // Filter apList based on active status filter, department, and name search
     const statusFilter = window.__apStatusFilter || 'all';
+    const deptFilter = apDeptSelect ? apDeptSelect.value : "ALL";
+    const searchInputEl = document.getElementById("apSearchInput");
+    const searchFilter = (searchInputEl ? searchInputEl.value : "").trim().toLowerCase();
+
     filteredApList = apList;
     if (statusFilter === 'done') {
-      filteredApList = apList.filter(p => p.status === 'done');
+      filteredApList = filteredApList.filter(p => p.status === 'done');
     } else if (statusFilter === 'prog') {
-      filteredApList = apList.filter(p => p.status === 'prog');
+      filteredApList = filteredApList.filter(p => p.status === 'prog');
+    }
+    if (deptFilter && deptFilter !== 'ALL') {
+      filteredApList = filteredApList.filter(p => (p.dept || "").trim() === deptFilter);
+    }
+    if (searchFilter) {
+      filteredApList = filteredApList.filter(p => (p.name || "").toLowerCase().includes(searchFilter));
     }
   }
 
