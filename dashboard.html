@@ -2750,6 +2750,7 @@ function updateParticipantStatus(no, newStatus) {
   } else {
     p1.status = newStatus;
   }
+  p1.s2Status = newStatus === "done" ? "Completed" : "";
   saveState();
 
   showToast(`Status ${p.name} berhasil diperbarui!`);

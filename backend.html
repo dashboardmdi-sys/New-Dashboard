@@ -3246,7 +3246,7 @@ function updateApParticipantStatus(no, newStatus) {
   const p = participants.find(item => item.no === no);
   if (!p) return;
   p.status = newStatus;
-  if (newStatus === "done") p.s2Status = "Completed";
+  p.s2Status = newStatus === "done" ? "Completed" : "";
   saveApParticipants(participants);
   toast(`✓ Status ${p.name} diperbarui ke ${newStatus === 'done' ? 'Completed' : 'In Progress'}`);
   renderApTrackerTable();
