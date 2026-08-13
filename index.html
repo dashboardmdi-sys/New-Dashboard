@@ -4932,9 +4932,12 @@ async function fetchData(manual=false){
   // 2.5 Fetch Analysis Sheets (Sheet2: Leadership, Sheet4: Wewenang, Sheet5: Interpersonal)
   if (targetMainId) {
     try {
-      const isLeadershipActive    = !!CONFIG.leadershipEnabled;
-      const isWewenangActive      = !!CONFIG.wewenangEnabled;
-      const isInterpersonalActive = !!CONFIG.interpersonalEnabled;
+      // Require an actual sheet link (not just the feature toggled on) — otherwise
+      // fetchSheetCsv() silently falls back to the main training sheet / a hardcoded
+      // example sheet, showing unrelated or demo data instead of "not configured yet".
+      const isLeadershipActive    = !!CONFIG.leadershipEnabled    && !!(CONFIG.leadershipSheetId    || CONFIG.leadershipCsvUrl);
+      const isWewenangActive      = !!CONFIG.wewenangEnabled      && !!(CONFIG.wewenangSheetId      || CONFIG.wewenangCsvUrl);
+      const isInterpersonalActive = !!CONFIG.interpersonalEnabled && !!(CONFIG.interpersonalSheetId || CONFIG.interpersonalCsvUrl);
 
       const [sheet2Rows, sheet4Rows, sheet5Rows] = await Promise.all([
         isLeadershipActive ? fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl) : Promise.resolve(null),
