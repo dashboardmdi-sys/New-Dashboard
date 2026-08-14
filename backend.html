@@ -2578,6 +2578,52 @@ $("cfgEvalSaveBtn").addEventListener("click",()=>{
   toast("✓ Konfigurasi tersimpan & otomatis disinkronkan ke Dashboard");
 });
 
+// Mirrors the trainer-column detection in index.html's parseEvaluationSheet(), so Backend
+// can show admins exactly which sheet column each trainer's rating/impression was matched
+// to — instead of that matching happening silently on the dashboard with no visibility.
+function detectEvalTrainerColumns(rawHeaders, trainerNames) {
+  const headers = rawHeaders.map(h => (h || "").trim().toLowerCase());
+  const findCol = (keywords) => {
+    for (let i = 0; i < headers.length; i++) {
+      if (keywords.every(k => headers[i].includes(k))) return i;
+    }
+    return -1;
+  };
+
+  const results = [];
+
+  // Primary: auto-detect from column headers shaped like "Penilaian Trainer: <Name>"
+  headers.forEach((h, i) => {
+    if (h.includes("penilaian") && h.includes("trainer") && !h.includes("keseluruhan")) {
+      let name = "Trainer";
+      const match = h.match(/trainer\s*[:\-]?\s*(.+)$/i);
+      if (match) name = match[1].trim().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+      const firstName = name.split(" ")[0].toLowerCase();
+      const fbIdx = headers.findIndex(h2 => h2.includes("kesan") && (h2.includes(name.toLowerCase()) || h2.includes(firstName)));
+      results.push({ name, source: "otomatis dari judul kolom", scoreHeader: rawHeaders[i], fbHeader: fbIdx !== -1 ? rawHeaders[fbIdx] : null, matched: true });
+    }
+  });
+
+  // Fallback: match each name in "Daftar Trainer Evaluasi" against a "penilaian <firstname>" column
+  (trainerNames || []).forEach(tName => {
+    const trimmed = (tName || "").trim();
+    if (!trimmed) return;
+    if (results.some(r => r.name.toLowerCase() === trimmed.toLowerCase())) return; // already covered above
+    const key = trimmed.toLowerCase().split(" ")[0];
+    const scoreIdx = findCol(["penilaian", key]);
+    const fbIdx = findCol(["kesan", key]);
+    results.push({
+      name: trimmed,
+      source: "dari Daftar Trainer Evaluasi",
+      scoreHeader: scoreIdx !== -1 ? rawHeaders[scoreIdx] : null,
+      fbHeader: fbIdx !== -1 ? rawHeaders[fbIdx] : null,
+      matched: scoreIdx !== -1
+    });
+  });
+
+  return results;
+}
+
 $("cfgEvalTestBtn").addEventListener("click", async()=>{
   const box=$("cfgEvalTestResult"); box.classList.add("show");
   const id=extractSheetId($("cfgEvalSheetId").value) || extractSheetId($("cfgSheetId").value);
@@ -2592,8 +2638,34 @@ $("cfgEvalTestBtn").addEventListener("click", async()=>{
     const cols = rows.reduce((m,r)=>Math.max(m,r.length),0);
     const th = rows[0].map(c=>`<th>${esc(c)}</th>`).join("");
     const tb = rows.slice(1,5).map(r=>`<tr>${rows[0].map((_,i)=>`<td>${esc(r[i]??"")}</td>`).join("")}</tr>`).join("");
+
+    const trainerNamesList = (window.evalTrainersData || []).map(t => t.name).filter(Boolean);
+    const trainerMatches = detectEvalTrainerColumns(rows[0], trainerNamesList);
+    let trainerMatchHtml = "";
+    if (trainerMatches.length === 0) {
+      trainerMatchHtml = `<div class="test-status warn" style="margin-top:10px;"><span class="dot"></span>Tidak ada trainer terdeteksi. Isi nama di "Daftar Trainer Evaluasi" di atas, atau pastikan judul kolom sheet mengandung "Penilaian Trainer: Nama".</div>`;
+    } else {
+      trainerMatchHtml = `
+        <div style="margin-top:14px;">
+          <div style="font-size:0.82rem;font-weight:700;color:var(--navy-800);margin-bottom:8px;">👤 Pencocokan Kolom Trainer</div>
+          <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+            <thead><tr style="background:var(--n50,#fafafa);"><th style="text-align:left;padding:6px 8px;">Trainer</th><th style="text-align:left;padding:6px 8px;">Sumber</th><th style="text-align:left;padding:6px 8px;">Kolom Nilai</th><th style="text-align:left;padding:6px 8px;">Kolom Kesan</th><th style="padding:6px 8px;">Status</th></tr></thead>
+            <tbody>
+              ${trainerMatches.map(m => `
+                <tr style="border-top:1px solid var(--card-border);">
+                  <td style="padding:6px 8px;font-weight:600;">${esc(m.name)}</td>
+                  <td style="padding:6px 8px;color:var(--n500);font-size:0.75rem;">${esc(m.source)}</td>
+                  <td style="padding:6px 8px;">${m.scoreHeader ? esc(m.scoreHeader) : '<span style="color:var(--danger);">tidak ditemukan</span>'}</td>
+                  <td style="padding:6px 8px;">${m.fbHeader ? esc(m.fbHeader) : '<span style="color:var(--n400);">—</span>'}</td>
+                  <td style="padding:6px 8px;text-align:center;">${m.matched ? "✅" : "❌"}</td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
     box.innerHTML=`<div class="test-status ok"><span class="dot"></span>Koneksi OK (${result.source}) · ${rows.length} baris × ${cols} kolom</div>
-      <div class="preview-table"><table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>`;
+      <div class="preview-table"><table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>${trainerMatchHtml}`;
   }catch(err){
     box.innerHTML=`<div class="test-status err"><span class="dot"></span>Gagal: ${esc(err.message)}</div>`;
   }
