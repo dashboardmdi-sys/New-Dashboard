@@ -1392,7 +1392,7 @@
     color: var(--n700);
     background: var(--n100);
   }
-  .bar-fill-5, .bar-fill-4, .bar-fill-3, .bar-fill-2, .bar-fill-1 {
+  .bar-seg {
     height: 100%;
     display: flex; align-items: center; justify-content: center;
     font-size: 11.5px;
@@ -1401,11 +1401,6 @@
     white-space: nowrap;
     transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.15s ease;
   }
-  .bar-fill-5 { background: #2ecc71; border-right: 2px solid #fff; color: #000; }
-  .bar-fill-4 { background: #3498db; border-right: 2px solid #fff; color: #000; }
-  .bar-fill-3 { background: #9b59b6; border-right: 2px solid #fff; color: #fff; }
-  .bar-fill-2 { background: #f1c40f; border-right: 2px solid #fff; color: #000; }
-  .bar-fill-1 { background: #e74c3c; color: #000; }
   .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; }
   .trainer-card-body {
     display: flex;
@@ -2882,11 +2877,13 @@ const I18N = {
     "ev.tingkatKesenangan": "Tingkat kesenangan sesi",
     "ev.relevansiMateri": "Relevansi materi dengan pekerjaan",
     "ev.materiPraktikalApp": "Materi Praktikal dan Aplikatif",
-    "ev.nilai5": "Nilai 5 — Sangat Baik",
-    "ev.nilai4": "Nilai 4 — Baik",
-    "ev.nilai3": "Nilai 3 — Cukup",
-    "ev.nilai2": "Nilai 2 — Kurang",
-    "ev.nilai1": "Nilai 1 — Sangat Kurang",
+    "ev.nilaiGeneric": "Nilai {{value}} — {{qualifier}}",
+    "ev.qual0": "Sangat Baik",
+    "ev.qual1": "Baik",
+    "ev.qual2": "Cukup",
+    "ev.qual3": "Kurang",
+    "ev.qual4": "Sangat Kurang",
+    "ev.dariX": "dari {{max}}",
     "l.efektivitasKepemimpinan": "Efektivitas Kepemimpinan",
     "lwi.noSheetConfigured": "Belum ada link/ID Google Sheet yang dimasukkan di Backend.",
     "lwi.dataNotEnteredTitle": "Data Belum Dimasukkan",
@@ -2920,8 +2917,7 @@ const I18N = {
     "ev.errorRender": "Error Render Evaluasi!",
     "ev.lihatRincian": "Lihat rincian:",
     "ev.belumAdaDataSuffix": "— belum ada data",
-    "ev.dari5": "dari 5",
-    "ev.rataRataPositif": "Rata-rata {{avg}}/5 · {{pct}}% positif",
+    "ev.rataRataPositif": "Rata-rata {{avg}}/{{max}} · {{pct}}% positif",
     "ev.penilaianTrainerAvg": "Penilaian Trainer<br>(Rata-rata)",
   },
   en: {
@@ -3114,11 +3110,13 @@ const I18N = {
     "ev.tingkatKesenangan": "Session enjoyment level",
     "ev.relevansiMateri": "Relevance of material to their work",
     "ev.materiPraktikalApp": "Practical and Applicable Material",
-    "ev.nilai5": "Score 5 — Excellent",
-    "ev.nilai4": "Score 4 — Good",
-    "ev.nilai3": "Score 3 — Fair",
-    "ev.nilai2": "Score 2 — Poor",
-    "ev.nilai1": "Score 1 — Very Poor",
+    "ev.nilaiGeneric": "Score {{value}} — {{qualifier}}",
+    "ev.qual0": "Excellent",
+    "ev.qual1": "Good",
+    "ev.qual2": "Fair",
+    "ev.qual3": "Poor",
+    "ev.qual4": "Very Poor",
+    "ev.dariX": "out of {{max}}",
     "l.efektivitasKepemimpinan": "Leadership Effectiveness",
     "lwi.noSheetConfigured": "No Google Sheet link/ID has been entered in the Backend yet.",
     "lwi.dataNotEnteredTitle": "Data Not Entered",
@@ -3152,8 +3150,7 @@ const I18N = {
     "ev.errorRender": "Evaluation Render Error!",
     "ev.lihatRincian": "View details:",
     "ev.belumAdaDataSuffix": "— no data yet",
-    "ev.dari5": "out of 5",
-    "ev.rataRataPositif": "Average {{avg}}/5 · {{pct}}% positive",
+    "ev.rataRataPositif": "Average {{avg}}/{{max}} · {{pct}}% positive",
     "ev.penilaianTrainerAvg": "Trainer Rating<br>(Average)",
   }
 };
@@ -3738,6 +3735,7 @@ function showDashboard(training, skipHistory = false) {
     aiSummary:     training.aiSummary     || null,
     trainerNames:  training.trainerNames  || "",
     trainerPhotos: training.trainerPhotos || "",
+    ratingScale:   Number(training.ratingScale) || 5,
     dateStart:     training.dateStart     || "",
     dateEnd:       training.dateEnd       || "",
     sessionTitle:  training.title         || "",
@@ -4184,13 +4182,17 @@ function parseEvaluationSheet(rows) {
     followUp: headers.findIndex(h => h.includes("ingin") || h.includes("lanjut") || h.includes("follow"))
   };
 
+  // Evaluation rating scale (e.g. 1-5, 1-4) — configurable per training in Backend,
+  // defaults to 5 so existing trainings are unaffected.
+  const ratingMax = Math.max(2, Math.round(CONFIG.ratingScale) || 5);
+  const emptyRatingStats = { avg: 0, pct54: 0, buckets: [] };
   const results = {
     total: 0,
-    benefit: { avg: 0, pct5: 0, pct4: 0, pct54: 0, pct3: 0, pct2: 0, pct1: 0 },
-    enjoyment: { avg: 0, pct5: 0, pct4: 0, pct54: 0, pct3: 0, pct2: 0, pct1: 0 },
-    relevance: { avg: 0, pct5: 0, pct4: 0, pct54: 0, pct3: 0, pct2: 0, pct1: 0 },
-    practical: { avg: 0, pct5: 0, pct4: 0, pct54: 0, pct3: 0, pct2: 0, pct1: 0 },
-    trainers: [], // {name, avg, count5, pct5}
+    benefit: { ...emptyRatingStats },
+    enjoyment: { ...emptyRatingStats },
+    relevance: { ...emptyRatingStats },
+    practical: { ...emptyRatingStats },
+    trainers: [], // {name, avg, countTop, pctTop}
     trainerFeedback: [], // filtered strings
     valuableTopics: [], // {text, count}
     nextTopics: [], // {text, count}
@@ -4227,6 +4229,9 @@ function parseEvaluationSheet(rows) {
     });
   }
 
+  // Buckets values into 1..ratingMax (instead of a fixed 1-5) and computes a
+  // "top box" pct54 as the top two scores of whatever scale is configured
+  // (e.g. 3&4 on a 1-4 scale), so the KPI stays meaningful across scales.
   const extractRatings = (colIdx) => {
     if (colIdx === -1) return null;
     const vals = [];
@@ -4236,21 +4241,18 @@ function parseEvaluationSheet(rows) {
     }
     if (!vals.length) return null;
     const avg = vals.reduce((a,b)=>a+b, 0) / vals.length;
-    const count5 = vals.filter(v => Math.round(v) === 5).length;
-    const count4 = vals.filter(v => Math.round(v) === 4).length;
-    const count3 = vals.filter(v => Math.round(v) === 3).length;
-    const count2 = vals.filter(v => Math.round(v) === 2).length;
-    const count1 = vals.filter(v => Math.round(v) === 1).length;
-    const count54 = vals.filter(v => v >= 4).length;
+    const buckets = [];
+    for (let v = ratingMax; v >= 1; v--) {
+      const count = vals.filter(x => Math.round(x) === v).length;
+      buckets.push({ value: v, count, pct: (count / vals.length) * 100 });
+    }
+    const topCount = vals.filter(v => v >= ratingMax - 1).length;
     return {
       avg,
-      pct5: (count5 / vals.length) * 100,
-      pct4: (count4 / vals.length) * 100,
-      pct3: (count3 / vals.length) * 100,
-      pct2: (count2 / vals.length) * 100,
-      pct1: (count1 / vals.length) * 100,
-      pct54: Math.round((count54 / vals.length) * 100),
-      count5,
+      buckets,
+      pct54: Math.round((topCount / vals.length) * 100),
+      countTop: buckets[0].count,
+      pctTop: buckets[0].pct,
       total: vals.length
     };
   };
@@ -4270,7 +4272,7 @@ function parseEvaluationSheet(rows) {
   trainerCols.forEach(tc => {
     const tStats = extractRatings(tc.scoreIdx);
     if (tStats) {
-      results.trainers.push({ name: tc.name, avg: tStats.avg, pct5: Math.round(tStats.pct5), count5: tStats.count5 });
+      results.trainers.push({ name: tc.name, avg: tStats.avg, pctTop: Math.round(tStats.pctTop), countTop: tStats.countTop });
     }
     if (tc.fbIdx !== -1) {
       for (let i = 1; i < rows.length; i++) {
@@ -4473,6 +4475,8 @@ function renderDynamicEvaluation(evalData) {
     // Use real data or fallback defaults
     const d = evalData || {};
     const hasData = !!evalData;
+    // Evaluation rating scale (1-5, 1-4, ...) — configurable per training in Backend.
+    const ratingMax = Math.max(2, Math.round(CONFIG.ratingScale) || 5);
 
     // Helpers
     const formatRange = (start, end) => {
@@ -4499,7 +4503,7 @@ function renderDynamicEvaluation(evalData) {
     // Use real data only — no fake fallback numbers. A missing metric renders an
     // explicit "Belum ada data" state instead of a fabricated zero (a 0 is
     // indistinguishable from a genuine bottom score on a 1-5 scale).
-    const empty = { pct54: 0, pct5: 0, pct4: 0, pct3: 0, pct2: 0, pct1: 0, avg: 0 };
+    const empty = { pct54: 0, buckets: [], avg: 0 };
     const benHasData  = !!(d.benefit   && d.benefit.pct54   != null);
     const enjHasData  = !!(d.enjoyment && d.enjoyment.pct54 != null);
     const relHasData  = !!(d.relevance && d.relevance.pct54 != null);
@@ -4522,8 +4526,8 @@ function renderDynamicEvaluation(evalData) {
           ...tData,
           name: n,
           avg: tData.avg || 0,
-          pct5: tData.pct5 || 0,
-          count5: tData.count5 || 0
+          pctTop: tData.pctTop || 0,
+          countTop: tData.countTop || 0
         };
       });
     } else {
@@ -4558,7 +4562,7 @@ function renderDynamicEvaluation(evalData) {
         <button type="button" class="eval-kpi" data-scroll-target="evalBarRow-${idx}" aria-label="${t("ev.lihatRincian")} ${k.short}">
           ${gaugeMarkup(`evalGaugeVal-${idx}`, k.data.pct54, k.data.pct54, "pct", false)}
           <div class="label">${k.label}</div>
-          <div class="score">${fmtID(k.data.avg, 2)} / 5 avg</div>
+          <div class="score">${fmtID(k.data.avg, 2)} / ${ratingMax} avg</div>
         </button>
       ` : `
         <button type="button" class="eval-kpi eval-kpi-empty" data-scroll-target="evalBarRow-${idx}" aria-label="${k.short} ${t("ev.belumAdaDataSuffix")}">
@@ -4572,11 +4576,11 @@ function renderDynamicEvaluation(evalData) {
     if(evalKpiTrainerEl) {
       evalKpiTrainerEl.classList.toggle("eval-kpi-empty", !trainerHasData);
       evalKpiTrainerEl.setAttribute("aria-label", trainerHasData ? t("ev.lihatDetailTrainer") : `${t("ev.penilaianTrainer")} ${t("ev.belumAdaDataSuffix")}`);
-      const trainerPct = Math.round((trainerAvg / 5) * 100);
+      const trainerPct = Math.round((trainerAvg / ratingMax) * 100);
       evalKpiTrainerEl.innerHTML = trainerHasData ? `
         ${gaugeMarkup("evalGaugeValTrainer", trainerPct, trainerAvg, "avg", false)}
         <div class="label">${t("ev.penilaianTrainerAvg")}</div>
-        <div class="score">${t("ev.dari5")}</div>
+        <div class="score">${tf("ev.dariX",{max:ratingMax})}</div>
       ` : `
         ${gaugeMarkup("evalGaugeValTrainer", 0, 0, "avg", true)}
         <div class="label">${t("ev.penilaianTrainerAvg")}</div>
@@ -4594,26 +4598,29 @@ function renderDynamicEvaluation(evalData) {
         { label: t("ev.relevansiMateri"), scores: rel, hasData: relHasData },
         { label: t("ev.materiPraktikalApp"), scores: prac, hasData: pracHasData }
       ];
-      const barColors = [
-        { cls: "bar-fill-5", lbl: t("ev.nilai5"), color: "#2ecc71" },
-        { cls: "bar-fill-4", lbl: t("ev.nilai4"), color: "#3498db" },
-        { cls: "bar-fill-3", lbl: t("ev.nilai3"), color: "#9b59b6" },
-        { cls: "bar-fill-2", lbl: t("ev.nilai2"), color: "#f1c40f" },
-        { cls: "bar-fill-1", lbl: t("ev.nilai1"), color: "#e74c3c" }
-      ];
-      const pctKeys = ["pct5","pct4","pct3","pct2","pct1"];
+      // Sample n colors/qualifiers from a fixed best->worst ramp so any scale
+      // (1-4, 1-5, 1-7, ...) gets a sensible gradient instead of only fitting 1-5.
+      const RAMP_COLORS = ["#2ecc71", "#3498db", "#9b59b6", "#f1c40f", "#e74c3c"];
+      const RAMP_TEXT   = ["#000",    "#000",    "#fff",    "#000",    "#000"];
+      const RAMP_QUALIFIERS = [t("ev.qual0"), t("ev.qual1"), t("ev.qual2"), t("ev.qual3"), t("ev.qual4")];
+      const sampleIdx = (n) => n <= 1 ? [0] : Array.from({length:n}, (_, i) => Math.round(i * (RAMP_COLORS.length - 1) / (n - 1)));
+      const barColors = sampleIdx(ratingMax).map((ri, i) => {
+        const value = ratingMax - i;
+        return { value, lbl: tf("ev.nilaiGeneric", {value, qualifier: RAMP_QUALIFIERS[ri]}), color: RAMP_COLORS[ri], textColor: RAMP_TEXT[ri] };
+      });
 
       evalBarsEl.innerHTML = barData.map((b, idx) => `
         <div class="bar-row" id="evalBarRow-${idx}">
           <div class="bar-label">
             <span>${b.label}</span>
-            ${b.hasData ? `<span class="bar-summary">${tf("ev.rataRataPositif",{avg:`<b>${fmtID(b.scores.avg, 2)}</b>`,pct:`<b>${b.scores.pct54}</b>`})}</span>` : ''}
+            ${b.hasData ? `<span class="bar-summary">${tf("ev.rataRataPositif",{avg:`<b>${fmtID(b.scores.avg, 2)}</b>`,max:ratingMax,pct:`<b>${b.scores.pct54}</b>`})}</span>` : ''}
           </div>
           ${b.hasData ? `
           <div class="bar-track">
-            ${pctKeys.map((pk, pi) => {
-              const pct = Math.round(b.scores[pk] || 0);
-              return `<div class="${barColors[pi].cls}" style="width:${b.scores[pk]||0}%" data-pct="${pct}" data-lbl="${barColors[pi].lbl}">${pct >= 8 ? pct + '%' : ''}</div>`;
+            ${b.scores.buckets.map((bucket, bi) => {
+              const pct = Math.round(bucket.pct || 0);
+              const isLast = bi === b.scores.buckets.length - 1;
+              return `<div class="bar-seg" style="width:${bucket.pct||0}%;background:${barColors[bi].color};color:${barColors[bi].textColor};${isLast ? '' : 'border-right:2px solid #fff;'}" data-pct="${pct}" data-lbl="${barColors[bi].lbl}">${pct >= 8 ? pct + '%' : ''}</div>`;
             }).join('')}
           </div>` : `
           <div class="bar-track bar-track-empty">${t("common.belumAdaData")}</div>`}
