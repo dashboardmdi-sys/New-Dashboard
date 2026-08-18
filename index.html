@@ -3144,7 +3144,11 @@ const I18N = {
   }
 };
 
-let currentLang = localStorage.getItem("mdp-lang") || "id";
+// Top-level statement, runs the instant the script parses — must never throw, or
+// everything after it in this script block (including bootApp() at the bottom)
+// silently never runs, leaving the page stuck on the loading screen forever.
+let currentLang = "id";
+try { currentLang = localStorage.getItem("mdp-lang") || "id"; } catch(e) {}
 
 function t(key, vars) {
   const dict = I18N[currentLang] || I18N.id;
@@ -3234,13 +3238,13 @@ let loadClientsActivePromise = null;
 
 async function loadClientsDbAsync() {
   // Coba ambil cache lokal dulu biar instan
-  const cached = localStorage.getItem("mdp-clients-db");
-  if(cached) {
-    try {
+  try {
+    const cached = localStorage.getItem("mdp-clients-db");
+    if(cached) {
       const parsed = JSON.parse(cached);
       if (Array.isArray(parsed)) clientsDb = parsed;
-    } catch(e) {}
-  }
+    }
+  } catch(e) {}
 
   // Jika sedang ada fetch yang berjalan, gunakan promise tersebut (debouncing/collapsing)
   if (loadClientsActivePromise) {
@@ -3306,7 +3310,8 @@ function formatDriveImageUrl(url) {
 }
 
 let loggedClient = null;
-let activeTrainingId = sessionStorage.getItem("mdp-active-training");
+let activeTrainingId = null;
+try { activeTrainingId = sessionStorage.getItem("mdp-active-training"); } catch(e) {}
 
 const DEFAULT_CONFIG = {
   sheetId: "",
@@ -5444,8 +5449,12 @@ document.getElementById("refreshBtn").addEventListener("click",()=>fetchData(tru
 /* ============ THEME TOGGLE ============ */
 (function(){
   const root=document.documentElement;
-  const saved=localStorage.getItem("dashboard-theme");
-  if(saved) root.setAttribute("data-theme",saved);
+  // Top-level IIFE, runs the instant the script parses — a throw here must never
+  // stop the rest of the script (bootApp() further down) from running.
+  try {
+    const saved=localStorage.getItem("dashboard-theme");
+    if(saved) root.setAttribute("data-theme",saved);
+  } catch(e) {}
   const logoEl=document.querySelector(".logo-mdi");
   function updateLogo(){
     if(logoEl) logoEl.src = root.getAttribute("data-theme")==="dark" ? "Asset 8-8.png" : "Asset 7-8 (1).png";
@@ -5454,7 +5463,7 @@ document.getElementById("refreshBtn").addEventListener("click",()=>fetchData(tru
   document.getElementById("themeToggle").addEventListener("click",()=>{
     const next=root.getAttribute("data-theme")==="dark"?"light":"dark";
     root.setAttribute("data-theme",next);
-    localStorage.setItem("dashboard-theme",next);
+    try { localStorage.setItem("dashboard-theme",next); } catch(e) {}
     updateLogo();
     if(typeof chartCompare!=="undefined"&&chartCompare) updateChartColors();
     if(typeof chartDist!=="undefined"&&chartDist) updateChartColors();
@@ -7555,21 +7564,32 @@ function bootDashboard() {
 
 
 async function bootApp() {
-  const cached = localStorage.getItem("mdp-clients-db");
-  let hasCache = false;
-  if (cached) {
-    try {
-      const parsed = JSON.parse(cached);
-      if (Array.isArray(parsed)) {
-        clientsDb = parsed;
-        hasCache = true;
+  // Storage access can throw outright in some real-world contexts (private browsing
+  // with storage disabled, certain in-app/webview browsers, restrictive security
+  // extensions) — an uncaught throw here stops bootApp() before it ever reaches
+  // initRouting()/hideLoader(), leaving the page stuck on the loading screen forever
+  // with no error and no retry. Never let storage access be the thing that hangs boot.
+  let cached = null, hasCache = false, loggedId = null;
+  try {
+    cached = localStorage.getItem("mdp-clients-db");
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) {
+          clientsDb = parsed;
+          hasCache = true;
+        }
+      } catch(e) {
+        clientsDb = [];
       }
-    } catch(e) {
-      clientsDb = [];
     }
+    loggedId = sessionStorage.getItem("mdp-logged-client") || localStorage.getItem("mdp-logged-client");
+  } catch(e) {
+    console.warn("Storage access failed during boot — continuing without cache/session:", e);
+    clientsDb = [];
+    hasCache = false;
+    loggedId = null;
   }
-  
-  const loggedId = sessionStorage.getItem("mdp-logged-client") || localStorage.getItem("mdp-logged-client");
   
   if (loggedId && !hasCache) {
     // Tampilkan loader & tunggu fetch server selesai karena ada login session tapi tidak ada cache
