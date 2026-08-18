@@ -2911,6 +2911,13 @@ const I18N = {
     "ev.trainerBerikutnya": "Trainer berikutnya",
     "ev.keTrainerXdariY": "Ke trainer {{x}} dari {{y}}",
     "komentar.difasilitasiOleh": "Difasilitasi oleh {{n}} trainer",
+    "ev.umpanBalikLabel": "Umpan Balik:",
+    "ev.beberapaUmpanBalik": "Beberapa umpan balik:",
+    "ev.umpanBalikPending": "Umpan balik trainer akan muncul setelah data evaluasi terhubung.",
+    "ev.tidakAdaTopik": "Tidak ada topik softskill ditemukan.",
+    "ev.topikPending": "Data topik akan muncul setelah evaluasi terhubung.",
+    "ev.kutipanPending": "Kutipan peserta akan muncul setelah data evaluasi terhubung.",
+    "ev.errorRender": "Error Render Evaluasi!",
     "ev.lihatRincian": "Lihat rincian:",
     "ev.belumAdaDataSuffix": "— belum ada data",
     "ev.dari5": "dari 5",
@@ -3136,6 +3143,13 @@ const I18N = {
     "ev.trainerBerikutnya": "Next trainer",
     "ev.keTrainerXdariY": "Go to trainer {{x}} of {{y}}",
     "komentar.difasilitasiOleh": "Facilitated by {{n}} trainer(s)",
+    "ev.umpanBalikLabel": "Feedback:",
+    "ev.beberapaUmpanBalik": "Some feedback:",
+    "ev.umpanBalikPending": "Trainer feedback will appear once evaluation data is connected.",
+    "ev.tidakAdaTopik": "No softskill topics found.",
+    "ev.topikPending": "Topic data will appear once evaluation data is connected.",
+    "ev.kutipanPending": "Participant quotes will appear once evaluation data is connected.",
+    "ev.errorRender": "Evaluation Render Error!",
     "ev.lihatRincian": "View details:",
     "ev.belumAdaDataSuffix": "— no data yet",
     "ev.dari5": "out of 5",
@@ -4631,19 +4645,19 @@ function renderDynamicEvaluation(evalData) {
       if (trainers.length === 0) {
         evalTrainersEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--n500,#888);font-size:0.88rem;background:var(--n100,#f8f9fa);border-radius:12px;border:1px dashed var(--n300,#ccc);">Belum ada nama trainer yang diisi di backend.</div>`;
       } else {
-        evalTrainersEl.innerHTML = trainers.map((t, i) => {
-          const ktMatch = ktByName[(t.name || "").trim().toLowerCase()];
+        evalTrainersEl.innerHTML = trainers.map((tr, i) => {
+          const ktMatch = ktByName[(tr.name || "").trim().toLowerCase()];
           const rawPhoto = evalPhotosList[i] || (ktMatch && ktMatch.photoUrl ? ktMatch.photoUrl : "");
           const photoUrl = rawPhoto ? formatDriveImageUrl(rawPhoto) : "";
           const bgStyle = photoUrl ? ` style="background-image:url('${esc(photoUrl)}')"` : "";
           return `
           <div class="trainer${i === 0 ? " active" : ""}${photoUrl ? "" : " trainer--nophoto"}" aria-hidden="${i === 0 ? "false" : "true"}"${bgStyle}>
-            ${photoUrl ? "" : `<span class="trainer-initials">${initials(t.name)}</span>`}
+            ${photoUrl ? "" : `<span class="trainer-initials">${initials(tr.name)}</span>`}
             <div class="trainer-scrim"></div>
             <div class="trainer-meta">
-              <div class="name">${esc(t.name)}</div>
+              <div class="name">${esc(tr.name)}</div>
               ${trainerHasData
-                ? `<div class="score-big${Number(t.avg) < 4 ? " score-big-low" : ""}">${fmtID(t.avg, 2)}</div>`
+                ? `<div class="score-big${Number(tr.avg) < 4 ? " score-big-low" : ""}">${fmtID(tr.avg, 2)}</div>`
                 : `<div class="score-big score-big-empty">${t("common.belumAdaData")}</div>`}
             </div>
           </div>
@@ -4675,14 +4689,14 @@ function renderDynamicEvaluation(evalData) {
       let fbHtml = "";
       if (CONFIG.aiSummary && CONFIG.aiSummary.feedback) {
         fbHtml = `<div style="margin-bottom:6px;font-weight:600;display:flex;align-items:center;gap:6px;">
-                    Umpan Balik:
+                    ${t("ev.umpanBalikLabel")}
                   </div>` +
                  `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(CONFIG.aiSummary.feedback)}"</div>`;
       } else if (d.trainerFeedback && d.trainerFeedback.length > 0) {
-        fbHtml = `<div style="margin-bottom:6px;"><b>Beberapa umpan balik:</b></div>` +
+        fbHtml = `<div style="margin-bottom:6px;"><b>${t("ev.beberapaUmpanBalik")}</b></div>` +
           d.trainerFeedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(w)}"</div>`).join('');
       } else {
-        fbHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">Umpan balik trainer akan muncul setelah data evaluasi terhubung.</span>`;
+        fbHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">${t("ev.umpanBalikPending")}</span>`;
       }
       evalTrainerFeedbackEl.innerHTML = fbHtml;
     }
@@ -4693,12 +4707,12 @@ function renderDynamicEvaluation(evalData) {
       if (CONFIG.aiSummary && CONFIG.aiSummary.topikBermanfaat) {
         const topics = CONFIG.aiSummary.topikBermanfaat.split(",").map(t => t.trim()).filter(Boolean);
         evalValuableTopicsEl.innerHTML = 
-          (topics.length > 0 && topics[0] !== "-" ? topics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(t)}</span>`).join("") : `<span style="color:var(--n500);font-size:13px;">Tidak ada topik softskill ditemukan.</span>`);
+          (topics.length > 0 && topics[0] !== "-" ? topics.map((tp, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(tp)}</span>`).join("") : `<span style="color:var(--n500);font-size:13px;">${t("ev.tidakAdaTopik")}</span>`);
       } else {
         const valTopics = (d.valuableTopics && d.valuableTopics.length > 0) ? d.valuableTopics : [];
         evalValuableTopicsEl.innerHTML = valTopics.length
           ? valTopics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(t.text)} (${t.count})</span>`).join("")
-          : `<span style="color:var(--n500,var(--muted));font-size:13px;">Data topik akan muncul setelah evaluasi terhubung.</span>`;
+          : `<span style="color:var(--n500,var(--muted));font-size:13px;">${t("ev.topikPending")}</span>`;
       }
     }
 
@@ -4707,12 +4721,12 @@ function renderDynamicEvaluation(evalData) {
       if (CONFIG.aiSummary && CONFIG.aiSummary.topikSelanjutnya) {
         const topics = CONFIG.aiSummary.topikSelanjutnya.split(",").map(t => t.trim()).filter(Boolean);
         evalNextTopicsEl.innerHTML = 
-          (topics.length > 0 && topics[0] !== "-" ? topics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(t)}</span>`).join("") : `<span style="color:var(--n500);font-size:13px;">Tidak ada topik softskill ditemukan.</span>`);
+          (topics.length > 0 && topics[0] !== "-" ? topics.map((tp, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(tp)}</span>`).join("") : `<span style="color:var(--n500);font-size:13px;">${t("ev.tidakAdaTopik")}</span>`);
       } else {
         const nxtTopics = (d.nextTopics && d.nextTopics.length > 0) ? d.nextTopics : [];
         evalNextTopicsEl.innerHTML = nxtTopics.length
           ? nxtTopics.map((t, idx) => `<span class="chip ${idx < 3 ? 'big' : ''}">${esc(t.text)} (${t.count})</span>`).join("")
-          : `<span style="color:var(--n500,var(--muted));font-size:13px;">Data topik akan muncul setelah evaluasi terhubung.</span>`;
+          : `<span style="color:var(--n500,var(--muted));font-size:13px;">${t("ev.topikPending")}</span>`;
       }
     }
 
@@ -4722,7 +4736,7 @@ function renderDynamicEvaluation(evalData) {
     if(evalQuotesEl) {
       if (quotes.length === 0) {
         evalQuotesEl.style.animation = "none";
-        evalQuotesEl.innerHTML = `<div class="quote" style="display:flex;align-items:center;justify-content:center;text-align:center;color:var(--n500,var(--muted));font-size:13px;">Kutipan peserta akan muncul setelah data evaluasi terhubung.</div>`;
+        evalQuotesEl.innerHTML = `<div class="quote" style="display:flex;align-items:center;justify-content:center;text-align:center;color:var(--n500,var(--muted));font-size:13px;">${t("ev.kutipanPending")}</div>`;
       } else {
         evalQuotesEl.style.animation = "";
         const repeatCount = quotes.length >= 4 ? 2 : quotes.length >= 2 ? 4 : 6;
@@ -4753,7 +4767,7 @@ function renderDynamicEvaluation(evalData) {
   } catch(err) {
     const evalReportTitle = document.getElementById("evalReportTitle");
     if(evalReportTitle) {
-      evalReportTitle.textContent = "Error Render Evaluasi!";
+      evalReportTitle.textContent = t("ev.errorRender");
       evalReportTitle.style.color = "red";
     }
     const evalReportSubtitle = document.getElementById("evalReportSubtitle");
