@@ -2313,9 +2313,12 @@ function updateTraining(patch){
 function extractSheetId(url) {
   if (!url) return "";
   if (url.includes("/d/e/")) return "";
-  const m = url.match(/\/d\/([a-zA-Z0-9-_]{40,})/);
+  // Google Sheet IDs aren't a fixed length (commonly ~25-60 chars depending on how
+  // the sheet was created) — a 40-char minimum here rejected perfectly valid shorter
+  // IDs, silently falling back to "use main sheet" instead of the sheet actually entered.
+  const m = url.match(/\/d\/([a-zA-Z0-9-_]{20,})/);
   if (m) return m[1];
-  if (url.length === 44 && !url.includes("/")) return url;
+  if (url.length >= 20 && url.length <= 100 && !url.includes("/") && !url.includes(" ")) return url;
   return "";
 }
 
