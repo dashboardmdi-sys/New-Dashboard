@@ -1835,6 +1835,21 @@
   [data-theme="dark"] #lTable tbody tr[data-lrow].expanded, [data-theme="dark"] #wTable tbody tr[data-wrow].expanded, [data-theme="dark"] #iTable tbody tr[data-irow].expanded{
     background:var(--primary-200);
   }
+
+  /* Rekap Absen table — plain (non-grid) table layout since its column count
+     is dynamic (one column per session/date, detected from the sheet). */
+  #raTable{width:100%;border-collapse:collapse}
+  #raTable thead th{text-align:left;font-size:.72rem;font-weight:700;color:var(--n500);text-transform:uppercase;letter-spacing:.03em;padding:8px 6px;border-bottom:2px solid var(--n200);white-space:nowrap;cursor:default}
+  #raTable thead th[data-rasort]{cursor:pointer}
+  #raTable thead th.lcol-num{text-align:center}
+  #raTable tbody td{padding:9px 6px;border-bottom:1px solid var(--n100);vertical-align:middle;font-size:.82rem;white-space:nowrap}
+  #raTable tbody td.lname{font-weight:600;color:var(--n900);padding-left:12px}
+  #raTable tbody td.lnum{font-family:var(--font-mono);font-weight:700;text-align:center;font-variant-numeric:tabular-nums;color:var(--n700)}
+  #raTable tbody td.lnum.hi{color:var(--navy);background:var(--primary-100);border-radius:6px}
+  #raTable tbody tr{transition:background .2s}
+  #raTable tbody tr:hover{background:var(--primary-100)}
+  [data-theme="dark"] #raTable tbody td.lnum.hi{background:var(--primary-200)}
+  @media(max-width:820px){ #raTable{min-width:600px} }
 </style>
 </head>
 <body class="light">
@@ -2028,6 +2043,10 @@
       <a href="#pane-interpersonal" class="nav-pill" id="navPillInterpersonal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
         <span data-i18n="nav.interpersonal">Gaya Interpersonal</span>
+      </a>
+      <a href="#pane-rekapabsen" class="nav-pill" id="navPillAbsen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+        <span data-i18n="nav.absen">Rekap Absen</span>
       </a>
     </div>
   </div>
@@ -2571,6 +2590,74 @@
     </section>
   </div>
 
+  <!-- ============ REKAP ABSEN ============ -->
+  <div class="dash-pane" id="pane-rekapabsen">
+    <div class="overline" data-animate><span class="num">05</span> <span data-i18n="sec.absen05">Ringkasan Kehadiran</span></div>
+    <section class="kpi-grid" id="raKpiGrid">
+      <div class="card kpi" data-animate>
+        <div class="accent" style="background:var(--navy)"></div>
+        <div class="icon" style="background:var(--navy-100);color:var(--navy)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="label" data-i18n="lwi.totalPesertaTernilai">TOTAL PESERTA TERNILAI</div>
+        <div class="value"><span id="raTotal">—</span> <span class="unit" data-i18n="pp.orang">orang</span></div>
+        <div class="sub"><span id="raTotalSub">peserta tercatat</span></div>
+      </div>
+
+      <div class="card kpi" data-animate>
+        <div class="accent" style="background:var(--primary-base)"></div>
+        <div class="icon" style="background:var(--primary-100);color:var(--primary-700)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+        </div>
+        <div class="label" data-i18n="ra.rataRataKehadiran">RATA-RATA KEHADIRAN</div>
+        <div class="value"><span id="raAvgPct">—</span> <span class="unit">%</span></div>
+        <div class="sub"><span id="raAvgSub">dari seluruh sesi</span></div>
+      </div>
+
+      <div class="card kpi" data-animate>
+        <div class="accent" style="background:var(--secondary-base)"></div>
+        <div class="icon" style="background:#FDECEC;color:var(--secondary-base)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="label" data-i18n="ra.sesiTercatat">SESI TERCATAT</div>
+        <div class="value" id="raSesiCount">—</div>
+        <div class="sub"><span id="raSesiSub">tanggal/sesi di sheet</span></div>
+      </div>
+
+      <div class="card kpi" data-animate>
+        <div class="accent" style="background:var(--success)"></div>
+        <div class="icon" style="background:#E7F6EC;color:var(--success)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+        </div>
+        <div class="label" data-i18n="ra.kehadiranTerendah">KEHADIRAN TERENDAH</div>
+        <div class="value" style="font-size:1.35rem;line-height:1.15;margin-top:12px" id="raLowestName">—</div>
+        <div class="sub"><span id="raLowestSub">—</span></div>
+      </div>
+    </section>
+
+    <div class="overline" data-animate><span class="num">06</span> <span data-i18n="sec.absen06">Detail Kehadiran Peserta</span></div>
+    <section class="card" data-animate style="padding:22px;">
+      <div class="card-head">
+        <h2 data-i18n="ra.rekapAbsenPeserta">Rekap Absen Peserta</h2>
+        <span class="hint" data-i18n="lwi.sortHintRow">klik baris atau judul kolom untuk mengurutkan</span>
+      </div>
+      <div class="table-tools">
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="raSearchInput" placeholder="Cari nama peserta…" data-i18n-placeholder="pp.searchPlaceholder" autocomplete="off">
+        </label>
+        <span class="count-pill" id="raRowCount">0 peserta</span>
+      </div>
+      <div class="kfilter" id="raFilter"></div>
+      <div style="overflow-x:auto">
+        <table id="raTable" style="min-width:700px">
+          <thead id="raThead"></thead>
+          <tbody id="raTbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
   <!-- ============ ACTION PLAN ============ -->
   <div class="dash-pane" id="pane-actionplan">
     <div class="overline" data-animate id="titleAp"><span class="num">05</span> <span data-i18n="sec.actionplan05">Action Plan Tracker</span></div>
@@ -2731,6 +2818,7 @@ const I18N = {
     "nav.leadership": "Gaya Kepemimpinan",
     "nav.wewenang": "Analisis Wewenang",
     "nav.interpersonal": "Gaya Interpersonal",
+    "nav.absen": "Rekap Absen",
     "sec.prepost01": "Ringkasan Program",
     "sec.prepost02": "Performa Peserta",
     "sec.prepost03": "Detail & Distribusi Nilai",
@@ -2742,6 +2830,8 @@ const I18N = {
     "sec.wewenang06": "Analisis & Peringkat Efektivitas Wewenang",
     "sec.interpersonal05": "Ringkasan Gaya Interpersonal",
     "sec.interpersonal06": "Distribusi Gaya Interpersonal",
+    "sec.absen05": "Ringkasan Kehadiran",
+    "sec.absen06": "Detail Kehadiran Peserta",
     "sec.detailPerPeserta": "Detail per Peserta",
     "sec.actionplan05": "Action Plan Tracker",
     "pp.totalPeserta": "Total Peserta",
@@ -2904,6 +2994,21 @@ const I18N = {
     "i.gayaLabel": "gaya",
     "i.skorGayaInterpersonal": "Skor Gaya Interpersonal · {{name}}",
     "i.socialStyleHint": "Social Style Model — nilai per dimensi",
+    "ra.rataRataKehadiran": "RATA-RATA KEHADIRAN",
+    "ra.sesiTercatat": "SESI TERCATAT",
+    "ra.kehadiranTerendah": "KEHADIRAN TERENDAH",
+    "ra.rekapAbsenPeserta": "Rekap Absen Peserta",
+    "ra.dariSeluruhSesi": "dari seluruh sesi",
+    "ra.tanggalSesiDiSheet": "tanggal/sesi di sheet",
+    "ra.kehadiranXdariY": "Hadir {{x}}/{{y}} sesi ({{pct}}%)",
+    "ra.hadirPenuh": "Hadir Penuh",
+    "ra.belumPenuh": "Belum Penuh",
+    "ra.kehadiran": "Kehadiran",
+    "ra.statusHadir": "Hadir",
+    "ra.statusTidak": "Tidak Hadir",
+    "ra.statusIzin": "Izin",
+    "ra.statusSakit": "Sakit",
+    "ra.statusKosong": "—",
     "ev.trainerSebelumnya": "Trainer sebelumnya",
     "ev.trainerBerikutnya": "Trainer berikutnya",
     "ev.keTrainerXdariY": "Ke trainer {{x}} dari {{y}}",
@@ -2964,6 +3069,7 @@ const I18N = {
     "nav.leadership": "Leadership Style",
     "nav.wewenang": "Authority Analysis",
     "nav.interpersonal": "Interpersonal Style",
+    "nav.absen": "Attendance Recap",
     "sec.prepost01": "Program Summary",
     "sec.prepost02": "Participant Performance",
     "sec.prepost03": "Score Detail & Distribution",
@@ -2975,6 +3081,8 @@ const I18N = {
     "sec.wewenang06": "Authority Effectiveness Analysis & Ranking",
     "sec.interpersonal05": "Interpersonal Style Summary",
     "sec.interpersonal06": "Interpersonal Style Distribution",
+    "sec.absen05": "Attendance Summary",
+    "sec.absen06": "Participant Attendance Detail",
     "sec.detailPerPeserta": "Per-Participant Detail",
     "sec.actionplan05": "Action Plan Tracker",
     "pp.totalPeserta": "Total Participants",
@@ -3137,6 +3245,21 @@ const I18N = {
     "i.gayaLabel": "style",
     "i.skorGayaInterpersonal": "Interpersonal Style Score · {{name}}",
     "i.socialStyleHint": "Social Style Model — score per dimension",
+    "ra.rataRataKehadiran": "AVERAGE ATTENDANCE",
+    "ra.sesiTercatat": "SESSIONS RECORDED",
+    "ra.kehadiranTerendah": "LOWEST ATTENDANCE",
+    "ra.rekapAbsenPeserta": "Participant Attendance Recap",
+    "ra.dariSeluruhSesi": "of all sessions",
+    "ra.tanggalSesiDiSheet": "dates/sessions in sheet",
+    "ra.kehadiranXdariY": "Present {{x}}/{{y}} sessions ({{pct}}%)",
+    "ra.hadirPenuh": "Full Attendance",
+    "ra.belumPenuh": "Not Full",
+    "ra.kehadiran": "Attendance",
+    "ra.statusHadir": "Present",
+    "ra.statusTidak": "Absent",
+    "ra.statusIzin": "Excused",
+    "ra.statusSakit": "Sick",
+    "ra.statusKosong": "—",
     "ev.trainerSebelumnya": "Previous trainer",
     "ev.trainerBerikutnya": "Next trainer",
     "ev.keTrainerXdariY": "Go to trainer {{x}} of {{y}}",
@@ -3212,6 +3335,7 @@ function setLang(lang) {
     try { if (typeof renderLeadership === "function") renderLeadership(); } catch(e) {}
     try { if (typeof renderWewenang === "function") renderWewenang(); } catch(e) {}
     try { if (typeof renderInterpersonal === "function") renderInterpersonal(); } catch(e) {}
+    try { if (typeof renderRekapAbsen === "function") renderRekapAbsen(); } catch(e) {}
     try { if (typeof renderDynamicEvaluation === "function" && typeof currentEvalData !== "undefined") renderDynamicEvaluation(currentEvalData); } catch(e) {}
     try { if (typeof renderActiveClientSections === "function") renderActiveClientSections(); } catch(e) {}
   } else {
@@ -3751,6 +3875,10 @@ function showDashboard(training, skipHistory = false) {
     interpersonalSheetId:   training.interpersonalSheetId   || "",
     interpersonalCsvUrl:  training.interpersonalCsvUrl  || "",
     interpersonalSheetName: training.interpersonalSheetName || "Sheet5",
+    absenEnabled:   !!training.absenEnabled,
+    absenSheetId:   training.absenSheetId   || "",
+    absenCsvUrl:  training.absenCsvUrl  || "",
+    absenSheetName: training.absenSheetName || "Sheet6",
   });
 
   activeTrainingId = String(training.id);
@@ -5015,7 +5143,7 @@ async function fetchData(manual=false){
     }
   }
 
-  // 2.5 Fetch Analysis Sheets (Sheet2: Leadership, Sheet4: Wewenang, Sheet5: Interpersonal)
+  // 2.5 Fetch Analysis Sheets (Sheet2: Leadership, Sheet4: Wewenang, Sheet5: Interpersonal, Sheet6: Rekap Absen)
   if (targetMainId) {
     try {
       // Require an actual sheet link (not just the feature toggled on) — otherwise
@@ -5024,11 +5152,13 @@ async function fetchData(manual=false){
       const isLeadershipActive    = !!CONFIG.leadershipEnabled    && !!(CONFIG.leadershipSheetId    || CONFIG.leadershipCsvUrl);
       const isWewenangActive      = !!CONFIG.wewenangEnabled      && !!(CONFIG.wewenangSheetId      || CONFIG.wewenangCsvUrl);
       const isInterpersonalActive = !!CONFIG.interpersonalEnabled && !!(CONFIG.interpersonalSheetId || CONFIG.interpersonalCsvUrl);
+      const isAbsenActive         = !!CONFIG.absenEnabled         && !!(CONFIG.absenSheetId         || CONFIG.absenCsvUrl);
 
-      const [sheet2Rows, sheet4Rows, sheet5Rows] = await Promise.all([
+      const [sheet2Rows, sheet4Rows, sheet5Rows, sheet6Rows] = await Promise.all([
         isLeadershipActive ? fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl) : Promise.resolve(null),
         isWewenangActive ? fetchSheetCsv(CONFIG.wewenangSheetName || "Sheet4", CONFIG.wewenangSheetId, CONFIG.wewenangCsvUrl) : Promise.resolve(null),
-        isInterpersonalActive ? fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl) : Promise.resolve(null)
+        isInterpersonalActive ? fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl) : Promise.resolve(null),
+        isAbsenActive ? fetchSheetCsv(CONFIG.absenSheetName || "Sheet6", CONFIG.absenSheetId, CONFIG.absenCsvUrl) : Promise.resolve(null)
       ]);
 
       if (sheet2Rows && sheet2Rows.length > 1) {
@@ -5081,8 +5211,27 @@ async function fetchData(manual=false){
         iStats = null;
         renderInterpersonal();
       }
+
+      if (sheet6Rows && sheet6Rows.length > 1) {
+        raSessionLabels = (sheet6Rows[0] || []).slice(1).map(h => (h || "").toString().trim()).filter(Boolean);
+        const raList = extractRekapAbsen(sheet6Rows);
+        if (raList && raList.length > 0) {
+          rekapAbsen = raList;
+          raStats = computeRekapAbsenStats(raList, raSessionLabels);
+          renderRekapAbsen();
+        } else {
+          rekapAbsen = [];
+          raStats = null;
+          renderRekapAbsen();
+        }
+      } else {
+        rekapAbsen = [];
+        raStats = null;
+        raSessionLabels = [];
+        renderRekapAbsen();
+      }
     } catch(e) {
-      console.warn("Gagal memuat Sheet Analisis (Sheet2/4/5):", e);
+      console.warn("Gagal memuat Sheet Analisis (Sheet2/4/5/6):", e);
     }
   }
 
@@ -5610,6 +5759,33 @@ let iExpandedName = null;
 let iDetailChart = null;
 let chartInterpersonal = null;
 
+let rekapAbsen = [];
+let raStats = null;
+let raSessionLabels = [];
+let raFilter = "all";
+let raSort = {key:"name", dir:1};
+
+const RA_STATUS_META = {
+  hadir: {i18nKey:"ra.statusHadir", color:"#2ecc71"},
+  tidak: {i18nKey:"ra.statusTidak", color:"#e74c3c"},
+  izin:  {i18nKey:"ra.statusIzin", color:"#3498db"},
+  sakit: {i18nKey:"ra.statusSakit", color:"#f1c40f"},
+  kosong:{i18nKey:"ra.statusKosong", color:"#c9ccd1"},
+};
+function raNormalizeStatus(raw){
+  const v = String(raw||"").trim().toLowerCase();
+  if(!v) return "kosong";
+  if(v.includes("hadir") || /^(h|y|yes|present|true|1|✓|v)$/.test(v)) return "hadir";
+  if(v.includes("sakit") || v==="s") return "sakit";
+  if(v.includes("izin") || v==="i") return "izin";
+  if(v.includes("tidak") || v.includes("absen") || v.includes("alpa") || /^(a|no|false|0)$/.test(v)) return "tidak";
+  return "kosong";
+}
+function raStatusBadgeHTML(status){
+  const m = RA_STATUS_META[status] || RA_STATUS_META.kosong;
+  return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;color:var(--n700,#444)"><span class="dot" style="background:${m.color};width:7px;height:7px;border-radius:50%;display:inline-block"></span>${t(m.i18nKey)}</span>`;
+}
+
 function badgeHTML(code){
   const m=STYLE_META[code]; if(!m) return "";
   return `<span class="style-badge ${m.cls}"><span class="dot"></span>${m.code}</span>`;
@@ -5827,6 +6003,39 @@ function computeInterpersonalStats(list){
     avgDom,
     minDom: Math.min(...doms), maxDom: Math.max(...doms),
     topDom: sortedByDom[0] || { name: "—", dom: 0, dominant: [] },
+  };
+}
+
+// Column A = Nama, columns B.. = one per session/date, cell = attendance status text.
+function extractRekapAbsen(rows){
+  if(!rows||rows.length<2) return [];
+  const sessionLabels = (rows[0]||[]).slice(1).map(h => (h||"").toString().trim()).filter(Boolean);
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    const name=(rows[i][0]||"").toString().trim();
+    if(!name) continue;
+    const sessions = sessionLabels.map((label, si) => ({ label, status: raNormalizeStatus(rows[i][si+1]) }));
+    const hadirCount = sessions.filter(s=>s.status==="hadir").length;
+    const totalSesi = sessionLabels.length;
+    const pct = totalSesi>0 ? Math.round((hadirCount/totalSesi)*100) : 0;
+    out.push({ name, sessions, hadirCount, totalSesi, pct });
+  }
+  return out;
+}
+
+function computeRekapAbsenStats(list, sessionLabels){
+  if(!list || !list.length) return null;
+  const total = list.length;
+  const avgPct = Math.round(list.reduce((s,p)=>s+p.pct,0)/total);
+  const sortedByPct = [...list].sort((a,b)=>a.pct-b.pct);
+  const fullCount = list.filter(p=>p.pct>=100).length;
+  return {
+    total,
+    sesiCount: (sessionLabels||[]).length,
+    avgPct,
+    fullCount,
+    partialCount: total - fullCount,
+    lowest: sortedByPct[0] || { name:"—", pct:0, hadirCount:0, totalSesi:0 },
   };
 }
 
@@ -6808,6 +7017,107 @@ function drawInterpersonalDetailChart(canvas, p){
   });
 }
 
+/* ================= RENDER REKAP ABSEN ================= */
+function renderRekapAbsen(){
+  const setText = (id, v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  if(!raStats){
+    setText("raTotal","—"); setText("raTotalSub","—");
+    setText("raAvgPct","—"); setText("raAvgSub","—");
+    setText("raSesiCount","—"); setText("raSesiSub","—");
+    setText("raLowestName","—"); setText("raLowestSub","—");
+
+    const thead = document.getElementById("raThead");
+    if(thead) thead.innerHTML = "";
+    const tbody = document.getElementById("raTbody");
+    if(tbody) {
+      tbody.innerHTML = `<tr style="display:grid;grid-template-columns:1fr">
+        <td style="padding:0;border-bottom:none">${emptyStateHTML(
+          t("lwi.dataNotEnteredTitle"),
+          tf("lwi.dataNotEnteredDescFor",{topic:t("nav.absen")})
+        )}</td>
+      </tr>`;
+    }
+    const countEl = document.getElementById("raRowCount");
+    if(countEl) countEl.textContent = tf("pp.pesertaCount",{n:0});
+    const filterEl = document.getElementById("raFilter");
+    if(filterEl) filterEl.innerHTML = "";
+    return;
+  }
+  setText("raTotal", raStats.total);
+  setText("raTotalSub", t("lwi.pesertaProgram"));
+  setText("raAvgPct", raStats.avgPct);
+  setText("raAvgSub", t("ra.dariSeluruhSesi"));
+  setText("raSesiCount", raStats.sesiCount);
+  setText("raSesiSub", t("ra.tanggalSesiDiSheet"));
+  setText("raLowestName", raStats.lowest.name);
+  setText("raLowestSub", tf("ra.kehadiranXdariY",{x:raStats.lowest.hadirCount,y:raStats.lowest.totalSesi,pct:raStats.lowest.pct}));
+
+  renderRekapAbsenFilter();
+  renderRekapAbsenTable();
+}
+
+function renderRekapAbsenFilter(){
+  if(!raStats) return;
+  const chips = [
+    {k:"all", lbl:t("lwi.semua"), count:rekapAbsen.length},
+    {k:"penuh", lbl:t("ra.hadirPenuh"), count:raStats.fullCount},
+    {k:"belumPenuh", lbl:t("ra.belumPenuh"), count:raStats.partialCount},
+  ];
+  const container = document.getElementById("raFilter");
+  if(container){
+    container.innerHTML = chips.map(c=>`
+      <button class="kchip ${raFilter===c.k?"active":""}" data-rachip="${c.k}">${c.lbl} <span style="opacity:.7">· ${c.count}</span></button>
+    `).join("");
+  }
+}
+
+function renderRekapAbsenTable(){
+  const thead = document.getElementById("raThead");
+  if(thead){
+    thead.innerHTML = `
+      <tr>
+        <th>#<span class="arrow"></span></th>
+        <th data-rasort="name"><span>${t("pp.colName")}</span><span class="arrow" id="raArr-name">▲</span></th>
+        ${raSessionLabels.map(label=>`<th>${esc(label)}</th>`).join("")}
+        <th data-rasort="pct" class="lcol-num"><span>${t("ra.kehadiran")}</span><span class="arrow" id="raArr-pct"></span></th>
+      </tr>`;
+  }
+
+  const q=(document.getElementById("raSearchInput")?.value||"").trim().toLowerCase();
+  const filtered = rekapAbsen.filter(p=>{
+    if(raFilter==="penuh" && p.pct<100) return false;
+    if(raFilter==="belumPenuh" && p.pct>=100) return false;
+    if(q && !p.name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const dir=raSort.dir;
+  const sorted=[...filtered].sort((a,b)=>{
+    if(raSort.key==="name") return a.name.localeCompare(b.name)*dir;
+    return (a.pct-b.pct)*dir;
+  });
+  const rows=sorted.map((p,i)=>`
+    <tr>
+      <td class="lnum" style="color:var(--n500)">${i+1}</td>
+      <td class="lname">${esc(p.name)}</td>
+      ${p.sessions.map(s=>`<td>${raStatusBadgeHTML(s.status)}</td>`).join("")}
+      <td class="lnum ${p.pct>=100?"hi":""}">${p.hadirCount}/${p.totalSesi} · ${p.pct}%</td>
+    </tr>`).join("");
+  const tbody = document.getElementById("raTbody");
+  if(tbody){
+    tbody.innerHTML = rows || `<tr style="display:grid;grid-template-columns:1fr">
+        <td style="padding:0;border-bottom:none">${emptyStateHTML(
+          t("lwi.tidakAdaPeserta"),
+          t("i.tidakAdaPesertaCocok")
+        )}</td>
+      </tr>`;
+  }
+  const countEl = document.getElementById("raRowCount");
+  if(countEl) countEl.textContent = tf("pp.pesertaCount",{n:sorted.length});
+  document.querySelectorAll('[id^="raArr-"]').forEach(el=>el.textContent="");
+  const arr=document.getElementById(`raArr-${raSort.key}`);
+  if(arr) arr.textContent = raSort.dir>0 ? "▲" : "▼";
+}
+
 // Event Listeners Binding for Analysis Tabs
 document.addEventListener("DOMContentLoaded", ()=>{
   // Leadership listeners
@@ -6927,6 +7237,31 @@ document.addEventListener("DOMContentLoaded", ()=>{
       renderInterpersonalTable();
     });
   });
+
+  // Rekap Absen listeners (thead is built dynamically, so sort uses delegation)
+  const raFilterEl = document.getElementById("raFilter");
+  if(raFilterEl){
+    raFilterEl.addEventListener("click",e=>{
+      const chip=e.target.closest("[data-rachip]");
+      if(!chip) return;
+      raFilter=chip.dataset.rachip;
+      renderRekapAbsenFilter();
+      renderRekapAbsenTable();
+    });
+  }
+  const raSearchEl = document.getElementById("raSearchInput");
+  if(raSearchEl) raSearchEl.addEventListener("input",()=>renderRekapAbsenTable());
+  const raTheadEl = document.getElementById("raThead");
+  if(raTheadEl){
+    raTheadEl.addEventListener("click",e=>{
+      const th=e.target.closest("th[data-rasort]");
+      if(!th) return;
+      const key=th.dataset.rasort;
+      if(raSort.key===key) raSort.dir*=-1;
+      else { raSort.key=key; raSort.dir = key==="name" ? 1 : -1; }
+      renderRekapAbsenTable();
+    });
+  }
 });
 
 
@@ -7340,10 +7675,11 @@ function renderActiveClientSections(){
       }
     }
 
-  // Control visibility of optional analysis tabs (Leadership, Wewenang, Interpersonal)
+  // Control visibility of optional analysis tabs (Leadership, Wewenang, Interpersonal, Rekap Absen)
   const isLeadershipVisible    = !!CONFIG.leadershipEnabled;
   const isWewenangVisible      = !!CONFIG.wewenangEnabled;
   const isInterpersonalVisible = !!CONFIG.interpersonalEnabled;
+  const isAbsenVisible         = !!CONFIG.absenEnabled;
 
   const navLeadership = document.getElementById("navPillLeadership");
   const paneLeadership = document.getElementById("pane-leadership");
@@ -7368,6 +7704,15 @@ function renderActiveClientSections(){
   if (navInterpersonal) navInterpersonal.style.display = isInterpersonalVisible ? "" : "none";
   if (paneInterpersonal && !isInterpersonalVisible && paneInterpersonal.classList.contains("active")) {
     paneInterpersonal.classList.remove("active");
+    const firstTab = document.querySelector(".nav-pill");
+    if (firstTab) firstTab.click();
+  }
+
+  const navAbsen = document.getElementById("navPillAbsen");
+  const paneAbsen = document.getElementById("pane-rekapabsen");
+  if (navAbsen) navAbsen.style.display = isAbsenVisible ? "" : "none";
+  if (paneAbsen && !isAbsenVisible && paneAbsen.classList.contains("active")) {
+    paneAbsen.classList.remove("active");
     const firstTab = document.querySelector(".nav-pill");
     if (firstTab) firstTab.click();
   }
@@ -7577,6 +7922,10 @@ function bootDashboard() {
                     CONFIG.interpersonalSheetId   = freshTraining.interpersonalSheetId   || "";
                     CONFIG.interpersonalCsvUrl  = freshTraining.interpersonalCsvUrl  || "";
                     CONFIG.interpersonalSheetName = freshTraining.interpersonalSheetName || "Sheet5";
+                    CONFIG.absenEnabled   = !!freshTraining.absenEnabled;
+                    CONFIG.absenSheetId   = freshTraining.absenSheetId   || "";
+                    CONFIG.absenCsvUrl  = freshTraining.absenCsvUrl  || "";
+                    CONFIG.absenSheetName = freshTraining.absenSheetName || "Sheet6";
                   } else {
                     // Sesi aktif tidak ditemukan di data fresh — kosongkan agar tidak bocor
                     CONFIG.evaluasi        = "";
@@ -7596,6 +7945,10 @@ function bootDashboard() {
                     CONFIG.interpersonalSheetId   = "";
                     CONFIG.interpersonalCsvUrl  = "";
                     CONFIG.interpersonalSheetName = "Sheet5";
+                    CONFIG.absenEnabled   = false;
+                    CONFIG.absenSheetId   = "";
+                    CONFIG.absenCsvUrl  = "";
+                    CONFIG.absenSheetName = "Sheet6";
                   }
                 }
               }

@@ -859,6 +859,10 @@
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
           Gaya Interpersonal
         </button>
+        <button class="tab-btn" data-tab="rekapabsen">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+          Rekap Absen
+        </button>
       </div>
 
       <!-- Tab Content -->
@@ -1545,6 +1549,54 @@
           </div>
         </div>
 
+        <!-- TAB: REKAP ABSEN -->
+        <div class="tab-pane" id="pane-rekapabsen">
+          <div class="card">
+            <div class="card-head">
+              <h2>🗓️ Pengaturan Google Sheet — Rekap Absen</h2>
+              <span class="badge badge-info" style="margin-left:auto;">Sheet6 (Rekap Absen)</span>
+            </div>
+            <p class="card-desc">Data Rekap Absen diambil dari Google Sheet. Format: kolom A = Nama, kolom berikutnya masing-masing satu tanggal/sesi berisi status hadir (mis. "Hadir"/"Tidak"/"Izin"/"Sakit"). Masukkan ID/URL Sheet jika berbeda dari Sheet utama, dan sesuaikan nama tab sheet (Default: <b>Sheet6</b>).</p>
+
+            <div class="toggle-field" style="display:flex;align-items:center;gap:12px;margin:16px 0;padding:12px 16px;border-radius:10px;background:var(--bg-alt,#f5f5f5);border:1.5px solid var(--n200,#e0e0e0)">
+              <label class="toggle-switch" style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0">
+                <input type="checkbox" id="cfgAbsenEnabled" style="opacity:0;width:0;height:0">
+                <span class="toggle-slider" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.3s"></span>
+              </label>
+              <div>
+                <strong style="font-size:.88rem">Tampilkan Tab Rekap Absen di Dashboard</strong>
+                <div style="font-size:.76rem;color:var(--n500,#888);margin-top:2px" id="cfgAbsenEnabledHint">Tab ini saat ini <b>disembunyikan</b> dari dashboard klien</div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="cfgAbsenSheetId">ID Google Sheet / URL Spreadsheet (Kosongkan jika menggunakan Sheet Utama)</label>
+              <input type="text" id="cfgAbsenSheetId" placeholder="contoh: 1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY atau tempel link URL Sheet">
+              <span class="field-hint">ID Sheet terdeteksi: <strong id="cfgAbsenIdEcho">—</strong></span>
+            </div>
+            <div class="field">
+              <label for="cfgAbsenCsvUrl">URL CSV Dipublikasikan (Opsional — jika menggunakan Publish to Web CSV)</label>
+              <input type="text" id="cfgAbsenCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
+            </div>
+            <div class="field">
+              <label for="cfgAbsenSheetName">Nama Tab Google Sheet (Default: Sheet6)</label>
+              <input type="text" id="cfgAbsenSheetName" value="Sheet6" placeholder="Sheet6">
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:16px;">
+              <button class="btn btn-primary" id="saveAbsenCfgBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Simpan Konfigurasi Sheet6
+              </button>
+              <button class="btn btn-secondary" id="testAbsenBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="testAbsenIcon"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Uji &amp; Preview Sheet6
+              </button>
+            </div>
+            <div class="test-result" id="testAbsenResult"></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -2206,7 +2258,15 @@ function openEditTraining(tid){
   if ($("cfgInterpersonalSheetId")) $("cfgInterpersonalSheetId").value = t.interpersonalSheetId || "";
   if ($("cfgInterpersonalCsvUrl"))  $("cfgInterpersonalCsvUrl").value  = t.interpersonalCsvUrl || "";
   if ($("cfgInterpersonalSheetName")) $("cfgInterpersonalSheetName").value = t.interpersonalSheetName || "Sheet5";
-  
+
+  if ($("cfgAbsenEnabled")) {
+    $("cfgAbsenEnabled").checked = !!t.absenEnabled;
+    updateToggleHint("cfgAbsenEnabled", "cfgAbsenEnabledHint");
+  }
+  if ($("cfgAbsenSheetId")) $("cfgAbsenSheetId").value = t.absenSheetId || "";
+  if ($("cfgAbsenCsvUrl"))  $("cfgAbsenCsvUrl").value  = t.absenCsvUrl || "";
+  if ($("cfgAbsenSheetName")) $("cfgAbsenSheetName").value = t.absenSheetName || "Sheet6";
+
   let kt = t.komentarTrainer;
   if(typeof kt === "string"){
     kt = [{ intro: kt, name: "", role: "", apresiasi: "", days: [], quote: "" }];
@@ -2725,6 +2785,7 @@ function setupSheetIdEcho(inputId, echoId) {
 setupSheetIdEcho("cfgLeadershipSheetId", "cfgLeadershipIdEcho");
 setupSheetIdEcho("cfgWewenangSheetId", "cfgWewenangIdEcho");
 setupSheetIdEcho("cfgInterpersonalSheetId", "cfgInterpersonalIdEcho");
+setupSheetIdEcho("cfgAbsenSheetId", "cfgAbsenIdEcho");
 
 function bindAnalysisTestBtn(btnId, iconId, resultId, customSheetIdInput, csvInputId, nameInputId, defaultSheetName) {
   const btn = $(btnId);
@@ -2768,6 +2829,7 @@ function bindAnalysisTestBtn(btnId, iconId, resultId, customSheetIdInput, csvInp
 bindAnalysisTestBtn("testLeadershipBtn", "testLeadershipIcon", "testLeadershipResult", "cfgLeadershipSheetId", "cfgLeadershipCsvUrl", "cfgLeadershipSheetName", "Sheet2");
 bindAnalysisTestBtn("testWewenangBtn", "testWewenangIcon", "testWewenangResult", "cfgWewenangSheetId", "cfgWewenangCsvUrl", "cfgWewenangSheetName", "Sheet4");
 bindAnalysisTestBtn("testInterpersonalBtn", "testInterpersonalIcon", "testInterpersonalResult", "cfgInterpersonalSheetId", "cfgInterpersonalCsvUrl", "cfgInterpersonalSheetName", "Sheet5");
+bindAnalysisTestBtn("testAbsenBtn", "testAbsenIcon", "testAbsenResult", "cfgAbsenSheetId", "cfgAbsenCsvUrl", "cfgAbsenSheetName", "Sheet6");
 
 function setupToggleListener(checkboxId, hintId) {
   const cb = $(checkboxId);
@@ -2784,6 +2846,7 @@ function setupToggleListener(checkboxId, hintId) {
 setupToggleListener("cfgLeadershipEnabled", "cfgLeadershipEnabledHint");
 setupToggleListener("cfgWewenangEnabled", "cfgWewenangEnabledHint");
 setupToggleListener("cfgInterpersonalEnabled", "cfgInterpersonalEnabledHint");
+setupToggleListener("cfgAbsenEnabled", "cfgAbsenEnabledHint");
 
 if ($("saveLeadershipCfgBtn")) {
   $("saveLeadershipCfgBtn").addEventListener("click", () => {
@@ -2819,6 +2882,18 @@ if ($("saveInterpersonalCfgBtn")) {
     });
     activateTraining(currentTrainingId);
     toast("✓ Konfigurasi Sheet5 (Gaya Interpersonal) tersimpan & disinkronkan");
+  });
+}
+if ($("saveAbsenCfgBtn")) {
+  $("saveAbsenCfgBtn").addEventListener("click", () => {
+    updateTraining({
+      absenEnabled: !!$("cfgAbsenEnabled")?.checked,
+      absenSheetId: extractSheetId($("cfgAbsenSheetId")?.value),
+      absenCsvUrl: $("cfgAbsenCsvUrl")?.value.trim(),
+      absenSheetName: $("cfgAbsenSheetName")?.value.trim() || "Sheet6"
+    });
+    activateTraining(currentTrainingId);
+    toast("✓ Konfigurasi Sheet6 (Rekap Absen) tersimpan & disinkronkan");
   });
 }
 
