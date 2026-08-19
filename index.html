@@ -4113,20 +4113,25 @@ function computeStats(list){
 function parseEvaluationSheet(rows) {
   if (!rows || rows.length < 2) return null;
   const headers = rows[0].map(h => (h || "").trim().toLowerCase());
+  // Evaluation rating scale (e.g. 1-5, 1-4, 1-10) — configurable per training in
+  // Backend, defaults to 5 so existing trainings are unaffected.
+  const ratingMax = Math.max(2, Math.round(CONFIG.ratingScale) || 5);
 
   const toNum = (val) => {
     if (!val) return 0;
     const str = String(val).trim();
     const direct = parseFloat(str.replace(",", "."));
-    if (!isNaN(direct) && direct >= 1 && direct <= 5) return direct;
+    if (!isNaN(direct) && direct >= 1 && direct <= ratingMax) return direct;
     const match = str.match(/^(\d+)/);
-    if (match) { const num = parseFloat(match[1]); if (num >= 1 && num <= 5) return num; }
+    if (match) { const num = parseFloat(match[1]); if (num >= 1 && num <= ratingMax) return num; }
     const v = str.toLowerCase();
-    if (v.includes('sangat baik') || v.includes('sangat bermanfaat') || v.includes('sangat setuju') || v.includes('sangat relevan') || v.includes('sangat senang') || v.includes('excellent')) return 5;
+    // Qualitative answers ("Sangat Baik", "Cukup", ...) map onto the top/bottom/
+    // middle of whatever scale is configured, not a hardcoded 1-5.
+    if (v.includes('sangat baik') || v.includes('sangat bermanfaat') || v.includes('sangat setuju') || v.includes('sangat relevan') || v.includes('sangat senang') || v.includes('excellent')) return ratingMax;
     if (v.includes('sangat kurang') || v.includes('sangat buruk') || v.includes('tidak sama sekali')) return 1;
-    if (v.includes('kurang') || v.includes('buruk') || v.includes('tidak')) return 2;
-    if (v.includes('baik') || v.includes('bermanfaat') || v.includes('setuju') || v.includes('relevan') || v.includes('senang') || v.includes('good')) return 4;
-    if (v.includes('cukup') || v.includes('sedang') || v.includes('biasa') || v.includes('mungkin')) return 3;
+    if (v.includes('kurang') || v.includes('buruk') || v.includes('tidak')) return Math.max(1, Math.round(ratingMax * 0.4));
+    if (v.includes('baik') || v.includes('bermanfaat') || v.includes('setuju') || v.includes('relevan') || v.includes('senang') || v.includes('good')) return Math.max(1, Math.round(ratingMax * 0.8));
+    if (v.includes('cukup') || v.includes('sedang') || v.includes('biasa') || v.includes('mungkin')) return Math.max(1, Math.round((ratingMax + 1) / 2));
     return 0;
   };
 
@@ -4141,6 +4146,22 @@ function parseEvaluationSheet(rows) {
   const hasTimestamp = headers[0].includes('timestamp') || headers[0].includes('waktu') || headers[0] === '';
   const off = hasTimestamp ? 0 : -1;
   const fb = (v, def) => v !== -1 ? v : (def >= 0 && def < headers.length ? def : -1);
+  // A column is "numeric" if every non-empty sampled cell parses as a number —
+  // used to keep the free-text position fallback (topics/nextTopics/comments)
+  // from landing on a rating column when a sheet's headers don't match any
+  // known keyword (that column would just be a trainer's score, not text).
+  const isNumericColumn = (colIdx) => {
+    if (colIdx === -1) return false;
+    let checked = 0, numeric = 0;
+    for (let i = 1; i < rows.length && checked < 20; i++) {
+      const raw = rows[i][colIdx];
+      if (raw === "" || raw == null) continue;
+      checked++;
+      if (typeof raw === "number" || (typeof raw === "string" && raw.trim() !== "" && !isNaN(Number(raw.trim())))) numeric++;
+    }
+    return checked > 0 && numeric === checked;
+  };
+  const fbText = (v, def) => v !== -1 ? v : (def >= 0 && def < headers.length && !isNumericColumn(def) ? def : -1);
 
   // Map columns: keyword match first, then position fallback
   const colMap = {
@@ -4162,19 +4183,19 @@ function parseEvaluationSheet(rows) {
     practical: fb(
       headers.findIndex(h => h.includes("praktikal") || h.includes("aplikatif")),
       4 + off),
-    topics: fb(
+    topics: fbText(
       findCol(['topik bahasan']) !== -1
         ? findCol(['topik bahasan'])
         : headers.findIndex(h => h.includes("topik") && (h.includes("manfaat") || h.includes("bermanfaat") || h.includes("valuable") || h.includes("disukai") || h.includes("landed"))),
       10 + off),
-    nextTopics: fb(
+    nextTopics: fbText(
       findCol(['harapkan']) !== -1
         ? findCol(['harapkan'])
         : (findCol(['selanjutnya']) !== -1
           ? findCol(['selanjutnya'])
           : headers.findIndex(h => (h.includes("selanjutnya") || h.includes("next") || h.includes("lanjutan") || h.includes("usulan") || h.includes("request")) && (h.includes("topik") || h.includes("materi") || h.includes("pelatihan")))),
       11 + off),
-    comments: fb(
+    comments: fbText(
       findCol(['kesan dan pesan']) !== -1
         ? findCol(['kesan dan pesan'])
         : headers.findIndex(h => h.includes("komentar") || h.includes("saran") || h.includes("masukan") || h.includes("testimoni") || h.includes("words") || h.includes("pendapat")),
@@ -4182,9 +4203,6 @@ function parseEvaluationSheet(rows) {
     followUp: headers.findIndex(h => h.includes("ingin") || h.includes("lanjut") || h.includes("follow"))
   };
 
-  // Evaluation rating scale (e.g. 1-5, 1-4) — configurable per training in Backend,
-  // defaults to 5 so existing trainings are unaffected.
-  const ratingMax = Math.max(2, Math.round(CONFIG.ratingScale) || 5);
   const emptyRatingStats = { avg: 0, pct54: 0, buckets: [] };
   const results = {
     total: 0,
@@ -4218,10 +4236,17 @@ function parseEvaluationSheet(rows) {
 
   // Fallback: if no trainer columns found by header pattern, try using trainer names from config
   if (trainerCols.length === 0 && CONFIG.trainerNames) {
-    const namesList = CONFIG.trainerNames.split(/[,&]|dan/i).map(s=>s.trim()).filter(Boolean);
+    const namesList = CONFIG.trainerNames.split(/[,&]|\bdan\b/i).map(s=>s.trim()).filter(Boolean);
     namesList.forEach(tName => {
       const key = tName.toLowerCase().split(' ')[0];
-      const scoreIdx = findCol(['penilaian', key]);
+      const fullNameLower = tName.trim().toLowerCase();
+      // Tier 1: "Penilaian Trainer: <Nama>" style header.
+      let scoreIdx = findCol(['penilaian', key]);
+      // Tier 2/3: some forms label the rating column with just the trainer's
+      // name (full name, then first name), no "Penilaian" prefix at all —
+      // exclude anything that looks like the feedback/name/timestamp columns.
+      if (scoreIdx === -1) scoreIdx = findCol([fullNameLower], ['kesan', 'saran', 'pesan', 'nama', 'timestamp']);
+      if (scoreIdx === -1) scoreIdx = findCol([key], ['kesan', 'saran', 'pesan', 'nama', 'timestamp']);
       const fbIdx = findCol(['kesan', key], ['pesan']);
       if (scoreIdx !== -1) {
         trainerCols.push({ name: tName, scoreIdx, fbIdx });
@@ -4302,7 +4327,7 @@ function parseEvaluationSheet(rows) {
     let yesCount = 0;
     let totalCount = 0;
     for (let i = 1; i < rows.length; i++) {
-      const val = (rows[i][colMap.followUp] || "").trim().toLowerCase();
+      const val = String(rows[i][colMap.followUp] || "").trim().toLowerCase();
       if (val) {
         totalCount++;
         if (val.includes("ya") || val.includes("yes") || val.includes("setuju") || val.includes("ingin") || val.includes("1") || val.includes("true")) {
@@ -4324,7 +4349,7 @@ function parseEvaluationSheet(rows) {
     if (colIdx === -1) return [];
     const counts = {};
     for (let i = 1; i < rows.length; i++) {
-      const val = (rows[i][colIdx] || "").trim();
+      const val = String(rows[i][colIdx] || "").trim();
       if (!val) continue;
       // Split by comma or semicolon
       const parts = val.split(/[;,]/);
@@ -4346,7 +4371,7 @@ function parseEvaluationSheet(rows) {
   // Extract comments
   if (colMap.comments !== -1) {
     for (let i = 1; i < rows.length; i++) {
-      const text = (rows[i][colMap.comments] || "").trim();
+      const text = String(rows[i][colMap.comments] || "").trim();
       if (text && text.length > 5) {
         results.comments.push({ text, who: "Participant Feedback" });
       }
@@ -4504,10 +4529,12 @@ function renderDynamicEvaluation(evalData) {
     // explicit "Belum ada data" state instead of a fabricated zero (a 0 is
     // indistinguishable from a genuine bottom score on a 1-5 scale).
     const empty = { pct54: 0, buckets: [], avg: 0 };
-    const benHasData  = !!(d.benefit   && d.benefit.pct54   != null);
-    const enjHasData  = !!(d.enjoyment && d.enjoyment.pct54 != null);
-    const relHasData  = !!(d.relevance && d.relevance.pct54 != null);
-    const pracHasData = !!(d.practical && d.practical.pct54 != null);
+    // total > 0 (not pct54 != null) — pct54 is 0 on both real zero-data results
+    // and the empty placeholder, so it can't tell "no data" from "genuinely 0%".
+    const benHasData  = !!(d.benefit   && d.benefit.total   > 0);
+    const enjHasData  = !!(d.enjoyment && d.enjoyment.total > 0);
+    const relHasData  = !!(d.relevance && d.relevance.total > 0);
+    const pracHasData = !!(d.practical && d.practical.total > 0);
     const ben   = benHasData  ? d.benefit   : empty;
     const enj   = enjHasData  ? d.enjoyment : empty;
     const rel   = relHasData  ? d.relevance : empty;
@@ -4518,7 +4545,7 @@ function renderDynamicEvaluation(evalData) {
     let trainers = [];
 
     // Strictly match the number of trainer cards with the names filled in backend CONFIG.trainerNames
-    const cfgTrainerNamesList = (CONFIG.trainerNames || "").split(/[,&]|dan/i).map(s=>s.trim()).filter(Boolean);
+    const cfgTrainerNamesList = (CONFIG.trainerNames || "").split(/[,&]|\bdan\b/i).map(s=>s.trim()).filter(Boolean);
     if (cfgTrainerNamesList.length > 0) {
       trainers = cfgTrainerNamesList.map((n, idx) => {
         const tData = rawSheetTrainers[idx] || {};

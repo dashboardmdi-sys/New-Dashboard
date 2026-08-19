@@ -2163,7 +2163,7 @@ function openEditTraining(tid){
   if (t.evalTrainersData && Array.isArray(t.evalTrainersData) && t.evalTrainersData.length > 0) {
     evalTrainers = JSON.parse(JSON.stringify(t.evalTrainersData));
   } else {
-    const namesList = (t.trainerNames || "").split(/[,&]|dan/i).map(s=>s.trim()).filter(Boolean);
+    const namesList = (t.trainerNames || "").split(/[,&]|\bdan\b/i).map(s=>s.trim()).filter(Boolean);
     const photosList = (t.trainerPhotos || "").split(",").map(s=>s.trim()).filter(Boolean);
     evalTrainers = namesList.map((n, i) => ({ name: n, photoUrl: photosList[i] || "" }));
   }
@@ -2600,9 +2600,9 @@ $("cfgEvalSaveBtn").addEventListener("click",()=>{
 // to — instead of that matching happening silently on the dashboard with no visibility.
 function detectEvalTrainerColumns(rawHeaders, trainerNames) {
   const headers = rawHeaders.map(h => (h || "").trim().toLowerCase());
-  const findCol = (keywords) => {
+  const findCol = (keywords, excludes = []) => {
     for (let i = 0; i < headers.length; i++) {
-      if (keywords.every(k => headers[i].includes(k))) return i;
+      if (keywords.every(k => headers[i].includes(k)) && excludes.every(x => !headers[i].includes(x))) return i;
     }
     return -1;
   };
@@ -2627,11 +2627,25 @@ function detectEvalTrainerColumns(rawHeaders, trainerNames) {
     if (!trimmed) return;
     if (results.some(r => r.name.toLowerCase() === trimmed.toLowerCase())) return; // already covered above
     const key = trimmed.toLowerCase().split(" ")[0];
-    const scoreIdx = findCol(["penilaian", key]);
+    const fullNameLower = trimmed.toLowerCase();
+    // Tier 1: "Penilaian Trainer: <Nama>" style header.
+    let scoreIdx = findCol(["penilaian", key]);
+    let source = "dari Daftar Trainer Evaluasi";
+    // Tier 2/3: some forms label the rating column with just the trainer's
+    // name (full name, then first name), no "Penilaian" prefix at all —
+    // exclude anything that looks like the feedback/name/timestamp columns.
+    if (scoreIdx === -1) {
+      scoreIdx = findCol([fullNameLower], ["kesan", "saran", "pesan", "nama", "timestamp"]);
+      if (scoreIdx !== -1) source = "dari Daftar Trainer Evaluasi (kolom nama polos)";
+    }
+    if (scoreIdx === -1) {
+      scoreIdx = findCol([key], ["kesan", "saran", "pesan", "nama", "timestamp"]);
+      if (scoreIdx !== -1) source = "dari Daftar Trainer Evaluasi (kolom nama polos)";
+    }
     const fbIdx = findCol(["kesan", key]);
     results.push({
       name: trimmed,
-      source: "dari Daftar Trainer Evaluasi",
+      source,
       scoreHeader: scoreIdx !== -1 ? rawHeaders[scoreIdx] : null,
       fbHeader: fbIdx !== -1 ? rawHeaders[fbIdx] : null,
       matched: scoreIdx !== -1
