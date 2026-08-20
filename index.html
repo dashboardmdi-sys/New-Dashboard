@@ -1703,7 +1703,12 @@
 #pane-actionplan .table-scroll, #pane-reports .table-scroll { overflow-x: auto; width: 100%; }
 #pane-actionplan .table-scroll table, #pane-reports .table-scroll table { width: 100%; min-width: 900px; border-collapse: collapse; text-align: left; table-layout: fixed; }
 #pane-actionplan .table-scroll tr:not(.detail-row), #pane-reports .table-scroll tr:not(.detail-row) { display: table-row; }
-#pane-actionplan .table-scroll th, #pane-reports .table-scroll th { display: table-cell; padding: 12px 24px; font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; border-bottom: 1px solid var(--mdi-border); background: #f8fafc; }
+#pane-actionplan .table-scroll th, #pane-reports .table-scroll th { display: table-cell; padding: 12px 24px; font-size: 11px; font-weight: 700; color: var(--mdi-muted); text-transform: uppercase; border-bottom: 1px solid var(--mdi-border); background: #f8fafc;
+  /* Overrides the generic "thead th{white-space:nowrap}" rule meant for the
+     other short fixed-label tables — Action Plan headers can be long,
+     free-text custom field labels and need to wrap instead of overflowing
+     into neighboring columns. */
+  white-space: normal; cursor: default; }
 #pane-actionplan .table-scroll td, #pane-reports .table-scroll td { display: table-cell; padding: 16px 24px; border-bottom: 1px solid var(--mdi-border); vertical-align: middle; }
 #pane-actionplan .table-scroll tr:hover td, #pane-reports .table-scroll tr:hover td { background: #f8fafc; }
 
