@@ -5213,7 +5213,7 @@ async function fetchData(manual=false){
       }
 
       if (sheet6Rows && sheet6Rows.length > 1) {
-        raSessionLabels = (sheet6Rows[0] || []).slice(1).map(h => (h || "").toString().trim()).filter(Boolean);
+        raSessionLabels = raParseHeaders(sheet6Rows).sessionLabels;
         const raList = extractRekapAbsen(sheet6Rows);
         if (raList && raList.length > 0) {
           rekapAbsen = raList;
@@ -6007,14 +6007,26 @@ function computeInterpersonalStats(list){
 }
 
 // Column A = Nama, columns B.. = one per session/date, cell = attendance status text.
+// Google Forms exports usually put a Timestamp column first — detect and skip
+// it (like parseEvaluationSheet does) so "Nama" is read from the right column
+// instead of the sheet's dates getting treated as if the Timestamp were a session.
+function raParseHeaders(rows){
+  const headers = (rows[0]||[]).map(h => (h||"").toString().trim());
+  const first = (headers[0]||"").toLowerCase();
+  const hasTimestamp = first.includes("timestamp") || first.includes("waktu");
+  const nameIdx = hasTimestamp ? 1 : 0;
+  const sessionLabels = headers.slice(nameIdx+1).filter(Boolean);
+  return { nameIdx, sessionLabels };
+}
+
 function extractRekapAbsen(rows){
   if(!rows||rows.length<2) return [];
-  const sessionLabels = (rows[0]||[]).slice(1).map(h => (h||"").toString().trim()).filter(Boolean);
+  const { nameIdx, sessionLabels } = raParseHeaders(rows);
   const out=[];
   for(let i=1;i<rows.length;i++){
-    const name=(rows[i][0]||"").toString().trim();
+    const name=(rows[i][nameIdx]||"").toString().trim();
     if(!name) continue;
-    const sessions = sessionLabels.map((label, si) => ({ label, status: raNormalizeStatus(rows[i][si+1]) }));
+    const sessions = sessionLabels.map((label, si) => ({ label, status: raNormalizeStatus(rows[i][nameIdx+1+si]) }));
     const hadirCount = sessions.filter(s=>s.status==="hadir").length;
     const totalSesi = sessionLabels.length;
     const pct = totalSesi>0 ? Math.round((hadirCount/totalSesi)*100) : 0;
