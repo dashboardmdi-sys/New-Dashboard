@@ -2729,7 +2729,7 @@
           <div class="table-scroll">
             <table>
               <thead>
-                <tr>
+                <tr id="apTheadRow">
                   <th style="width: 4%" data-i18n="ap.colNo">#</th>
                   <th style="width: 18%" data-i18n="ap.colName">Participant Name</th>
                   <th style="width: 14%" data-i18n="ap.colDept">Department</th>
@@ -5447,6 +5447,21 @@ function deriveApPlansFromAnswers(answers, formConfig) {
   return plans;
 }
 
+// Mirrors backend.html's renderApSpreadsheet() questionFields filter exactly, so the
+// client-facing table shows the same dynamic columns as the admin's "Rekap Awal" —
+// whatever custom fields a client's Action Plan form was configured with, not a
+// hardcoded "Action Plan (Commitment)" column.
+function getApCommitmentFields(formConfig) {
+  const fields = (formConfig && Array.isArray(formConfig.fields)) ? formConfig.fields : [];
+  return fields.filter(f => {
+    const fid = (f.id || "").toLowerCase();
+    const lbl = (f.label || "").toLowerCase().trim();
+    if (fid === "q_nama" || fid === "q_dept" || fid === "q_grade" || fid === "q_timestamp") return false;
+    if (lbl === "nama" || lbl === "nama lengkap" || lbl === "nama peserta" || lbl === "departemen" || lbl === "department:" || lbl === "department" || lbl === "grade" || lbl === "timestamp" || lbl === "#" || lbl === "no") return false;
+    return true;
+  });
+}
+
 /* --- Podium --- */
 function renderPodium(tab){
   const list = tab==="top" ? (stats?.top3 || []) : (stats?.bottom3 || []);
@@ -7512,9 +7527,15 @@ function renderActiveClientSections(){
   let apList = [];
   let filteredApList = [];
   let totalPlans = 0;
+  // Only switches the table to per-field columns when the training's Action Plan form
+  // actually has custom fields configured — trainings with no actionPlanFormConfig (or
+  // the old r.item/r.pic shape below) fall through to the single flattened column
+  // unchanged, so this never affects clients not using the fields-based system.
+  const apCommitmentFields = getApCommitmentFields(CONFIG.actionPlanFormConfig);
+  const apUseDynamicCols = apCommitmentFields.length > 0;
 
   const ap = Array.isArray(CONFIG.actionPlan) ? CONFIG.actionPlan : [];
-  
+
   if (ap.length > 0 && ap[0]) {
     if (ap[0].extractedPlans !== undefined || ap[0].answers) {
       // Format baru dari dashboard.html (cloud sync)
@@ -7527,6 +7548,7 @@ function renderActiveClientSections(){
            : deriveApPlansFromAnswers(p.answers, CONFIG.actionPlanFormConfig);
          return {
            no: p.no, name: p.name, dept: p.dept, plans: plans, status: st,
+           answers: p.answers || {},
            s2Update: (p.answers && p.answers['q_notes']) ? p.answers['q_notes'] : (p.s2Update || ""),
            s2Challenge: p.s2Challenge || ""
          };
@@ -7629,14 +7651,40 @@ function renderActiveClientSections(){
     const tableCount = document.getElementById("table-count-label");
     if(tableCount) tableCount.textContent = tf("ap.showingXofY",{shown:filteredApList.length,total:totalParticipants});
 
+    // Rebuild the header every render (not just once) so it reflects the current
+    // language and the training's current field config — mirrors Backend's Rekap
+    // Awal columns exactly when custom fields are configured, otherwise falls back
+    // to the original single "Action Plan (Commitment)" column unchanged.
+    const apTheadRow = document.getElementById("apTheadRow");
+    if (apTheadRow) {
+      apTheadRow.innerHTML = apUseDynamicCols ? `
+        <th style="width: 4%">${t("ap.colNo")}</th>
+        <th style="width: 16%">${t("ap.colName")}</th>
+        <th style="width: 12%">${t("ap.colDept")}</th>
+        ${apCommitmentFields.map(f => `<th>${esc(f.label)}</th>`).join("")}
+        <th style="width: 10%; text-align:center;">${t("ap.colStatus")}</th>
+        <th style="width: 9%">${t("ap.colNotes")}</th>
+        <th style="width: 9%">${t("ap.colChallenge")}</th>
+        <th style="width: 4%"></th>
+      ` : `
+        <th style="width: 4%">${t("ap.colNo")}</th>
+        <th style="width: 18%">${t("ap.colName")}</th>
+        <th style="width: 14%">${t("ap.colDept")}</th>
+        <th style="width: 26%">${t("ap.colCommitment")}</th>
+        <th style="width: 12%; text-align:center;">${t("ap.colStatus")}</th>
+        <th style="width: 11%">${t("ap.colNotes")}</th>
+        <th style="width: 11%">${t("ap.colChallenge")}</th>
+        <th style="width: 4%"></th>
+      `;
+    }
+    const apColCount = 7 + (apUseDynamicCols ? apCommitmentFields.length : 1);
+
     const tbody = document.getElementById("apTableBody");
     if (tbody) {
       if (filteredApList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 48px; color: var(--mdi-muted);">${t("ap.noPlanForStatus")}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${apColCount}" style="text-align:center; padding: 48px; color: var(--mdi-muted);">${t("ap.noPlanForStatus")}</td></tr>`;
       } else {
       const renderHtml = filteredApList.map((p, index) => {
-          const firstPlan = p.plans.length > 0 ? esc(p.plans[0]) : "-";
-          const moreText = p.plans.length > 1 ? `<div style="font-size:11px; color:var(--mdi-orange); margin-top:4px;">${tf("ap.moreActions",{n:p.plans.length - 1})}</div>` : "";
           const statusHtml = p.status === 'done' ? `<span class="status-pill s-done">● ${t("ap.statusDone")}</span>` : `<span class="status-pill s-prog">● ${t("ap.statusProg")}</span>`;
 
           const s2UpdateVal = (p.s2Update || "").trim();
@@ -7645,30 +7693,53 @@ function renderActiveClientSections(){
           const s2ChallengeVal = (p.s2Challenge || "").trim();
           const s2Challenge = s2ChallengeVal ? esc(s2ChallengeVal) : `<span style="color:var(--mdi-danger); font-size:12px;">⚠️ ${t("ap.none")}</span>`;
 
+          let commitmentCellsHtml, detailBlocksHtml;
+          if (apUseDynamicCols) {
+            commitmentCellsHtml = apCommitmentFields.map(f => {
+              const val = (p.answers && p.answers[f.id] && String(p.answers[f.id]).trim() && p.answers[f.id] !== "—") ? esc(p.answers[f.id]) : "-";
+              return `<td><div style="font-size:13px; color:var(--mdi-ink); line-height:1.4;">${val}</div></td>`;
+            }).join("");
+            detailBlocksHtml = apCommitmentFields.map(f => {
+              const val = (p.answers && p.answers[f.id] && String(p.answers[f.id]).trim() && p.answers[f.id] !== "—") ? esc(p.answers[f.id]) : `<span style="color:var(--mdi-muted); font-style: italic;">${t("ap.none")}</span>`;
+              return `
+                <div>
+                  <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">${esc(f.label)}</div>
+                  <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5; white-space:pre-wrap;">${val}</div>
+                </div>`;
+            }).join("");
+          } else {
+            const firstPlan = p.plans.length > 0 ? esc(p.plans[0]) : "-";
+            const moreText = p.plans.length > 1 ? `<div style="font-size:11px; color:var(--mdi-orange); margin-top:4px;">${tf("ap.moreActions",{n:p.plans.length - 1})}</div>` : "";
+            commitmentCellsHtml = `
+              <td>
+                <div style="font-size:13px; color:var(--mdi-ink); line-height:1.4;">${firstPlan}</div>
+                ${moreText}
+              </td>`;
+            detailBlocksHtml = `
+              <div>
+                <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">${tf("ap.allNActionPlans",{n:p.plans.length})}</div>
+                <ol style="margin:0; padding-left:16px; font-size:13px; color:var(--mdi-ink); line-height:1.6; font-weight:600;">
+                  ${p.plans.map(pl => `<li style="margin-bottom:8px;"><span style="color:var(--mdi-ink); font-weight:400;">${esc(pl)}</span></li>`).join("")}
+                </ol>
+              </div>`;
+          }
+
           return `
             <tr onclick="toggleApRow('${p.no}')" id="ap-row-${p.no}">
               <td class="td-num">${index + 1}</td>
               <td><div class="td-name" title="${esc(p.name)}">${esc(p.name)}</div></td>
               <td><span class="dept-tag" title="${esc(p.dept)}">${esc(p.dept)}</span></td>
-              <td>
-                <div style="font-size:13px; color:var(--mdi-ink); line-height:1.4;">${firstPlan}</div>
-                ${moreText}
-              </td>
+              ${commitmentCellsHtml}
               <td style="text-align:center;">${statusHtml}</td>
               <td><div style="font-size:12px; color:var(--mdi-muted); line-height:1.4;">${s2Update}</div></td>
               <td><div style="font-size:12px; color:var(--mdi-muted); line-height:1.4;">${s2Challenge}</div></td>
               <td><button class="expand-btn" id="ap-btn-${p.no}" onclick="event.stopPropagation(); toggleApRow('${p.no}')">›</button></td>
             </tr>
             <tr class="detail-row" id="ap-detail-${p.no}">
-              <td colspan="8" class="detail-cell">
+              <td colspan="${apColCount}" class="detail-cell">
                 <div class="detail-inner">
-                  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
-                    <div>
-                      <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">${tf("ap.allNActionPlans",{n:p.plans.length})}</div>
-                      <ol style="margin:0; padding-left:16px; font-size:13px; color:var(--mdi-ink); line-height:1.6; font-weight:600;">
-                        ${p.plans.map(pl => `<li style="margin-bottom:8px;"><span style="color:var(--mdi-ink); font-weight:400;">${esc(pl)}</span></li>`).join("")}
-                      </ol>
-                    </div>
+                  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px;">
+                    ${detailBlocksHtml}
                     <div>
                       <div style="font-size:10px; font-weight:800; color:var(--mdi-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">${t("ap.update30Day")}</div>
                       <div style="font-size:13px; color:var(--mdi-ink); line-height:1.5;">${s2UpdateVal ? esc(s2UpdateVal) : `<span style="color:var(--mdi-muted); font-style: italic;">${t("ap.none")}</span>`}</div>
@@ -7920,6 +7991,7 @@ function bootDashboard() {
                     CONFIG.komentarTrainer = freshTraining.komentarTrainer || "";
                     CONFIG.dokumentasi     = freshTraining.dokumentasi     || [];
                     CONFIG.actionPlan      = freshTraining.actionPlan      || [];
+                    CONFIG.actionPlanFormConfig = freshTraining.actionPlanFormConfig || null;
                     CONFIG.aiSummary       = freshTraining.aiSummary       || null;
                     CONFIG.trainerPhotos   = freshTraining.trainerPhotos   || "";
                     CONFIG.leadershipEnabled      = !!freshTraining.leadershipEnabled;
@@ -7944,6 +8016,7 @@ function bootDashboard() {
                     CONFIG.komentarTrainer = "";
                     CONFIG.dokumentasi     = [];
                     CONFIG.actionPlan      = [];
+                    CONFIG.actionPlanFormConfig = null;
                     CONFIG.aiSummary       = null;
                     CONFIG.leadershipEnabled      = false;
                     CONFIG.leadershipSheetId      = "";
