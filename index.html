@@ -2727,7 +2727,7 @@
             <div class="th-count" id="table-count-label">Showing 30 of 30</div>
           </div>
           <div class="table-scroll">
-            <table>
+            <table id="apTable">
               <thead>
                 <tr id="apTheadRow">
                   <th style="width: 4%" data-i18n="ap.colNo">#</th>
@@ -7656,26 +7656,42 @@ function renderActiveClientSections(){
     // Awal columns exactly when custom fields are configured, otherwise falls back
     // to the original single "Action Plan (Commitment)" column unchanged.
     const apTheadRow = document.getElementById("apTheadRow");
+    const apTableEl = document.getElementById("apTable");
     if (apTheadRow) {
-      apTheadRow.innerHTML = apUseDynamicCols ? `
-        <th style="width: 4%">${t("ap.colNo")}</th>
-        <th style="width: 16%">${t("ap.colName")}</th>
-        <th style="width: 12%">${t("ap.colDept")}</th>
-        ${apCommitmentFields.map(f => `<th>${esc(f.label)}</th>`).join("")}
-        <th style="width: 10%; text-align:center;">${t("ap.colStatus")}</th>
-        <th style="width: 9%">${t("ap.colNotes")}</th>
-        <th style="width: 9%">${t("ap.colChallenge")}</th>
-        <th style="width: 4%"></th>
-      ` : `
-        <th style="width: 4%">${t("ap.colNo")}</th>
-        <th style="width: 18%">${t("ap.colName")}</th>
-        <th style="width: 14%">${t("ap.colDept")}</th>
-        <th style="width: 26%">${t("ap.colCommitment")}</th>
-        <th style="width: 12%; text-align:center;">${t("ap.colStatus")}</th>
-        <th style="width: 11%">${t("ap.colNotes")}</th>
-        <th style="width: 11%">${t("ap.colChallenge")}</th>
-        <th style="width: 4%"></th>
-      `;
+      if (apUseDynamicCols) {
+        // table-layout:fixed sizes every column purely off this header row, so with
+        // many custom fields, percentage widths squeeze each one down to nothing —
+        // give every commitment column a real minimum width in px instead, and grow
+        // the table itself to fit them all so .table-scroll's overflow-x scrolls
+        // instead of every column collapsing into unreadable stacked text.
+        const COL_PX = { no:50, name:180, dept:140, commitment:220, status:120, notes:170, challenge:170, expand:50 };
+        apTheadRow.innerHTML = `
+          <th style="width:${COL_PX.no}px">${t("ap.colNo")}</th>
+          <th style="width:${COL_PX.name}px">${t("ap.colName")}</th>
+          <th style="width:${COL_PX.dept}px">${t("ap.colDept")}</th>
+          ${apCommitmentFields.map(f => `<th style="width:${COL_PX.commitment}px">${esc(f.label)}</th>`).join("")}
+          <th style="width:${COL_PX.status}px; text-align:center;">${t("ap.colStatus")}</th>
+          <th style="width:${COL_PX.notes}px">${t("ap.colNotes")}</th>
+          <th style="width:${COL_PX.challenge}px">${t("ap.colChallenge")}</th>
+          <th style="width:${COL_PX.expand}px"></th>
+        `;
+        if (apTableEl) {
+          const totalPx = COL_PX.no + COL_PX.name + COL_PX.dept + COL_PX.status + COL_PX.notes + COL_PX.challenge + COL_PX.expand + apCommitmentFields.length * COL_PX.commitment;
+          apTableEl.style.minWidth = Math.max(900, totalPx) + "px";
+        }
+      } else {
+        apTheadRow.innerHTML = `
+          <th style="width: 4%">${t("ap.colNo")}</th>
+          <th style="width: 18%">${t("ap.colName")}</th>
+          <th style="width: 14%">${t("ap.colDept")}</th>
+          <th style="width: 26%">${t("ap.colCommitment")}</th>
+          <th style="width: 12%; text-align:center;">${t("ap.colStatus")}</th>
+          <th style="width: 11%">${t("ap.colNotes")}</th>
+          <th style="width: 11%">${t("ap.colChallenge")}</th>
+          <th style="width: 4%"></th>
+        `;
+        if (apTableEl) apTableEl.style.minWidth = "";
+      }
     }
     const apColCount = 7 + (apUseDynamicCols ? apCommitmentFields.length : 1);
 
