@@ -4166,6 +4166,33 @@ function reloadApFormForEditing() {
   loadApParticipantAnswers();
 }
 
+function findApExcelHeaderRow(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return { headerRowIdx: -1, nameIdx: -1 };
+  const maxScan = Math.min(rows.length, 10);
+  
+  for (let r = 0; r < maxScan; r++) {
+    const row = rows[r];
+    if (!Array.isArray(row) || row.length === 0) continue;
+    const lower = row.map(h => (h || "").toString().replace(/\u00a0/g, ' ').trim().toLowerCase());
+    
+    // First try exact / strong matches
+    let idx = lower.findIndex(h => 
+      h === "nama" || h === "name" || h === "nama lengkap" || h === "nama peserta" || 
+      h === "peserta" || h === "participant" || h === "nama pic" || h === "pic" || 
+      h === "full name" || h === "employee" || h === "karyawan" || h === "user" || h === "nama karyawan"
+    );
+    // Fallback to substring match
+    if (idx === -1) {
+      idx = lower.findIndex(h => h.includes("nama") || h.includes("name") || h.includes("peserta") || h.includes("participant"));
+    }
+
+    if (idx !== -1) {
+      return { headerRowIdx: r, nameIdx: idx };
+    }
+  }
+  return { headerRowIdx: -1, nameIdx: -1 };
+}
+
 function handleApStage1ExcelUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -4177,28 +4204,38 @@ function handleApStage1ExcelUpload(event) {
       data = new Uint8Array(e.target.result);
     } catch(err) {
       alert("Gagal membaca file Excel.");
+      event.target.value = '';
       return;
     }
     const workbook = XLSX.read(data, {type: 'array'});
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
 
-    if (rows.length < 2) {
+    if (!rows || rows.length < 2) {
       alert("File kosong atau tidak memiliki data.");
+      event.target.value = '';
       return;
     }
 
-    const headers = rows[0].map(h => (h || "").toString().trim());
+    const { headerRowIdx, nameIdx } = findApExcelHeaderRow(rows);
+
+    if (headerRowIdx === -1 || nameIdx === -1) {
+      alert("Gagal mengimpor: Kolom 'Nama' / 'Peserta' tidak ditemukan dalam 10 baris pertama file Excel.\n\nPastikan terdapat header kolom yang memuat kata Nama / Peserta / Participant / PIC di file Excel Anda.");
+      event.target.value = '';
+      return;
+    }
+
+    const headers = rows[headerRowIdx].map(h => (h || "").toString().replace(/\u00a0/g, ' ').trim());
     const lowerHeaders = headers.map(h => h.toLowerCase());
     
-    let nameIdx = lowerHeaders.findIndex(h => h === "nama" || h === "name" || h === "nama lengkap" || h === "nama peserta");
-    if (nameIdx === -1) nameIdx = lowerHeaders.findIndex(h => h.includes("nama") || h.includes("name"));
+    let deptIdx = lowerHeaders.findIndex(h => 
+      h === "departemen" || h === "dept" || h === "department" || h === "department:" || 
+      h === "divisi" || h === "unit kerja" || h === "unit" || h === "section" || h === "jabatan"
+    );
+    if (deptIdx === -1) deptIdx = lowerHeaders.findIndex(h => h.includes("dept") || h.includes("departemen") || h.includes("department") || h.includes("divisi"));
     
-    let deptIdx = lowerHeaders.findIndex(h => h === "departemen" || h === "dept" || h === "department" || h === "department:" || h === "divisi" || h === "unit kerja");
-    if (deptIdx === -1) deptIdx = lowerHeaders.findIndex(h => h.includes("dept") || h.includes("departemen") || h.includes("department"));
-    
-    let gradeIdx = lowerHeaders.findIndex(h => h.includes("grade") || h.includes("jabatan") || h.includes("level") || h.includes("posisi"));
-    let timestampIdx = lowerHeaders.findIndex(h => h.includes("timestamp") || h.includes("waktu") || h.includes("tanggal"));
+    let gradeIdx = lowerHeaders.findIndex(h => h.includes("grade") || h.includes("jabatan") || h.includes("level") || h.includes("posisi") || h.includes("role"));
+    let timestampIdx = lowerHeaders.findIndex(h => h.includes("timestamp") || h.includes("waktu") || h.includes("tanggal") || h.includes("date") || h.includes("time"));
 
     const config = getApFormConfig();
     let newFields = [
@@ -4212,7 +4249,9 @@ function handleApStage1ExcelUpload(event) {
       if (!h) return;
       const lh = h.toLowerCase().trim();
       if (idx === nameIdx || idx === deptIdx || idx === gradeIdx || idx === timestampIdx) return;
-      if (lh === "#" || lh === "no" || lh === "nama" || lh === "nama lengkap" || lh === "nama peserta" || lh === "departemen" || lh === "department:" || lh === "department" || lh === "grade" || lh === "timestamp") return;
+      if (lh === "#" || lh === "no" || lh === "nama" || lh === "nama lengkap" || lh === "nama peserta" || 
+          lh === "peserta" || lh === "participant" || lh === "departemen" || lh === "department:" || 
+          lh === "department" || lh === "grade" || lh === "timestamp" || lh === "waktu") return;
       
       const safeId = "q_custom_" + idx;
       newFields.push({
@@ -4232,23 +4271,23 @@ function handleApStage1ExcelUpload(event) {
     const participants = getApParticipants();
     let importedCount = 0;
     
-    for (let i = 1; i < rows.length; i++) {
+    for (let i = headerRowIdx + 1; i < rows.length; i++) {
       const row = rows[i];
       if (!row || row.length === 0) continue;
       
-      const name = nameIdx !== -1 ? (row[nameIdx] || "").toString().trim() : "";
+      const name = (row[nameIdx] || "").toString().replace(/\u00a0/g, ' ').trim();
       if (!name) continue;
       
-      const dept = deptIdx !== -1 ? (row[deptIdx] || "").toString().trim() : "-";
-      const grade = gradeIdx !== -1 ? (row[gradeIdx] || "").toString().trim() : "-";
+      const dept = deptIdx !== -1 ? ((row[deptIdx] || "").toString().replace(/\u00a0/g, ' ').trim() || "-") : "-";
+      const grade = gradeIdx !== -1 ? ((row[gradeIdx] || "").toString().replace(/\u00a0/g, ' ').trim() || "-") : "-";
       
       const answers = {};
       Object.keys(fieldMapping).forEach(colIdx => {
         const fieldId = fieldMapping[colIdx];
-        answers[fieldId] = (row[colIdx] || "").toString().trim();
+        answers[fieldId] = (row[colIdx] || "").toString().replace(/\u00a0/g, ' ').trim();
       });
 
-      const existingIdx = participants.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+      const existingIdx = participants.findIndex(p => p.name.toLowerCase().trim() === name.toLowerCase());
       const newParticipant = {
         no: Date.now() + i,
         name: name,
@@ -4270,74 +4309,15 @@ function handleApStage1ExcelUpload(event) {
     saveApParticipants(participants);
     toast(`✓ Berhasil mengimpor ${importedCount} data peserta dari Excel!`);
     renderApTrackerTable();
+    if (typeof renderApSpreadsheet === 'function') renderApSpreadsheet();
+    if (typeof renderApSpreadsheet2 === 'function') renderApSpreadsheet2();
     event.target.value = '';
   };
   reader.readAsArrayBuffer(file);
 }
 
 function handleApExcelUpload(event) {
-  const file = event.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    let data;
-    try { data = new Uint8Array(e.target.result); } catch(err) { alert("Gagal membaca file Excel."); return; }
-    const workbook = XLSX.read(data, {type: 'array'});
-    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
-    if(rows.length < 2) { alert("File kosong atau tidak memiliki data."); return; }
-
-    const headers = rows[0].map(h => (h || "").toString().trim());
-    const lowerHeaders = headers.map(h => h.toLowerCase());
-    const config = getApFormConfig();
-
-    let nameIdx = lowerHeaders.findIndex(h => h === "nama" || h === "name" || h === "nama lengkap" || h === "nama peserta");
-    if(nameIdx === -1) nameIdx = lowerHeaders.findIndex(h => h.includes("nama") || h.includes("name"));
-    if(nameIdx === -1) { alert("Kolom 'Nama' tidak ditemukan di file Excel."); return; }
-
-    let deptIdx = lowerHeaders.findIndex(h => h.includes("dept") || h.includes("departemen") || h.includes("divisi") || h.includes("unit"));
-    let gradeIdx = lowerHeaders.findIndex(h => h.includes("grade") || h.includes("level") || h.includes("jabatan"));
-
-    const participants = getApParticipants();
-    let added = 0, updated = 0;
-
-    for(let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      if(!row || row.length === 0) continue;
-      const name = (row[nameIdx] || "").toString().trim();
-      if(!name) continue;
-
-      let p = participants.find(x => x.name.toLowerCase() === name.toLowerCase());
-      if(!p) {
-        const newNo = participants.length > 0 ? Math.max(...participants.map(x => x.no || 0)) + 1 : i;
-        p = { no: newNo, name, dept: "-", grade: "-", status: "prog", answers: {} };
-        participants.push(p);
-        added++;
-      } else {
-        updated++;
-      }
-
-      if(deptIdx !== -1 && row[deptIdx]) p.dept = (row[deptIdx] || "").toString().trim();
-      if(gradeIdx !== -1 && row[gradeIdx]) p.grade = (row[gradeIdx] || "").toString().trim();
-      if(!p.answers) p.answers = {};
-
-      // Map Excel columns to form config fields by matching label text
-      (config.fields || []).forEach(f => {
-        const lbl = (f.label || "").toLowerCase();
-        const colIdx = lowerHeaders.findIndex(h => h === lbl || (lbl.length > 8 && h.includes(lbl.substring(0, 20))));
-        if(colIdx !== -1 && row[colIdx] !== undefined && row[colIdx] !== null) {
-          const val = (row[colIdx] || "").toString().trim();
-          if(val) p.answers[f.id] = val;
-        }
-      });
-    }
-
-    saveApParticipants(participants);
-    toast(`✓ Import Tahap 1 selesai: ${added} peserta baru, ${updated} peserta diperbarui.`);
-    renderApTrackerTable();
-    event.target.value = '';
-  };
-  reader.readAsArrayBuffer(file);
+  handleApStage1ExcelUpload(event);
 }
 
 function handleApStage2ExcelUpload(event) {
@@ -4351,22 +4331,29 @@ function handleApStage2ExcelUpload(event) {
       data = new Uint8Array(e.target.result);
     } catch(err) {
       alert("Gagal membaca file Excel.");
+      event.target.value = '';
       return;
     }
     const workbook = XLSX.read(data, {type: 'array'});
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
 
-    if (rows.length < 2) {
+    if (!rows || rows.length < 2) {
       alert("File kosong atau tidak memiliki data.");
+      event.target.value = '';
       return;
     }
 
-    const headers = rows[0].map(h => (h || "").toString().trim());
+    const { headerRowIdx, nameIdx } = findApExcelHeaderRow(rows);
+
+    if (headerRowIdx === -1 || nameIdx === -1) {
+      alert("Gagal memperbarui: Kolom 'Nama' / 'Peserta' tidak ditemukan dalam 10 baris pertama file Excel.");
+      event.target.value = '';
+      return;
+    }
+
+    const headers = rows[headerRowIdx].map(h => (h || "").toString().replace(/\u00a0/g, ' ').trim());
     const lowerHeaders = headers.map(h => h.toLowerCase());
-    
-    let nameIdx = lowerHeaders.findIndex(h => h === "nama" || h === "name" || h === "nama lengkap" || h === "nama peserta");
-    if (nameIdx === -1) nameIdx = lowerHeaders.findIndex(h => h.includes("nama") || h.includes("name"));
     
     let statusIdx = lowerHeaders.findIndex(h => h.includes("status"));
     let updateIdx = lowerHeaders.findIndex(h => h.includes("update") || h.includes("notes") || h.includes("progres") || h.includes("progress"));
@@ -4375,17 +4362,17 @@ function handleApStage2ExcelUpload(event) {
     const participants = getApParticipants();
     let updatedCount = 0;
 
-    for (let i = 1; i < rows.length; i++) {
+    for (let i = headerRowIdx + 1; i < rows.length; i++) {
       const row = rows[i];
       if (!row || row.length === 0) continue;
       
-      const name = nameIdx !== -1 ? (row[nameIdx] || "").toString().trim() : "";
+      const name = (row[nameIdx] || "").toString().replace(/\u00a0/g, ' ').trim();
       if (!name) continue;
 
-      const p = participants.find(x => x.name.toLowerCase() === name.toLowerCase());
+      const p = participants.find(x => x.name.toLowerCase().trim() === name.toLowerCase());
       if (p) {
-        if (updateIdx !== -1 && row[updateIdx]) p.s2Update = (row[updateIdx] || "").toString().trim();
-        if (challengeIdx !== -1 && row[challengeIdx]) p.s2Challenge = (row[challengeIdx] || "").toString().trim();
+        if (updateIdx !== -1 && row[updateIdx]) p.s2Update = (row[updateIdx] || "").toString().replace(/\u00a0/g, ' ').trim();
+        if (challengeIdx !== -1 && row[challengeIdx]) p.s2Challenge = (row[challengeIdx] || "").toString().replace(/\u00a0/g, ' ').trim();
         
         if (statusIdx !== -1 && row[statusIdx]) {
           const st = (row[statusIdx] || "").toString().trim().toLowerCase();
@@ -4407,6 +4394,8 @@ function handleApStage2ExcelUpload(event) {
     saveApParticipants(participants);
     toast(`✓ Berhasil memperbarui data progres Tahap 2 untuk ${updatedCount} peserta dari Excel!`);
     renderApTrackerTable();
+    if (typeof renderApSpreadsheet === 'function') renderApSpreadsheet();
+    if (typeof renderApSpreadsheet2 === 'function') renderApSpreadsheet2();
     event.target.value = '';
   };
   reader.readAsArrayBuffer(file);

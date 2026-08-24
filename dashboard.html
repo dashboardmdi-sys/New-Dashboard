@@ -3931,6 +3931,31 @@ window.addEventListener('firebaseDataChanged', () => {
   init();
 });
 
+function findApExcelHeaderRow(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return { headerRowIdx: -1, nameIdx: -1 };
+  const maxScan = Math.min(rows.length, 10);
+  
+  for (let r = 0; r < maxScan; r++) {
+    const row = rows[r];
+    if (!Array.isArray(row) || row.length === 0) continue;
+    const lower = row.map(h => (h || "").toString().replace(/\u00a0/g, ' ').trim().toLowerCase());
+    
+    let idx = lower.findIndex(h => 
+      h === "nama" || h === "name" || h === "nama lengkap" || h === "nama peserta" || 
+      h === "peserta" || h === "participant" || h === "nama pic" || h === "pic" || 
+      h === "full name" || h === "employee" || h === "karyawan" || h === "user" || h === "nama karyawan"
+    );
+    if (idx === -1) {
+      idx = lower.findIndex(h => h.includes("nama") || h.includes("name") || h.includes("peserta") || h.includes("participant"));
+    }
+
+    if (idx !== -1) {
+      return { headerRowIdx: r, nameIdx: idx };
+    }
+  }
+  return { headerRowIdx: -1, nameIdx: -1 };
+}
+
 function handleExcelUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -3942,22 +3967,28 @@ function handleExcelUpload(event) {
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
 
-    if (rows.length < 2) {
+    if (!rows || rows.length < 2) {
       alert("File kosong atau tidak memiliki data.");
+      event.target.value = '';
       return;
     }
 
-    const headers = rows[0].map(h => (h || "").toString().trim());
+    const { headerRowIdx, nameIdx } = findApExcelHeaderRow(rows);
+
+    if (headerRowIdx === -1 || nameIdx === -1) {
+      alert("Gagal mengimpor: Kolom 'Nama' / 'Peserta' tidak ditemukan dalam 10 baris pertama file Excel.\n\nPastikan terdapat header kolom yang memuat kata Nama / Peserta / Participant / PIC di file Excel Anda.");
+      event.target.value = '';
+      return;
+    }
+
+    const headers = rows[headerRowIdx].map(h => (h || "").toString().replace(/\u00a0/g, ' ').trim());
     const lowerHeaders = headers.map(h => h.toLowerCase());
-    
-    let nameIdx = lowerHeaders.findIndex(h => h === "nama" || h === "name" || h === "nama lengkap");
-    if (nameIdx === -1) nameIdx = lowerHeaders.findIndex(h => h.includes("nama") || h.includes("name"));
     
     let deptIdx = lowerHeaders.findIndex(h => h === "departemen" || h === "dept" || h === "department" || h === "divisi" || h === "division" || h === "unit kerja");
     if (deptIdx === -1) deptIdx = lowerHeaders.findIndex(h => h.startsWith("dept") || h.startsWith("departemen") || h === "nama departemen");
     
-    let gradeIdx = lowerHeaders.findIndex(h => h.includes("grade") || h.includes("jabatan"));
-    let dateIdx = lowerHeaders.findIndex(h => h.includes("timestamp") || h.includes("waktu"));
+    let gradeIdx = lowerHeaders.findIndex(h => h.includes("grade") || h.includes("jabatan") || h.includes("level") || h.includes("posisi"));
+    let dateIdx = lowerHeaders.findIndex(h => h.includes("timestamp") || h.includes("waktu") || h.includes("tanggal"));
 
     // DYNAMICALLY REBUILD FORM_CONFIG.fields based on Excel headers
     let newFields = [
@@ -3999,15 +4030,15 @@ function handleExcelUpload(event) {
 
     let importedCount = 0;
     
-    for (let i = 1; i < rows.length; i++) {
+    for (let i = headerRowIdx + 1; i < rows.length; i++) {
       const row = rows[i];
       if (!row || row.length === 0) continue;
       
-      const name = nameIdx !== -1 ? (row[nameIdx] || "").toString().trim() : "";
+      const name = (row[nameIdx] || "").toString().replace(/\u00a0/g, ' ').trim();
       if (!name) continue; // Wajib ada nama
       
-      const dept = deptIdx !== -1 ? (row[deptIdx] || "").toString().trim() : "-";
-      const grade = gradeIdx !== -1 ? (row[gradeIdx] || "").toString().trim() : "-";
+      const dept = deptIdx !== -1 ? ((row[deptIdx] || "").toString().replace(/\u00a0/g, ' ').trim() || "-") : "-";
+      const grade = gradeIdx !== -1 ? ((row[gradeIdx] || "").toString().replace(/\u00a0/g, ' ').trim() || "-") : "-";
       
       let submitDate = new Date().toISOString().split('T')[0];
       if (dateIdx !== -1 && row[dateIdx]) {
@@ -4020,10 +4051,10 @@ function handleExcelUpload(event) {
       const answers = {};
       Object.keys(fieldMapping).forEach(colIdx => {
         const fieldId = fieldMapping[colIdx];
-        answers[fieldId] = (row[colIdx] || "").toString().trim();
+        answers[fieldId] = (row[colIdx] || "").toString().replace(/\u00a0/g, ' ').trim();
       });
 
-      const existingIdx = PARTICIPANTS_STAGE1.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+      const existingIdx = PARTICIPANTS_STAGE1.findIndex(p => p.name.toLowerCase().trim() === name.toLowerCase());
       
       const newParticipant = {
         no: Date.now() + i,
@@ -4064,17 +4095,17 @@ function handleStage2ExcelUpload(event) {
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
 
-    if (rows.length < 2) {
+    if (!rows || rows.length < 2) {
       alert("File kosong atau tidak memiliki data.");
+      event.target.value = '';
       return;
     }
 
-    const headers = rows[0].map(h => (h || "").toString().toLowerCase().trim());
-    let nameIdx = headers.findIndex(h => h === "nama" || h === "name" || h === "nama lengkap");
-    if (nameIdx === -1) nameIdx = headers.findIndex(h => h.includes("nama") || h.includes("name"));
-    
-    if (nameIdx === -1) {
-      alert("Tidak dapat menemukan kolom Nama di file Excel.");
+    const { headerRowIdx, nameIdx } = findApExcelHeaderRow(rows);
+
+    if (headerRowIdx === -1 || nameIdx === -1) {
+      alert("Tidak dapat menemukan kolom Nama / Peserta di file Excel.");
+      event.target.value = '';
       return;
     }
 

@@ -3018,7 +3018,7 @@ const I18N = {
     "ev.trainerBerikutnya": "Trainer berikutnya",
     "ev.keTrainerXdariY": "Ke trainer {{x}} dari {{y}}",
     "komentar.difasilitasiOleh": "Difasilitasi oleh {{n}} trainer",
-    "ev.ringkasanAi": "Ringkasan AI",
+    "ev.kesimpulan": "Kesimpulan",
     "ev.umpanBalikTerhadapTrainer": "Umpan Balik terhadap Trainer ({{name}})",
     "ev.umpanBalikPending": "Umpan balik trainer akan muncul setelah data evaluasi terhubung.",
     "ev.tidakAdaTopik": "Tidak ada topik softskill ditemukan.",
@@ -3269,7 +3269,7 @@ const I18N = {
     "ev.trainerBerikutnya": "Next trainer",
     "ev.keTrainerXdariY": "Go to trainer {{x}} of {{y}}",
     "komentar.difasilitasiOleh": "Facilitated by {{n}} trainer(s)",
-    "ev.ringkasanAi": "AI Summary",
+    "ev.kesimpulan": "Conclusion",
     "ev.umpanBalikTerhadapTrainer": "Feedback for Trainer ({{name}})",
     "ev.umpanBalikPending": "Trainer feedback will appear once evaluation data is connected.",
     "ev.tidakAdaTopik": "No softskill topics found.",
@@ -3858,10 +3858,20 @@ function showDashboard(training, skipHistory = false) {
     pollMs:        training.pollMs        || 10000,
     evaluasi:      training.evaluasi      || "",
     komentarTrainer: training.komentarTrainer || "",
-    dokumentasi:   training.dokumentasi   || [],
-    actionPlan:    training.actionPlan    || [],
-    actionPlanFormConfig: training.actionPlanFormConfig || null,
-    aiSummary:     training.aiSummary     || null,
+    actionPlan: (Array.isArray(training.actionPlan) && training.actionPlan.length > 0) ? training.actionPlan : (function() {
+      try {
+        const raw = localStorage.getItem('mdi_participants_form_' + training.id);
+        if (raw) { const p = JSON.parse(raw); if (Array.isArray(p) && p.length > 0) return p; }
+      } catch(e) {}
+      return [];
+    })(),
+    actionPlanFormConfig: training.actionPlanFormConfig || (function() {
+      try {
+        const raw = localStorage.getItem('mdi_form_config_form_' + training.id);
+        if (raw) return JSON.parse(raw);
+      } catch(e) {}
+      return null;
+    })(),
     trainerNames:  training.trainerNames  || "",
     trainerPhotos: training.trainerPhotos || "",
     ratingScale:   Number(training.ratingScale) || 5,
@@ -4530,6 +4540,36 @@ function gaugeMarkup(valId, pct, targetValue, format, isEmpty) {
 
 // Trainer carousel: deck-of-cards stack with shuffle animation + autoplay
 const trainerCarousel = { index: 0, count: 0, timer: null };
+// Cached by renderDynamicEvaluation() so setActiveTrainer() can re-render the feedback
+// section for whichever trainer becomes active, without re-parsing the whole sheet.
+let __evalTrainersData = [];
+function renderActiveTrainerFeedback() {
+  const el = document.getElementById("evalTrainerFeedback");
+  if (!el) return;
+  const tr = __evalTrainersData[trainerCarousel.index];
+
+  let breakdownHtml = "";
+  if (tr && tr.feedback && tr.feedback.length > 0) {
+    breakdownHtml = `<div style="margin-bottom:6px;"><b>${tf("ev.umpanBalikTerhadapTrainer",{name:esc(tr.name)})}</b></div>` +
+      tr.feedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(w)}"</div>`).join('');
+  } else {
+    breakdownHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">${t("ev.umpanBalikPending")}</span>`;
+  }
+
+  // General AI conclusion (combined across all trainers) — always the same text
+  // regardless of which trainer card is active, shown below as a closing takeaway.
+  let aiHtml = "";
+  if (CONFIG.aiSummary && CONFIG.aiSummary.feedback) {
+    aiHtml = `<div style="margin-top:16px;padding:14px 16px;background:var(--n50,#fff8e1);border-radius:10px;border:1px solid var(--gold);">
+      <div style="margin-bottom:6px;font-weight:600;display:flex;align-items:center;gap:6px;">
+        📝 ${t("ev.kesimpulan")}
+      </div>
+      <div style="color:var(--text);font-style:italic;">"${esc(CONFIG.aiSummary.feedback)}"</div>
+    </div>`;
+  }
+
+  el.innerHTML = breakdownHtml + aiHtml;
+}
 // Assign each card its depth in the deck relative to the active index.
 function layoutTrainerDeck() {
   const cards = [...document.querySelectorAll("#evalTrainers .trainer")];
@@ -4552,6 +4592,7 @@ function setActiveTrainer(idx) {
   if (normalized === trainerCarousel.index) return;
   trainerCarousel.index = normalized;
   layoutTrainerDeck();
+  renderActiveTrainerFeedback();
 }
 function stopTrainerAutoplay() {
   if (trainerCarousel.timer) { clearInterval(trainerCarousel.timer); trainerCarousel.timer = null; }
@@ -4849,35 +4890,11 @@ function renderDynamicEvaluation(evalData) {
       startTrainerAutoplay();
     }
     
-    const evalTrainerFeedbackEl = document.getElementById("evalTrainerFeedback");
-    if(evalTrainerFeedbackEl) {
-      // AI summary is a TL;DR highlight, not a replacement — the per-trainer breakdown
-      // below always renders too, so generating an AI summary never hides which trainer
-      // each quote actually belongs to.
-      let aiHtml = "";
-      if (CONFIG.aiSummary && CONFIG.aiSummary.feedback) {
-        aiHtml = `<div style="margin-bottom:16px;padding:14px 16px;background:var(--n50,#fff8e1);border-radius:10px;border:1px solid var(--gold);">
-          <div style="margin-bottom:6px;font-weight:600;display:flex;align-items:center;gap:6px;">
-            ✨ ${t("ev.ringkasanAi")}
-          </div>
-          <div style="color:var(--text);font-style:italic;">"${esc(CONFIG.aiSummary.feedback)}"</div>
-        </div>`;
-      }
-
-      const trainersWithFb = trainers.filter(tr => tr.feedback && tr.feedback.length > 0);
-      let breakdownHtml = "";
-      if (trainersWithFb.length > 0) {
-        breakdownHtml = trainersWithFb.map(tr => `
-          <div style="margin-bottom:14px;">
-            <div style="margin-bottom:6px;"><b>${tf("ev.umpanBalikTerhadapTrainer",{name:esc(tr.name)})}</b></div>
-            ${tr.feedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(w)}"</div>`).join('')}
-          </div>
-        `).join('');
-      } else if (!aiHtml) {
-        breakdownHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">${t("ev.umpanBalikPending")}</span>`;
-      }
-      evalTrainerFeedbackEl.innerHTML = aiHtml + breakdownHtml;
-    }
+    // Feedback now follows whichever trainer card is active in the carousel above —
+    // renderActiveTrainerFeedback() (near the carousel code) does the actual rendering,
+    // re-run here for the initial paint and again from setActiveTrainer() on every swipe.
+    __evalTrainersData = trainers;
+    renderActiveTrainerFeedback();
 
     // 4. Topics
     const evalValuableTopicsEl = document.getElementById("evalValuableTopics");
@@ -7547,10 +7564,25 @@ function renderActiveClientSections(){
   // actually has custom fields configured — trainings with no actionPlanFormConfig (or
   // the old r.item/r.pic shape below) fall through to the single flattened column
   // unchanged, so this never affects clients not using the fields-based system.
+  let ap = Array.isArray(CONFIG.actionPlan) ? CONFIG.actionPlan : [];
+  if (ap.length === 0 && (typeof activeTrainingId !== "undefined" && activeTrainingId)) {
+    try {
+      const raw = localStorage.getItem('mdi_participants_form_' + activeTrainingId);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) ap = parsed;
+      }
+    } catch(e) {}
+  }
+  if (!CONFIG.actionPlanFormConfig && (typeof activeTrainingId !== "undefined" && activeTrainingId)) {
+    try {
+      const raw = localStorage.getItem('mdi_form_config_form_' + activeTrainingId);
+      if (raw) CONFIG.actionPlanFormConfig = JSON.parse(raw);
+    } catch(e) {}
+  }
+
   const apCommitmentFields = getApCommitmentFields(CONFIG.actionPlanFormConfig);
   const apUseDynamicCols = apCommitmentFields.length > 0;
-
-  const ap = Array.isArray(CONFIG.actionPlan) ? CONFIG.actionPlan : [];
 
   if (ap.length > 0 && ap[0]) {
     if (ap[0].extractedPlans !== undefined || ap[0].answers) {
@@ -8022,8 +8054,22 @@ function bootDashboard() {
                     CONFIG.evaluasi        = freshTraining.evaluasi        || "";
                     CONFIG.komentarTrainer = freshTraining.komentarTrainer || "";
                     CONFIG.dokumentasi     = freshTraining.dokumentasi     || [];
-                    CONFIG.actionPlan      = freshTraining.actionPlan      || [];
-                    CONFIG.actionPlanFormConfig = freshTraining.actionPlanFormConfig || null;
+                    CONFIG.actionPlan = (Array.isArray(freshTraining.actionPlan) && freshTraining.actionPlan.length > 0)
+                      ? freshTraining.actionPlan
+                      : (function() {
+                          try {
+                            const raw = localStorage.getItem('mdi_participants_form_' + activeTrainingId);
+                            if (raw) { const p = JSON.parse(raw); if (Array.isArray(p) && p.length > 0) return p; }
+                          } catch(e) {}
+                          return CONFIG.actionPlan || [];
+                        })();
+                    CONFIG.actionPlanFormConfig = freshTraining.actionPlanFormConfig || (function() {
+                      try {
+                        const raw = localStorage.getItem('mdi_form_config_form_' + activeTrainingId);
+                        if (raw) return JSON.parse(raw);
+                      } catch(e) {}
+                      return CONFIG.actionPlanFormConfig || null;
+                    })();
                     CONFIG.aiSummary       = freshTraining.aiSummary       || null;
                     CONFIG.trainerPhotos   = freshTraining.trainerPhotos   || "";
                     CONFIG.leadershipEnabled      = !!freshTraining.leadershipEnabled;
