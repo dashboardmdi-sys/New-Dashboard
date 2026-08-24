@@ -1396,7 +1396,13 @@
                   <p style="font-size:11px; color:rgba(255,255,255,0.7); margin:0;">Status 30 hari, pembaharuan progres & kendala peserta</p>
                 </div>
               </div>
-              <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="text-align:right;">
+                  <button class="btn btn-secondary" id="apSessionReminderBtn" onclick="sendApSessionReminder()" style="font-size:12px;">
+                    <span>📧</span> Kirim Pengingat ke Sales
+                  </button>
+                  <div style="font-size:10px; color:rgba(255,255,255,0.7); margin-top:3px;" id="apSessionReminderSub"></div>
+                </div>
                 <button class="btn btn-primary" onclick="exportApSpreadsheet2ToExcel()" style="background:#107c41; border-color:#107c41; color:#fff; font-size:12px;">
                   <span>📥</span> Download Excel (.xls)
                 </button>
@@ -4460,18 +4466,17 @@ function renderApSpreadsheet2() {
   const participants = getApParticipants();
 
   const rowCountEl = document.getElementById("ap-sheet2-row-count"); if (rowCountEl) rowCountEl.textContent = participants.length;
-  const colCountEl = document.getElementById("ap-sheet2-col-count"); if (colCountEl) colCountEl.textContent = 7;
+  const colCountEl = document.getElementById("ap-sheet2-col-count"); if (colCountEl) colCountEl.textContent = 6;
 
   const thead = document.getElementById("apSheet2TableHeader");
   const tbody = document.getElementById("apSheet2TableBody");
   if (!thead || !tbody) return;
 
-  let headers = ["#", "Nama Peserta", "Departemen", "Status 30 Hari", "Update & Notes", "Challenges / Kendala", "Pengingat"];
+  let headers = ["#", "Nama Peserta", "Departemen", "Status 30 Hari", "Update & Notes", "Challenges / Kendala"];
   thead.innerHTML = `<tr style="background:var(--n100); border-bottom:1px solid var(--card-border);">` + headers.map(h => `<th style="padding:8px 12px; font-weight:700; color:var(--navy); font-size:11px;">${escapeApHtml(h)}</th>`).join("") + `</tr>`;
 
   tbody.innerHTML = participants.map((p, idx) => {
     const isDone = (p.status === "done" || p.s2Status === "Completed");
-    const sentAt = p.lastReminderSentAt ? new Date(p.lastReminderSentAt).toLocaleDateString("id-ID", {day:"2-digit", month:"short", year:"numeric"}) : "";
     return `<tr style="border-bottom:1px solid var(--card-border);">
       <td style="padding:6px 12px; font-weight:700; color:var(--n500);">${idx + 1}</td>
       <td style="padding:6px 12px; font-weight:700; color:var(--navy);">${escapeApHtml(p.name)}</td>
@@ -4479,19 +4484,26 @@ function renderApSpreadsheet2() {
       <td style="padding:6px 12px;"><span class="status-select select-${isDone ? 'done' : 'prog'}">${isDone ? 'Completed' : 'In Progress'}</span></td>
       <td style="padding:6px 12px; color:var(--n800);" contenteditable="true" onblur="updateApSpreadsheetCellData(${p.no}, 's2Update', false, this)">${escapeApHtml(p.s2Update || "—")}</td>
       <td style="padding:6px 12px; color:var(--n800);" contenteditable="true" onblur="updateApSpreadsheetCellData(${p.no}, 's2Challenge', false, this)">${escapeApHtml(p.s2Challenge || "—")}</td>
-      <td style="padding:6px 12px;">
-        <button type="button" class="btn btn-secondary btn-sm" id="ap-remind-btn-${p.no}" style="font-size:11px;padding:4px 8px;white-space:nowrap;" onclick="sendApReminder(${p.no})">📧 Kirim Pengingat</button>
-        <div style="font-size:10px;color:var(--n500);margin-top:3px;" id="ap-remind-sub-${p.no}">${sentAt ? `Terkirim ${sentAt}` : ""}</div>
-      </td>
     </tr>`;
   }).join("");
+
+  renderApSessionReminderSub();
 }
 
-// Sends an email reminder to the client's TC/sales contact about one participant's
-// pending Action Plan Tahap 2 (30-day) submission. The actual sending happens in the
-// Apps Script backend (action: 'sendApReminder') — this only makes the request and
-// records that a reminder was sent, it does not send email itself.
-async function sendApReminder(no) {
+function renderApSessionReminderSub() {
+  const t = getApCurrentTraining();
+  const sub = document.getElementById("apSessionReminderSub");
+  if (!sub) return;
+  const sentAt = t && t.lastApReminderSentAt ? new Date(t.lastApReminderSentAt).toLocaleDateString("id-ID", {day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"}) : "";
+  sub.textContent = sentAt ? `Terkirim ${sentAt}` : "";
+}
+
+// Sends ONE reminder email to the client's TC/sales contact per training session —
+// a nudge that this session is approaching its 30-day Action Plan follow-up mark,
+// with a summary of how many participants are still in progress. Not tied to any
+// single participant. Actual sending happens in the Apps Script backend (action:
+// 'sendApReminder') — this only makes the request and records that it was sent.
+async function sendApSessionReminder() {
   const t = getApCurrentTraining();
   const c = clientsDb.find(x => String(x.id) === String(currentClientId));
   if (!t || !c) return;
@@ -4499,11 +4511,12 @@ async function sendApReminder(no) {
     toast("⚠ Email TC belum diisi. Isi dulu di kartu \"Training Consultant (TC)\" pada halaman Detail Klien.");
     return;
   }
-  const p = (t.actionPlan || []).find(x => String(x.no) === String(no));
-  if (!p) return;
 
-  const btn = document.getElementById(`ap-remind-btn-${no}`);
-  if (btn) { btn.disabled = true; btn.textContent = "Mengirim..."; }
+  const participants = getApParticipants();
+  const inProgress = participants.filter(p => !(p.status === "done" || p.s2Status === "Completed"));
+
+  const btn = document.getElementById("apSessionReminderBtn");
+  if (btn) { btn.disabled = true; btn.innerHTML = "<span>📧</span> Mengirim..."; }
   try {
     const res = await fetch(WEB_APP_URL, {
       method: 'POST',
@@ -4513,24 +4526,25 @@ async function sendApReminder(no) {
         tcName: c.tcName || '',
         clientName: c.name,
         trainingTitle: t.title || '',
-        participantName: p.name || '',
-        participantDept: p.dept || ''
+        trainingDateEnd: t.dateEnd || t.dateStart || '',
+        totalParticipants: participants.length,
+        inProgressCount: inProgress.length,
+        inProgressNames: inProgress.map(p => p.name).filter(Boolean)
       })
     });
     const json = await res.json();
     if (json.success) {
-      p.lastReminderSentAt = new Date().toISOString();
+      t.lastApReminderSentAt = new Date().toISOString();
       updateLocalClientArray(c);
       apiUpdateClient(c, `✓ Pengingat terkirim ke ${c.tcEmail}`);
-      renderApSpreadsheet2();
+      renderApSessionReminderSub();
     } else {
       toast("⚠ Gagal mengirim pengingat: " + (json.error || "error tidak diketahui"));
-      if (btn) { btn.disabled = false; btn.textContent = "📧 Kirim Pengingat"; }
     }
   } catch (e) {
     toast("⚠ Error jaringan saat mengirim pengingat");
-    if (btn) { btn.disabled = false; btn.textContent = "📧 Kirim Pengingat"; }
   }
+  if (btn) { btn.disabled = false; btn.innerHTML = "<span>📧</span> Kirim Pengingat ke Sales"; }
 }
 
 function exportApSpreadsheetToExcel() {
