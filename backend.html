@@ -1398,9 +1398,15 @@
               </div>
               <div style="display:flex; align-items:center; gap:8px;">
                 <div style="text-align:right;">
-                  <button class="btn btn-secondary" id="apSessionReminderBtn" onclick="sendApSessionReminder()" style="font-size:12px;">
-                    <span>📧</span> Kirim Pengingat ke Sales
-                  </button>
+                  <div style="display:flex; gap:4px;">
+                    <select id="apReminderMode" style="font-size:11px; border-radius:6px; border:1px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:#fff; padding:0 6px;">
+                      <option value="now" style="color:#000;">Kirim Sekarang</option>
+                      <option value="schedule" style="color:#000;">Jadwalkan H+29 (dari Tgl Selesai)</option>
+                    </select>
+                    <button class="btn btn-secondary" id="apSessionReminderBtn" onclick="sendApSessionReminder()" style="font-size:12px;">
+                      <span>📧</span> Pengingat ke Sales
+                    </button>
+                  </div>
                   <div style="font-size:10px; color:rgba(255,255,255,0.7); margin-top:3px;" id="apSessionReminderSub"></div>
                 </div>
                 <button class="btn btn-primary" onclick="exportApSpreadsheet2ToExcel()" style="background:#107c41; border-color:#107c41; color:#fff; font-size:12px;">
@@ -4498,15 +4504,26 @@ function renderApSessionReminderSub() {
   const t = getApCurrentTraining();
   const sub = document.getElementById("apSessionReminderSub");
   if (!sub) return;
-  const sentAt = t && t.lastApReminderSentAt ? new Date(t.lastApReminderSentAt).toLocaleDateString("id-ID", {day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"}) : "";
-  sub.textContent = sentAt ? `Terkirim ${sentAt}` : "";
+  if (t && t.lastApReminderSentAt) {
+    const sentAt = new Date(t.lastApReminderSentAt).toLocaleDateString("id-ID", {day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"});
+    sub.textContent = `Terkirim ${sentAt}`;
+  } else if (t && t.apReminderScheduledAt) {
+    const schedAt = new Date(t.apReminderScheduledAt).toLocaleDateString("id-ID", {day:"2-digit", month:"short", year:"numeric"});
+    sub.textContent = `Terjadwal untuk ${schedAt}`;
+  } else {
+    sub.textContent = "";
+  }
 }
 
-// Sends ONE reminder email to the client's TC/sales contact per training session —
-// a nudge that this session is approaching its 30-day Action Plan follow-up mark,
-// with a summary of how many participants are still in progress. Not tied to any
-// single participant. Actual sending happens in the Apps Script backend (action:
-// 'sendApReminder') — this only makes the request and records that it was sent.
+// Sends (or schedules) ONE reminder email to the client's TC/sales contact per training
+// session — a nudge that this session is approaching its 30-day Action Plan follow-up
+// mark, with a summary of how many participants are still in progress. Not tied to any
+// single participant.
+//
+// #apReminderMode picks between two Apps Script actions:
+//  - 'sendApReminder': sends immediately.
+//  - 'scheduleApReminder': Apps Script computes H+29 from this training's Tanggal Selesai
+//    and creates a one-time trigger for that exact date — no daily/recurring polling.
 async function sendApSessionReminder() {
   const t = getApCurrentTraining();
   const c = clientsDb.find(x => String(x.id) === String(currentClientId));
@@ -4518,16 +4535,22 @@ async function sendApSessionReminder() {
     return;
   }
 
+  const mode = document.getElementById("apReminderMode")?.value || "now";
+  if (mode === "schedule" && !t.dateEnd) {
+    toast("⚠ Tanggal Selesai sesi ini belum diisi — tidak bisa hitung H+29. Isi dulu di \"Tambah/Edit Sesi Pelatihan\".");
+    return;
+  }
+
   const participants = getApParticipants();
   const inProgress = participants.filter(p => !(p.status === "done" || p.s2Status === "Completed"));
 
   const btn = document.getElementById("apSessionReminderBtn");
-  if (btn) { btn.disabled = true; btn.innerHTML = "<span>📧</span> Mengirim..."; }
+  if (btn) { btn.disabled = true; btn.innerHTML = mode === "schedule" ? "<span>📧</span> Menjadwalkan..." : "<span>📧</span> Mengirim..."; }
   try {
     const res = await fetch(WEB_APP_URL, {
       method: 'POST',
       body: JSON.stringify({
-        action: 'sendApReminder',
+        action: mode === "schedule" ? 'scheduleApReminder' : 'sendApReminder',
         tcEmail: tcEmail,
         tcName: tcName,
         clientName: c.name,
@@ -4540,17 +4563,24 @@ async function sendApSessionReminder() {
     });
     const json = await res.json();
     if (json.success) {
-      t.lastApReminderSentAt = new Date().toISOString();
       updateLocalClientArray(c);
-      apiUpdateClient(c, `✓ Pengingat terkirim ke ${tcEmail}`);
+      if (mode === "schedule") {
+        t.apReminderScheduledAt = json.sendAt || null;
+        delete t.lastApReminderSentAt;
+        apiUpdateClient(c, `✓ Pengingat dijadwalkan untuk ${new Date(json.sendAt).toLocaleDateString("id-ID")}`);
+      } else {
+        t.lastApReminderSentAt = new Date().toISOString();
+        delete t.apReminderScheduledAt;
+        apiUpdateClient(c, `✓ Pengingat terkirim ke ${tcEmail}`);
+      }
       renderApSessionReminderSub();
     } else {
-      toast("⚠ Gagal mengirim pengingat: " + (json.error || "error tidak diketahui"));
+      toast("⚠ Gagal: " + (json.error || "error tidak diketahui"));
     }
   } catch (e) {
     toast("⚠ Error jaringan saat mengirim pengingat");
   }
-  if (btn) { btn.disabled = false; btn.innerHTML = "<span>📧</span> Kirim Pengingat ke Sales"; }
+  if (btn) { btn.disabled = false; btn.innerHTML = "<span>📧</span> Pengingat ke Sales"; }
 }
 
 function exportApSpreadsheetToExcel() {
