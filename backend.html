@@ -2053,8 +2053,12 @@ function openEdit(id){
   $("editClientMeta").textContent = `Nama: ${c.name} | PIN: ${String(c.pin).padStart(4, '0')} | Dibuat ${new Date(c.createdAt).toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"})}`;
 
   loadConfigForm(c.config);
-  if ($("cfgTcName")) $("cfgTcName").value = c.tcName || "";
-  if ($("cfgTcEmail")) $("cfgTcEmail").value = c.tcEmail || "";
+  // Stored inside client.config (not as top-level client fields) — the Apps Script's
+  // updateClient() only writes a fixed set of top-level columns to the sheet and would
+  // silently drop anything else, but config is already round-tripped as an opaque JSON
+  // blob, so new keys inside it persist with zero backend changes.
+  if ($("cfgTcName")) $("cfgTcName").value = (c.config && c.config.tcName) || "";
+  if ($("cfgTcEmail")) $("cfgTcEmail").value = (c.config && c.config.tcEmail) || "";
   renderTrainingList();
   showView("edit");
 }
@@ -2066,7 +2070,7 @@ if ($("tcSaveBtn")) {
       toast("⚠ Format email TC tidak valid");
       return;
     }
-    updateClient({ tcName: $("cfgTcName").value.trim(), tcEmail });
+    updateClient({ config: { tcName: $("cfgTcName").value.trim(), tcEmail } });
     toast("✓ Info TC tersimpan");
   });
 }
@@ -4507,7 +4511,9 @@ async function sendApSessionReminder() {
   const t = getApCurrentTraining();
   const c = clientsDb.find(x => String(x.id) === String(currentClientId));
   if (!t || !c) return;
-  if (!c.tcEmail) {
+  const tcEmail = (c.config && c.config.tcEmail) || "";
+  const tcName = (c.config && c.config.tcName) || "";
+  if (!tcEmail) {
     toast("⚠ Email TC belum diisi. Isi dulu di kartu \"Training Consultant (TC)\" pada halaman Detail Klien.");
     return;
   }
@@ -4522,8 +4528,8 @@ async function sendApSessionReminder() {
       method: 'POST',
       body: JSON.stringify({
         action: 'sendApReminder',
-        tcEmail: c.tcEmail,
-        tcName: c.tcName || '',
+        tcEmail: tcEmail,
+        tcName: tcName,
         clientName: c.name,
         trainingTitle: t.title || '',
         trainingDateEnd: t.dateEnd || t.dateStart || '',
@@ -4536,7 +4542,7 @@ async function sendApSessionReminder() {
     if (json.success) {
       t.lastApReminderSentAt = new Date().toISOString();
       updateLocalClientArray(c);
-      apiUpdateClient(c, `✓ Pengingat terkirim ke ${c.tcEmail}`);
+      apiUpdateClient(c, `✓ Pengingat terkirim ke ${tcEmail}`);
       renderApSessionReminderSub();
     } else {
       toast("⚠ Gagal mengirim pengingat: " + (json.error || "error tidak diketahui"));
