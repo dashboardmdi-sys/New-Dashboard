@@ -3018,7 +3018,7 @@ const I18N = {
     "ev.trainerBerikutnya": "Trainer berikutnya",
     "ev.keTrainerXdariY": "Ke trainer {{x}} dari {{y}}",
     "komentar.difasilitasiOleh": "Difasilitasi oleh {{n}} trainer",
-    "ev.umpanBalikLabel": "Umpan Balik:",
+    "ev.ringkasanAi": "Ringkasan AI",
     "ev.umpanBalikTerhadapTrainer": "Umpan Balik terhadap Trainer ({{name}})",
     "ev.umpanBalikPending": "Umpan balik trainer akan muncul setelah data evaluasi terhubung.",
     "ev.tidakAdaTopik": "Tidak ada topik softskill ditemukan.",
@@ -3269,7 +3269,7 @@ const I18N = {
     "ev.trainerBerikutnya": "Next trainer",
     "ev.keTrainerXdariY": "Go to trainer {{x}} of {{y}}",
     "komentar.difasilitasiOleh": "Facilitated by {{n}} trainer(s)",
-    "ev.umpanBalikLabel": "Feedback:",
+    "ev.ringkasanAi": "AI Summary",
     "ev.umpanBalikTerhadapTrainer": "Feedback for Trainer ({{name}})",
     "ev.umpanBalikPending": "Trainer feedback will appear once evaluation data is connected.",
     "ev.tidakAdaTopik": "No softskill topics found.",
@@ -4851,26 +4851,32 @@ function renderDynamicEvaluation(evalData) {
     
     const evalTrainerFeedbackEl = document.getElementById("evalTrainerFeedback");
     if(evalTrainerFeedbackEl) {
-      let fbHtml = "";
+      // AI summary is a TL;DR highlight, not a replacement — the per-trainer breakdown
+      // below always renders too, so generating an AI summary never hides which trainer
+      // each quote actually belongs to.
+      let aiHtml = "";
       if (CONFIG.aiSummary && CONFIG.aiSummary.feedback) {
-        fbHtml = `<div style="margin-bottom:6px;font-weight:600;display:flex;align-items:center;gap:6px;">
-                    ${t("ev.umpanBalikLabel")}
-                  </div>` +
-                 `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(CONFIG.aiSummary.feedback)}"</div>`;
-      } else {
-        const trainersWithFb = trainers.filter(tr => tr.feedback && tr.feedback.length > 0);
-        if (trainersWithFb.length > 0) {
-          fbHtml = trainersWithFb.map(tr => `
-            <div style="margin-bottom:14px;">
-              <div style="margin-bottom:6px;"><b>${tf("ev.umpanBalikTerhadapTrainer",{name:esc(tr.name)})}</b></div>
-              ${tr.feedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(w)}"</div>`).join('')}
-            </div>
-          `).join('');
-        } else {
-          fbHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">${t("ev.umpanBalikPending")}</span>`;
-        }
+        aiHtml = `<div style="margin-bottom:16px;padding:14px 16px;background:var(--n50,#fff8e1);border-radius:10px;border:1px solid var(--gold);">
+          <div style="margin-bottom:6px;font-weight:600;display:flex;align-items:center;gap:6px;">
+            ✨ ${t("ev.ringkasanAi")}
+          </div>
+          <div style="color:var(--text);font-style:italic;">"${esc(CONFIG.aiSummary.feedback)}"</div>
+        </div>`;
       }
-      evalTrainerFeedbackEl.innerHTML = fbHtml;
+
+      const trainersWithFb = trainers.filter(tr => tr.feedback && tr.feedback.length > 0);
+      let breakdownHtml = "";
+      if (trainersWithFb.length > 0) {
+        breakdownHtml = trainersWithFb.map(tr => `
+          <div style="margin-bottom:14px;">
+            <div style="margin-bottom:6px;"><b>${tf("ev.umpanBalikTerhadapTrainer",{name:esc(tr.name)})}</b></div>
+            ${tr.feedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(w)}"</div>`).join('')}
+          </div>
+        `).join('');
+      } else if (!aiHtml) {
+        breakdownHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">${t("ev.umpanBalikPending")}</span>`;
+      }
+      evalTrainerFeedbackEl.innerHTML = aiHtml + breakdownHtml;
     }
 
     // 4. Topics
