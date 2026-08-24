@@ -659,7 +659,8 @@
 
     <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; margin-top: 16px; align-items: start;" class="client-edit-grid">
       <!-- COLUMN 1: TEMA & APPEARANCE (HEADER & FOOTER) -->
-      <div class="card">
+      <div>
+      <div class="card" style="margin-bottom:16px;">
         <div class="card-head"><h2>Header, Footer &amp; Tema Klien</h2></div>
         <p class="card-desc">Konfigurasi tampilan dashboard untuk klien ini.</p>
         <div class="field">
@@ -763,6 +764,24 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           Simpan Tema &amp; Footer Klien
         </button>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>📧 Training Consultant (TC)</h2></div>
+        <p class="card-desc">Kontak TC/sales klien ini — dipakai sebagai tujuan email saat admin mengirim pengingat Action Plan Tahap 2 dari sesi pelatihan manapun milik klien ini.</p>
+        <div class="field">
+          <label for="cfgTcName">Nama TC</label>
+          <input type="text" id="cfgTcName" placeholder="contoh: Matius">
+        </div>
+        <div class="field">
+          <label for="cfgTcEmail">Email TC</label>
+          <input type="email" id="cfgTcEmail" placeholder="tc@perusahaan.com">
+        </div>
+        <button class="btn btn-primary" id="tcSaveBtn" style="width:100%; justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Simpan Info TC
+        </button>
+      </div>
       </div>
 
       <!-- COLUMN 2: DAFTAR SESI PELATIHAN (CRUD) -->
@@ -2028,8 +2047,22 @@ function openEdit(id){
   $("editClientMeta").textContent = `Nama: ${c.name} | PIN: ${String(c.pin).padStart(4, '0')} | Dibuat ${new Date(c.createdAt).toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"})}`;
 
   loadConfigForm(c.config);
+  if ($("cfgTcName")) $("cfgTcName").value = c.tcName || "";
+  if ($("cfgTcEmail")) $("cfgTcEmail").value = c.tcEmail || "";
   renderTrainingList();
   showView("edit");
+}
+
+if ($("tcSaveBtn")) {
+  $("tcSaveBtn").addEventListener("click", () => {
+    const tcEmail = $("cfgTcEmail").value.trim();
+    if (tcEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(tcEmail)) {
+      toast("⚠ Format email TC tidak valid");
+      return;
+    }
+    updateClient({ tcName: $("cfgTcName").value.trim(), tcEmail });
+    toast("✓ Info TC tersimpan");
+  });
 }
 
 $("backToListBtn").addEventListener("click",()=>{
@@ -4427,17 +4460,18 @@ function renderApSpreadsheet2() {
   const participants = getApParticipants();
 
   const rowCountEl = document.getElementById("ap-sheet2-row-count"); if (rowCountEl) rowCountEl.textContent = participants.length;
-  const colCountEl = document.getElementById("ap-sheet2-col-count"); if (colCountEl) colCountEl.textContent = 6;
+  const colCountEl = document.getElementById("ap-sheet2-col-count"); if (colCountEl) colCountEl.textContent = 7;
 
   const thead = document.getElementById("apSheet2TableHeader");
   const tbody = document.getElementById("apSheet2TableBody");
   if (!thead || !tbody) return;
 
-  let headers = ["#", "Nama Peserta", "Departemen", "Status 30 Hari", "Update & Notes", "Challenges / Kendala"];
+  let headers = ["#", "Nama Peserta", "Departemen", "Status 30 Hari", "Update & Notes", "Challenges / Kendala", "Pengingat"];
   thead.innerHTML = `<tr style="background:var(--n100); border-bottom:1px solid var(--card-border);">` + headers.map(h => `<th style="padding:8px 12px; font-weight:700; color:var(--navy); font-size:11px;">${escapeApHtml(h)}</th>`).join("") + `</tr>`;
 
   tbody.innerHTML = participants.map((p, idx) => {
     const isDone = (p.status === "done" || p.s2Status === "Completed");
+    const sentAt = p.lastReminderSentAt ? new Date(p.lastReminderSentAt).toLocaleDateString("id-ID", {day:"2-digit", month:"short", year:"numeric"}) : "";
     return `<tr style="border-bottom:1px solid var(--card-border);">
       <td style="padding:6px 12px; font-weight:700; color:var(--n500);">${idx + 1}</td>
       <td style="padding:6px 12px; font-weight:700; color:var(--navy);">${escapeApHtml(p.name)}</td>
@@ -4445,8 +4479,58 @@ function renderApSpreadsheet2() {
       <td style="padding:6px 12px;"><span class="status-select select-${isDone ? 'done' : 'prog'}">${isDone ? 'Completed' : 'In Progress'}</span></td>
       <td style="padding:6px 12px; color:var(--n800);" contenteditable="true" onblur="updateApSpreadsheetCellData(${p.no}, 's2Update', false, this)">${escapeApHtml(p.s2Update || "—")}</td>
       <td style="padding:6px 12px; color:var(--n800);" contenteditable="true" onblur="updateApSpreadsheetCellData(${p.no}, 's2Challenge', false, this)">${escapeApHtml(p.s2Challenge || "—")}</td>
+      <td style="padding:6px 12px;">
+        <button type="button" class="btn btn-secondary btn-sm" id="ap-remind-btn-${p.no}" style="font-size:11px;padding:4px 8px;white-space:nowrap;" onclick="sendApReminder(${p.no})">📧 Kirim Pengingat</button>
+        <div style="font-size:10px;color:var(--n500);margin-top:3px;" id="ap-remind-sub-${p.no}">${sentAt ? `Terkirim ${sentAt}` : ""}</div>
+      </td>
     </tr>`;
   }).join("");
+}
+
+// Sends an email reminder to the client's TC/sales contact about one participant's
+// pending Action Plan Tahap 2 (30-day) submission. The actual sending happens in the
+// Apps Script backend (action: 'sendApReminder') — this only makes the request and
+// records that a reminder was sent, it does not send email itself.
+async function sendApReminder(no) {
+  const t = getApCurrentTraining();
+  const c = clientsDb.find(x => String(x.id) === String(currentClientId));
+  if (!t || !c) return;
+  if (!c.tcEmail) {
+    toast("⚠ Email TC belum diisi. Isi dulu di kartu \"Training Consultant (TC)\" pada halaman Detail Klien.");
+    return;
+  }
+  const p = (t.actionPlan || []).find(x => String(x.no) === String(no));
+  if (!p) return;
+
+  const btn = document.getElementById(`ap-remind-btn-${no}`);
+  if (btn) { btn.disabled = true; btn.textContent = "Mengirim..."; }
+  try {
+    const res = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'sendApReminder',
+        tcEmail: c.tcEmail,
+        tcName: c.tcName || '',
+        clientName: c.name,
+        trainingTitle: t.title || '',
+        participantName: p.name || '',
+        participantDept: p.dept || ''
+      })
+    });
+    const json = await res.json();
+    if (json.success) {
+      p.lastReminderSentAt = new Date().toISOString();
+      updateLocalClientArray(c);
+      apiUpdateClient(c, `✓ Pengingat terkirim ke ${c.tcEmail}`);
+      renderApSpreadsheet2();
+    } else {
+      toast("⚠ Gagal mengirim pengingat: " + (json.error || "error tidak diketahui"));
+      if (btn) { btn.disabled = false; btn.textContent = "📧 Kirim Pengingat"; }
+    }
+  } catch (e) {
+    toast("⚠ Error jaringan saat mengirim pengingat");
+    if (btn) { btn.disabled = false; btn.textContent = "📧 Kirim Pengingat"; }
+  }
 }
 
 function exportApSpreadsheetToExcel() {
