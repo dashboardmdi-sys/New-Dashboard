@@ -3019,7 +3019,7 @@ const I18N = {
     "ev.keTrainerXdariY": "Ke trainer {{x}} dari {{y}}",
     "komentar.difasilitasiOleh": "Difasilitasi oleh {{n}} trainer",
     "ev.umpanBalikLabel": "Umpan Balik:",
-    "ev.beberapaUmpanBalik": "Beberapa umpan balik:",
+    "ev.umpanBalikTerhadapTrainer": "Umpan Balik terhadap Trainer ({{name}})",
     "ev.umpanBalikPending": "Umpan balik trainer akan muncul setelah data evaluasi terhubung.",
     "ev.tidakAdaTopik": "Tidak ada topik softskill ditemukan.",
     "ev.topikPending": "Data topik akan muncul setelah evaluasi terhubung.",
@@ -3270,7 +3270,7 @@ const I18N = {
     "ev.keTrainerXdariY": "Go to trainer {{x}} of {{y}}",
     "komentar.difasilitasiOleh": "Facilitated by {{n}} trainer(s)",
     "ev.umpanBalikLabel": "Feedback:",
-    "ev.beberapaUmpanBalik": "Some feedback:",
+    "ev.umpanBalikTerhadapTrainer": "Feedback for Trainer ({{name}})",
     "ev.umpanBalikPending": "Trainer feedback will appear once evaluation data is connected.",
     "ev.tidakAdaTopik": "No softskill topics found.",
     "ev.topikPending": "Topic data will appear once evaluation data is connected.",
@@ -4343,8 +4343,7 @@ function parseEvaluationSheet(rows) {
     enjoyment: { ...emptyRatingStats },
     relevance: { ...emptyRatingStats },
     practical: { ...emptyRatingStats },
-    trainers: [], // {name, avg, countTop, pctTop}
-    trainerFeedback: [], // filtered strings
+    trainers: [], // {name, avg, countTop, pctTop, feedback: string[]}
     valuableTopics: [], // {text, count}
     nextTopics: [], // {text, count}
     comments: [], // {text, who}
@@ -4425,33 +4424,32 @@ function parseEvaluationSheet(rows) {
   const pStats = extractRatings(colMap.practical);
   if (pStats) results.practical = pStats;
 
-  // Parse Trainers & Feedback
-  const allFb = [];
+  // Parse Trainers & Feedback — kept per-trainer (not merged) so each trainer's
+  // quotes can be shown under their own "Umpan Balik terhadap Trainer (Nama)" heading.
+  const fbStopWords = new Set(['baik','seru','kocak','komunikatif','bagus','oke','ok','good','nice','mantap','keren','hebat','informatif','menarik','edukatif','atraktif','santai','lucu']);
+  const filterFeedback = (list) => list.filter(tx => {
+    const clean = tx.trim().toLowerCase();
+    if (clean.length < 12) return false;
+    if (fbStopWords.has(clean)) return false;
+    if (/^[1-5]$/.test(clean)) return false;
+    return true;
+  }).slice(0, 5);
+
   trainerCols.forEach(tc => {
     const tStats = extractRatings(tc.scoreIdx);
-    if (tStats) {
-      results.trainers.push({ name: tc.name, avg: tStats.avg, pctTop: Math.round(tStats.pctTop), countTop: tStats.countTop });
-    }
+    const rawFb = [];
     if (tc.fbIdx !== -1) {
       for (let i = 1; i < rows.length; i++) {
         const text = String(rows[i][tc.fbIdx] || "").trim();
         if (text && text !== "-" && text.length > 2 && isNaN(parseFloat(text))) {
-          allFb.push(text);
+          rawFb.push(text);
         }
       }
     }
+    if (tStats) {
+      results.trainers.push({ name: tc.name, avg: tStats.avg, pctTop: Math.round(tStats.pctTop), countTop: tStats.countTop, feedback: filterFeedback(rawFb) });
+    }
   });
-
-  if (allFb.length > 0) {
-    const stopWords = new Set(['baik','seru','kocak','komunikatif','bagus','oke','ok','good','nice','mantap','keren','hebat','informatif','menarik','edukatif','atraktif','santai','lucu']);
-    results.trainerFeedback = allFb.filter(t => {
-      const clean = t.trim().toLowerCase();
-      if (clean.length < 12) return false;
-      if (stopWords.has(clean)) return false;
-      if (/^[1-5]$/.test(clean)) return false;
-      return true;
-    }).slice(0, 5);
-  }
 
   results.total = bStats ? bStats.total : (rows.length - 1);
 
@@ -4859,11 +4857,18 @@ function renderDynamicEvaluation(evalData) {
                     ${t("ev.umpanBalikLabel")}
                   </div>` +
                  `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(CONFIG.aiSummary.feedback)}"</div>`;
-      } else if (d.trainerFeedback && d.trainerFeedback.length > 0) {
-        fbHtml = `<div style="margin-bottom:6px;"><b>${t("ev.beberapaUmpanBalik")}</b></div>` +
-          d.trainerFeedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(w)}"</div>`).join('');
       } else {
-        fbHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">${t("ev.umpanBalikPending")}</span>`;
+        const trainersWithFb = trainers.filter(tr => tr.feedback && tr.feedback.length > 0);
+        if (trainersWithFb.length > 0) {
+          fbHtml = trainersWithFb.map(tr => `
+            <div style="margin-bottom:14px;">
+              <div style="margin-bottom:6px;"><b>${tf("ev.umpanBalikTerhadapTrainer",{name:esc(tr.name)})}</b></div>
+              ${tr.feedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(w)}"</div>`).join('')}
+            </div>
+          `).join('');
+        } else {
+          fbHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">${t("ev.umpanBalikPending")}</span>`;
+        }
       }
       evalTrainerFeedbackEl.innerHTML = fbHtml;
     }
