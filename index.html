@@ -7753,7 +7753,17 @@ function renderActiveClientSections(){
 
     const tbody = document.getElementById("apTableBody");
     if (tbody) {
-      if (filteredApList.length === 0) {
+      // The 10s poll calls this on every tick even when nothing actually changed —
+      // rebuilding innerHTML unconditionally collapsed whatever detail row an admin
+      // had open mid-read. Skip the rebuild entirely when the rendered content would
+      // be identical, and if it does need to rebuild (real data change), reopen
+      // whichever participant's row was expanded beforehand.
+      const apRenderKey = JSON.stringify({ list: filteredApList, dyn: apUseDynamicCols, fields: apCommitmentFields.map(f => f.id + ':' + f.label), lang: currentLang, colCount: apColCount });
+      if (tbody.dataset.renderedKey !== apRenderKey) {
+        const openRow = tbody.querySelector(".detail-row.open");
+        const openNo = openRow ? openRow.id.replace("ap-detail-", "") : null;
+
+        if (filteredApList.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${apColCount}" style="text-align:center; padding: 48px; color: var(--mdi-muted);">${t("ap.noPlanForStatus")}</td></tr>`;
       } else {
       const renderHtml = filteredApList.map((p, index) => {
@@ -7827,6 +7837,12 @@ function renderActiveClientSections(){
           `;
         }).join("");
         tbody.innerHTML = renderHtml;
+        }
+        tbody.dataset.renderedKey = apRenderKey;
+
+        if (openNo && document.getElementById("ap-detail-" + openNo)) {
+          try { toggleApRow(openNo); } catch(e) {}
+        }
       }
     }
 
