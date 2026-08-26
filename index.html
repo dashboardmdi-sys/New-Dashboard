@@ -2225,6 +2225,7 @@
           </div>
           <div id="evalTrainerFeedback" class="trainer-feedback-col" style="font-size:clamp(12.5px, 1.1vw + 9px, 16px); line-height:1.7; background:var(--n50); padding:20px 22px; border-radius:10px; border:1px solid var(--card-border); color:var(--n800);"></div>
         </div>
+        <div id="evalKesimpulan" style="display:none; margin-top:14px; font-size:clamp(12.5px, 1.1vw + 9px, 16px); line-height:1.7; background:var(--n50,#fff8e1); padding:20px 22px; border-radius:10px; border:1px solid var(--gold); color:var(--n800);"></div>
       </div>
 
       <!-- What Landed Best Title -->
@@ -4545,6 +4546,7 @@ const trainerCarousel = { index: 0, count: 0, timer: null };
 let __evalTrainersData = [];
 function renderActiveTrainerFeedback() {
   const el = document.getElementById("evalTrainerFeedback");
+  const kesimpulanEl = document.getElementById("evalKesimpulan");
   if (!el) return;
   const tr = __evalTrainersData[trainerCarousel.index];
 
@@ -4555,20 +4557,26 @@ function renderActiveTrainerFeedback() {
   } else {
     breakdownHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">${t("ev.umpanBalikPending")}</span>`;
   }
+  el.innerHTML = breakdownHtml;
 
   // General AI conclusion (combined across all trainers) — always the same text
-  // regardless of which trainer card is active, shown below as a closing takeaway.
-  let aiHtml = "";
-  if (CONFIG.aiSummary && CONFIG.aiSummary.feedback) {
-    aiHtml = `<div style="margin-top:16px;padding:14px 16px;background:var(--n50,#fff8e1);border-radius:10px;border:1px solid var(--gold);">
-      <div style="margin-bottom:6px;font-weight:600;display:flex;align-items:center;gap:6px;">
-        📝 ${t("ev.kesimpulan")}
-      </div>
-      <div style="color:var(--text);font-style:italic;">"${esc(CONFIG.aiSummary.feedback)}"</div>
-    </div>`;
+  // regardless of which trainer card is active. Rendered as its own separate box
+  // (not appended inside evalTrainerFeedback) so it never visually merges with the
+  // per-trainer quotes above it.
+  if (kesimpulanEl) {
+    if (CONFIG.aiSummary && CONFIG.aiSummary.feedback) {
+      kesimpulanEl.style.display = "";
+      kesimpulanEl.innerHTML = `
+        <div style="margin-bottom:6px;font-weight:600;display:flex;align-items:center;gap:6px;">
+          📝 ${t("ev.kesimpulan")}
+        </div>
+        <div style="color:var(--text);font-style:italic;">"${esc(CONFIG.aiSummary.feedback)}"</div>
+      `;
+    } else {
+      kesimpulanEl.style.display = "none";
+      kesimpulanEl.innerHTML = "";
+    }
   }
-
-  el.innerHTML = breakdownHtml + aiHtml;
 }
 // Assign each card its depth in the deck relative to the active index.
 function layoutTrainerDeck() {
