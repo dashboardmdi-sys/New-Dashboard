@@ -2513,6 +2513,7 @@
       line-height: 1.75;
       color: var(--n800);
       margin: 0 0 16px;
+      text-align: justify;
     }
 
     .kt-lead p:last-child {
@@ -2558,6 +2559,7 @@
       line-height: 1.75;
       color: var(--n800);
       margin: 0 0 12px;
+      text-align: justify;
     }
 
     .kt-day p:last-child {
@@ -7178,7 +7180,7 @@
       let breakdownHtml = "";
       if (tr && tr.feedback && tr.feedback.length > 0) {
         breakdownHtml = `<div style="margin-bottom:6px;"><b>${tf("ev.umpanBalikTerhadapTrainer", { name: esc(tr.name) })}</b></div>` +
-          tr.feedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic;">"${esc(w)}"</div>`).join('');
+          tr.feedback.map(w => `<div style="margin-bottom:6px; border-left: 3px solid var(--gold); padding-left: 10px; color:var(--text); font-style:italic; text-align:justify;">"${esc(w)}"</div>`).join('');
       } else {
         breakdownHtml = `<span style="color:var(--n500,var(--muted));font-size:12px;">${t("ev.umpanBalikPending")}</span>`;
       }
@@ -7195,7 +7197,7 @@
         <div style="margin-bottom:6px;font-weight:600;display:flex;align-items:center;gap:6px;">
           📝 ${t("ev.kesimpulan")}
         </div>
-        <div style="color:var(--text);font-style:italic;">"${esc(CONFIG.aiSummary.feedback)}"</div>
+        <div style="color:var(--text);font-style:italic;text-align:justify;">"${esc(CONFIG.aiSummary.feedback)}"</div>
       `;
         } else {
           kesimpulanEl.style.display = "none";
