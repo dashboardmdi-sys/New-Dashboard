@@ -6063,26 +6063,43 @@ function computeInterpersonalStats(list){
 }
 
 // Column A = Nama, columns B.. = one per session/date, cell = attendance status text.
-// Google Forms exports usually put a Timestamp column first — detect and skip
-// it (like parseEvaluationSheet does) so "Nama" is read from the right column
-// instead of the sheet's dates getting treated as if the Timestamp were a session.
+// Google Forms exports usually put a Timestamp column first — detect and skip it (like
+// parseEvaluationSheet does) so "Nama" is read from the right column. Every training's
+// sheet can have a different number of session columns AND different extra metadata
+// columns mixed in (e.g. "Alamat Email") — rather than assuming everything after Nama
+// is a session, only columns whose non-empty values actually look like an attendance
+// status (Hadir/Tidak/Izin/Sakit) are treated as real sessions; anything else (email,
+// phone, notes, etc.) is ignored regardless of its header text.
 function raParseHeaders(rows){
   const headers = (rows[0]||[]).map(h => (h||"").toString().trim());
   const first = (headers[0]||"").toLowerCase();
   const hasTimestamp = first.includes("timestamp") || first.includes("waktu");
   const nameIdx = hasTimestamp ? 1 : 0;
-  const sessionLabels = headers.slice(nameIdx+1).filter(Boolean);
-  return { nameIdx, sessionLabels };
+
+  const sessionColIdxs = [];
+  for (let c = nameIdx + 1; c < headers.length; c++) {
+    if (!headers[c]) continue;
+    let checked = 0, recognized = 0;
+    for (let r = 1; r < rows.length && checked < 20; r++) {
+      const raw = rows[r][c];
+      if (raw === "" || raw == null) continue;
+      checked++;
+      if (raNormalizeStatus(raw) !== "kosong") recognized++;
+    }
+    if (checked > 0 && recognized / checked >= 0.5) sessionColIdxs.push(c);
+  }
+  const sessionLabels = sessionColIdxs.map(c => headers[c]);
+  return { nameIdx, sessionLabels, sessionColIdxs };
 }
 
 function extractRekapAbsen(rows){
   if(!rows||rows.length<2) return [];
-  const { nameIdx, sessionLabels } = raParseHeaders(rows);
+  const { nameIdx, sessionLabels, sessionColIdxs } = raParseHeaders(rows);
   const out=[];
   for(let i=1;i<rows.length;i++){
     const name=(rows[i][nameIdx]||"").toString().trim();
     if(!name) continue;
-    const sessions = sessionLabels.map((label, si) => ({ label, status: raNormalizeStatus(rows[i][nameIdx+1+si]) }));
+    const sessions = sessionColIdxs.map((colIdx, si) => ({ label: sessionLabels[si], status: raNormalizeStatus(rows[i][colIdx]) }));
     const hadirCount = sessions.filter(s=>s.status==="hadir").length;
     const totalSesi = sessionLabels.length;
     const pct = totalSesi>0 ? Math.round((hadirCount/totalSesi)*100) : 0;
