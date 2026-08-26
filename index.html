@@ -195,6 +195,11 @@
   .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
   @media(max-width:980px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:520px){.kpi-grid{grid-template-columns:1fr}}
+  /* Rekap Absen only has 3 KPI tiles (no "Kehadiran Terendah") — its own column
+     count so it doesn't leave an empty 4th slot on desktop widths. */
+  #raKpiGrid{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:980px){#raKpiGrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){#raKpiGrid{grid-template-columns:1fr}}
   .card{
     background:var(--card-bg);border:1px solid var(--card-border);
     border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
@@ -2630,15 +2635,6 @@
         <div class="sub"><span id="raSesiSub">tanggal/sesi di sheet</span></div>
       </div>
 
-      <div class="card kpi" data-animate>
-        <div class="accent" style="background:var(--success)"></div>
-        <div class="icon" style="background:#E7F6EC;color:var(--success)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
-        </div>
-        <div class="label" data-i18n="ra.kehadiranTerendah">KEHADIRAN TERENDAH</div>
-        <div class="value" style="font-size:1.35rem;line-height:1.15;margin-top:12px" id="raLowestName">—</div>
-        <div class="sub"><span id="raLowestSub">—</span></div>
-      </div>
     </section>
 
     <div class="overline" data-animate><span class="num">06</span> <span data-i18n="sec.absen06">Detail Kehadiran Peserta</span></div>
@@ -3002,11 +2998,9 @@ const I18N = {
     "i.socialStyleHint": "Social Style Model — nilai per dimensi",
     "ra.rataRataKehadiran": "RATA-RATA KEHADIRAN",
     "ra.sesiTercatat": "SESI TERCATAT",
-    "ra.kehadiranTerendah": "KEHADIRAN TERENDAH",
     "ra.rekapAbsenPeserta": "Rekap Absen Peserta",
     "ra.dariSeluruhSesi": "dari seluruh sesi",
     "ra.tanggalSesiDiSheet": "tanggal/sesi di sheet",
-    "ra.kehadiranXdariY": "Hadir {{x}}/{{y}} sesi ({{pct}}%)",
     "ra.hadirPenuh": "Hadir Penuh",
     "ra.belumPenuh": "Belum Penuh",
     "ra.kehadiran": "Kehadiran",
@@ -3253,11 +3247,9 @@ const I18N = {
     "i.socialStyleHint": "Social Style Model — score per dimension",
     "ra.rataRataKehadiran": "AVERAGE ATTENDANCE",
     "ra.sesiTercatat": "SESSIONS RECORDED",
-    "ra.kehadiranTerendah": "LOWEST ATTENDANCE",
     "ra.rekapAbsenPeserta": "Participant Attendance Recap",
     "ra.dariSeluruhSesi": "of all sessions",
     "ra.tanggalSesiDiSheet": "dates/sessions in sheet",
-    "ra.kehadiranXdariY": "Present {{x}}/{{y}} sessions ({{pct}}%)",
     "ra.hadirPenuh": "Full Attendance",
     "ra.belumPenuh": "Not Full",
     "ra.kehadiran": "Attendance",
@@ -6112,7 +6104,6 @@ function computeRekapAbsenStats(list, sessionLabels){
   if(!list || !list.length) return null;
   const total = list.length;
   const avgPct = Math.round(list.reduce((s,p)=>s+p.pct,0)/total);
-  const sortedByPct = [...list].sort((a,b)=>a.pct-b.pct);
   const fullCount = list.filter(p=>p.pct>=100).length;
   return {
     total,
@@ -6120,7 +6111,6 @@ function computeRekapAbsenStats(list, sessionLabels){
     avgPct,
     fullCount,
     partialCount: total - fullCount,
-    lowest: sortedByPct[0] || { name:"—", pct:0, hadirCount:0, totalSesi:0 },
   };
 }
 
@@ -7109,7 +7099,6 @@ function renderRekapAbsen(){
     setText("raTotal","—"); setText("raTotalSub","—");
     setText("raAvgPct","—"); setText("raAvgSub","—");
     setText("raSesiCount","—"); setText("raSesiSub","—");
-    setText("raLowestName","—"); setText("raLowestSub","—");
 
     const thead = document.getElementById("raThead");
     if(thead) thead.innerHTML = "";
@@ -7134,8 +7123,6 @@ function renderRekapAbsen(){
   setText("raAvgSub", t("ra.dariSeluruhSesi"));
   setText("raSesiCount", raStats.sesiCount);
   setText("raSesiSub", t("ra.tanggalSesiDiSheet"));
-  setText("raLowestName", raStats.lowest.name);
-  setText("raLowestSub", tf("ra.kehadiranXdariY",{x:raStats.lowest.hadirCount,y:raStats.lowest.totalSesi,pct:raStats.lowest.pct}));
 
   renderRekapAbsenFilter();
   renderRekapAbsenTable();
