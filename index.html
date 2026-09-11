@@ -6045,7 +6045,15 @@
         if (!data) data = await attempt(15000); // likely cold start on the first hit — one retry
 
         if (data) {
-          clientsDb = data;
+          const localMap = new Map((clientsDb || []).map(c => [String(c.id), c]));
+          clientsDb = data.map(serverClient => {
+            const localClient = localMap.get(String(serverClient.id));
+            if (!localClient) return serverClient;
+            if ((localClient.updatedAt || 0) > (serverClient.updatedAt || 0)) {
+              return localClient;
+            }
+            return serverClient;
+          });
           try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch (e) { }
         }
       })();
@@ -6222,8 +6230,15 @@
           return;
         }
 
-        // Jika database klien sedang dimuat di background, tunggu dulu agar tidak langsung gagal login
-        if (window.__loadClientsPromise) {
+        // 1. Cek langsung ke cache database lokal (Login Instan tanpa delay!)
+        let found = clientsDb.find(c => {
+          const nameMatch = (c.name || "").trim().toLowerCase() === companyNameVal.toLowerCase();
+          const pinMatch = String(c.pin).padStart(4, '0') === pinInput;
+          return nameMatch && pinMatch;
+        });
+
+        // 2. Jika belum cocok di lokal dan database sedang dimuat dari server, tunggu proses server selesai
+        if (!found && window.__loadClientsPromise) {
           isChecking = true;
           btnSubmitLogin.disabled = true;
           const originalText = btnSubmitLogin.textContent;
@@ -6237,14 +6252,14 @@
             btnSubmitLogin.disabled = false;
             btnSubmitLogin.textContent = originalText;
           }
-        }
 
-        // Cari client berdasarkan nama perusahaan
-        const found = clientsDb.find(c => {
-          const nameMatch = (c.name || "").trim().toLowerCase() === companyNameVal.toLowerCase();
-          const pinMatch = String(c.pin).padStart(4, '0') === pinInput;
-          return nameMatch && pinMatch;
-        });
+          // Cek kembali setelah database cloud selesai dimuat
+          found = clientsDb.find(c => {
+            const nameMatch = (c.name || "").trim().toLowerCase() === companyNameVal.toLowerCase();
+            const pinMatch = String(c.pin).padStart(4, '0') === pinInput;
+            return nameMatch && pinMatch;
+          });
+        }
 
         if (found) {
           sessionStorage.setItem("mdp-logged-client", String(found.id));
@@ -10495,7 +10510,7 @@
       const isLeadershipVisible = !!CONFIG.leadershipEnabled;
       const isWewenangVisible = !!CONFIG.wewenangEnabled;
       const isInterpersonalVisible = !!CONFIG.interpersonalEnabled;
-      const isAbsenVisible = !!CONFIG.absenEnabled;
+      const isAbsenVisible = !!CONFIG.absenEnabled || !!(CONFIG.absenSheetId || CONFIG.absenCsvUrl);
 
       const navLeadership = document.getElementById("navPillLeadership");
       const paneLeadership = document.getElementById("pane-leadership");
@@ -10753,10 +10768,10 @@
                       CONFIG.interpersonalSheetId = freshTraining.interpersonalSheetId || "";
                       CONFIG.interpersonalCsvUrl = freshTraining.interpersonalCsvUrl || "";
                       CONFIG.interpersonalSheetName = freshTraining.interpersonalSheetName || "Sheet5";
-                      CONFIG.absenEnabled = !!freshTraining.absenEnabled;
-                      CONFIG.absenSheetId = freshTraining.absenSheetId || "";
-                      CONFIG.absenCsvUrl = freshTraining.absenCsvUrl || "";
-                      CONFIG.absenSheetName = freshTraining.absenSheetName || "Sheet6";
+                      CONFIG.absenEnabled = (freshTraining.absenEnabled != null) ? !!freshTraining.absenEnabled : (CONFIG.absenEnabled || !!freshTraining.absenSheetId);
+                      CONFIG.absenSheetId = freshTraining.absenSheetId || CONFIG.absenSheetId || "";
+                      CONFIG.absenCsvUrl = freshTraining.absenCsvUrl || CONFIG.absenCsvUrl || "";
+                      CONFIG.absenSheetName = freshTraining.absenSheetName || CONFIG.absenSheetName || "Sheet6";
                     } else {
                       // Sesi aktif tidak ditemukan di data fresh — kosongkan agar tidak bocor
                       CONFIG.evaluasi = "";

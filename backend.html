@@ -1869,7 +1869,15 @@ async function fetchDatabase() {
     if (!data) data = await attemptFetchClients(15000); // likely cold start on the first hit — one retry
 
     if (data) {
-      clientsDb = data;
+      const localMap = new Map((clientsDb || []).map(c => [String(c.id), c]));
+      clientsDb = data.map(serverClient => {
+        const localClient = localMap.get(String(serverClient.id));
+        if (!localClient) return serverClient;
+        if ((localClient.updatedAt || 0) > (serverClient.updatedAt || 0)) {
+          return localClient;
+        }
+        return serverClient;
+      });
       try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
     } else {
       toast(clientsDb.length === 0 ? "⚠️ Tidak dapat terhubung ke server. Pastikan terhubung ke internet." : "⚠️ Gagal mengambil database dari server");
@@ -2657,6 +2665,8 @@ function updateTraining(patch, successMsg="✅ Tersimpan!"){
 
   const t = clientsDb[cIdx].trainings[tIdx];
   Object.assign(t, patch);
+  t.updatedAt = Date.now();
+  clientsDb[cIdx].updatedAt = Date.now();
   try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
   apiUpdateClient(clientsDb[cIdx], successMsg);
   return t;
