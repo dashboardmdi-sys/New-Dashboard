@@ -6487,12 +6487,12 @@
       });
 
       // 2. Apply training-specific data fields
-      SHEET_ID = training.sheetId || "";
+      SHEET_ID = extractSheetId(training.sheetId) || training.sheetId || "";
       CSV_URL = training.csvUrl || "";
       Object.assign(CONFIG, {
-        sheetId: training.sheetId || "",
+        sheetId: extractSheetId(training.sheetId) || training.sheetId || "",
         csvUrl: training.csvUrl || "",
-        evalSheetId: training.evalSheetId || "",
+        evalSheetId: extractSheetId(training.evalSheetId) || training.evalSheetId || "",
         evalCsvUrl: training.evalCsvUrl || "",
         evalSheetName: training.evalSheetName || "Sheet2",
         evalDataRange: training.evalDataRange || "",
@@ -6522,19 +6522,19 @@
         dateEnd: training.dateEnd || "",
         sessionTitle: training.title || "",
         leadershipEnabled: !!training.leadershipEnabled,
-        leadershipSheetId: training.leadershipSheetId || "",
+        leadershipSheetId: extractSheetId(training.leadershipSheetId) || training.leadershipSheetId || "",
         leadershipCsvUrl: training.leadershipCsvUrl || "",
         leadershipSheetName: training.leadershipSheetName || "Sheet2",
         wewenangEnabled: !!training.wewenangEnabled,
-        wewenangSheetId: training.wewenangSheetId || "",
+        wewenangSheetId: extractSheetId(training.wewenangSheetId) || training.wewenangSheetId || "",
         wewenangCsvUrl: training.wewenangCsvUrl || "",
         wewenangSheetName: training.wewenangSheetName || "Sheet4",
         interpersonalEnabled: !!training.interpersonalEnabled,
-        interpersonalSheetId: training.interpersonalSheetId || "",
+        interpersonalSheetId: extractSheetId(training.interpersonalSheetId) || training.interpersonalSheetId || "",
         interpersonalCsvUrl: training.interpersonalCsvUrl || "",
         interpersonalSheetName: training.interpersonalSheetName || "Sheet5",
         absenEnabled: !!training.absenEnabled,
-        absenSheetId: training.absenSheetId || "",
+        absenSheetId: extractSheetId(training.absenSheetId) || training.absenSheetId || "",
         absenCsvUrl: training.absenCsvUrl || "",
         absenSheetName: training.absenSheetName || "Sheet6",
       });
@@ -7664,11 +7664,22 @@
       wrap.addEventListener("focusout", startTrainerAutoplay);
     })();
 
+    function extractSheetId(url) {
+      if (!url) return "";
+      if (typeof url !== "string") return String(url);
+      if (url.includes("/d/e/")) return "";
+      const m = url.match(/\/d\/([a-zA-Z0-9-_]{20,})/);
+      if (m) return m[1];
+      if (url.length >= 20 && url.length <= 100 && !url.includes("/") && !url.includes(" ")) return url;
+      return url;
+    }
+
     function buildGvizUrl(id, { out = "csv", name = "", range = "", cb = "" } = {}) {
+      const cleanId = extractSheetId(id) || id;
       const tqx = out === "json"
         ? (cb ? `out:json;responseHandler:${cb}` : "out:json")
         : "out:csv";
-      let url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=${tqx}`;
+      let url = `https://docs.google.com/spreadsheets/d/${cleanId}/gviz/tq?tqx=${tqx}`;
       if (name) url += `&sheet=${encodeURIComponent(name)}`;
       if (range) url += `&range=${encodeURIComponent(range)}`;
       return url;
@@ -7678,9 +7689,11 @@
     // JSONP: bypass CORS sehingga bisa buka file:// langsung di Chrome
     function fetchViaJSONP() {
       return new Promise((resolve, reject) => {
+        const cleanId = extractSheetId(SHEET_ID) || SHEET_ID;
+        if (!cleanId) return reject(new Error("Sheet ID kosong"));
         const cb = "_gsheetCb_" + Date.now();
         const script = document.createElement("script");
-        const timer = setTimeout(() => { cleanup(); reject(new Error("JSONP timeout")); }, 5000);
+        const timer = setTimeout(() => { cleanup(); reject(new Error("JSONP timeout")); }, 7000);
         function cleanup() { clearTimeout(timer); delete window[cb]; script.remove(); }
         window[cb] = function (resp) {
           cleanup();
@@ -7694,7 +7707,7 @@
             resolve(rows);
           } catch (e) { reject(e); }
         };
-        script.src = buildGvizUrl(SHEET_ID, { out: "json", name: CONFIG.sheet1.name, range: CONFIG.sheet1.range, cb }) + `&_cb=${Date.now()}`;
+        script.src = buildGvizUrl(cleanId, { out: "json", name: CONFIG.sheet1?.name || "", range: CONFIG.sheet1?.range || "", cb }) + `&_cb=${Date.now()}`;
         script.onerror = () => { cleanup(); reject(new Error("JSONP gagal memuat script")); };
         document.head.appendChild(script);
       });
@@ -7702,11 +7715,20 @@
 
     // fetch CSV (hanya jalan di http:/https:)
     async function fetchViaCSV() {
-      // Jika range Sheet1 diatur, pakai gviz agar range dihormati; jika tidak dan
-      // CSV publish tersedia, pakai itu (paling real-time). Fallback ke gviz.
-      const base = (CONFIG.sheet1.range || !CSV_URL)
-        ? buildGvizUrl(SHEET_ID, { out: "csv", name: CONFIG.sheet1.name, range: CONFIG.sheet1.range })
-        : CSV_URL;
+      let base = CSV_URL;
+      const cleanId = extractSheetId(SHEET_ID) || SHEET_ID;
+      if (base) {
+        if (base.includes("/spreadsheets/d/") && !base.includes("/d/e/")) {
+          // Link spreadsheet biasa, gunakan GViz endpoint
+          const directId = extractSheetId(base) || cleanId;
+          base = buildGvizUrl(directId, { out: "csv", name: (CONFIG.sheet1 && CONFIG.sheet1.name) || "", range: (CONFIG.sheet1 && CONFIG.sheet1.range) || "" });
+        } else if (base.endsWith("/pubhtml")) {
+          base = base.replace("/pubhtml", "/pub?output=csv");
+        }
+      } else {
+        base = buildGvizUrl(cleanId, { out: "csv", name: (CONFIG.sheet1 && CONFIG.sheet1.name) || "", range: (CONFIG.sheet1 && CONFIG.sheet1.range) || "" });
+      }
+
       const sep = base.includes("?") ? "&" : "?";
       const res = await fetch(`${base}${sep}_cb=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -7717,13 +7739,13 @@
     }
 
     async function fetchSheet2() {
-      const targetSheetId = CONFIG.evalSheetId || SHEET_ID;
+      const targetSheetId = extractSheetId(CONFIG.evalSheetId) || extractSheetId(SHEET_ID);
       const targetSheetName = CONFIG.evalSheetName || (CONFIG.sheet2 && CONFIG.sheet2.name) || "Sheet2";
       if (!targetSheetId) return null;
       return new Promise((resolve, reject) => {
         const cb = "_gsheetCb2_" + Date.now();
         const script = document.createElement("script");
-        const timer = setTimeout(() => { cleanup(); reject(new Error("Sheet2 timeout")); }, 5000);
+        const timer = setTimeout(() => { cleanup(); reject(new Error("Sheet2 timeout")); }, 7000);
         function cleanup() { clearTimeout(timer); delete window[cb]; script.remove(); }
         window[cb] = function (resp) {
           cleanup();
@@ -7752,11 +7774,17 @@
     async function fetchData(manual = false) {
       const startingTrainingId = activeTrainingId;
       const btn = document.getElementById("refreshBtn");
-      const targetMainId = SHEET_ID;
+      const targetMainId = extractSheetId(SHEET_ID) || SHEET_ID;
       // Hanya fetch evaluasi jika sheet evaluasi KHUSUS dikonfigurasi (tidak fallback ke sheet utama)
       const hasEvalSheet = !!(CONFIG.evalCsvUrl || CONFIG.evalSheetId);
+      const isLeadershipActive = !!CONFIG.leadershipEnabled && !!(CONFIG.leadershipSheetId || CONFIG.leadershipCsvUrl || targetMainId);
+      const isWewenangActive = !!CONFIG.wewenangEnabled && !!(CONFIG.wewenangSheetId || CONFIG.wewenangCsvUrl || targetMainId);
+      const isInterpersonalActive = !!CONFIG.interpersonalEnabled && !!(CONFIG.interpersonalSheetId || CONFIG.interpersonalCsvUrl || targetMainId);
+      const isAbsenActive = (!!CONFIG.absenEnabled || !!CONFIG.absenSheetId || !!CONFIG.absenCsvUrl) && !!(CONFIG.absenSheetId || CONFIG.absenCsvUrl || targetMainId);
 
-      if (!targetMainId && !hasEvalSheet) {
+      const hasAnyDataSource = !!targetMainId || hasEvalSheet || isLeadershipActive || isWewenangActive || isInterpersonalActive || isAbsenActive;
+
+      if (!hasAnyDataSource) {
         render(false);
         setOnline(false);
         document.getElementById("liveText").textContent = t("header.notConfigured");
@@ -7797,18 +7825,20 @@
 
           if (CONFIG.evalCsvUrl) {
             try {
-              // Auto-fix link pubhtml menjadi pub?output=csv agar tidak gagal (CORS/HTML)
-              let finalCsvUrl = CONFIG.evalCsvUrl;
+              let finalCsvUrl = CONFIG.evalCsvUrl.trim();
               if (finalCsvUrl.endsWith("/pubhtml")) {
                 finalCsvUrl = finalCsvUrl.replace("/pubhtml", "/pub?output=csv");
               }
-
-              const sep = finalCsvUrl.includes("?") ? "&" : "?";
-              const res = await fetch(`${finalCsvUrl}${sep}_cb=${Date.now()}`, { cache: "no-store" });
-              if (!res.ok) throw new Error(`HTTP ${res.status}`);
-              const text = await res.text();
-              if (text.trimStart().startsWith("<")) throw new Error("CORS/HTML returned");
-              sheet2Rows = parseCSV(text);
+              if (!finalCsvUrl.includes("/spreadsheets/d/") || finalCsvUrl.includes("/d/e/")) {
+                const sep = finalCsvUrl.includes("?") ? "&" : "?";
+                const res = await fetch(`${finalCsvUrl}${sep}_cb=${Date.now()}`, { cache: "no-store" });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const text = await res.text();
+                if (text.trimStart().startsWith("<")) throw new Error("CORS/HTML returned");
+                sheet2Rows = parseCSV(text);
+              } else {
+                csvFailed = true;
+              }
             } catch (err) {
               console.warn("CSV Evaluasi fetch gagal, mencoba JSONP...", err);
               csvFailed = true;
@@ -7827,17 +7857,10 @@
       }
 
       // 2.5 Fetch Analysis Sheets (Sheet2: Leadership, Sheet4: Wewenang, Sheet5: Interpersonal, Sheet6: Rekap Absen)
-      if (targetMainId) {
+      let sheet2Rows = null, sheet4Rows = null, sheet5Rows = null, sheet6Rows = null;
+      if (targetMainId || isLeadershipActive || isWewenangActive || isInterpersonalActive || isAbsenActive) {
         try {
-          // Require an actual sheet link (not just the feature toggled on) — otherwise
-          // fetchSheetCsv() silently falls back to the main training sheet / a hardcoded
-          // example sheet, showing unrelated or demo data instead of "not configured yet".
-          const isLeadershipActive = !!CONFIG.leadershipEnabled && !!(CONFIG.leadershipSheetId || CONFIG.leadershipCsvUrl);
-          const isWewenangActive = !!CONFIG.wewenangEnabled && !!(CONFIG.wewenangSheetId || CONFIG.wewenangCsvUrl);
-          const isInterpersonalActive = !!CONFIG.interpersonalEnabled && !!(CONFIG.interpersonalSheetId || CONFIG.interpersonalCsvUrl);
-          const isAbsenActive = !!CONFIG.absenEnabled && !!(CONFIG.absenSheetId || CONFIG.absenCsvUrl);
-
-          const [sheet2Rows, sheet4Rows, sheet5Rows, sheet6Rows] = await Promise.all([
+          [sheet2Rows, sheet4Rows, sheet5Rows, sheet6Rows] = await Promise.all([
             isLeadershipActive ? fetchSheetCsv(CONFIG.leadershipSheetName || "Sheet2", CONFIG.leadershipSheetId, CONFIG.leadershipCsvUrl) : Promise.resolve(null),
             isWewenangActive ? fetchSheetCsv(CONFIG.wewenangSheetName || "Sheet4", CONFIG.wewenangSheetId, CONFIG.wewenangCsvUrl) : Promise.resolve(null),
             isInterpersonalActive ? fetchSheetCsv(CONFIG.interpersonalSheetName || "Sheet5", CONFIG.interpersonalSheetId, CONFIG.interpersonalCsvUrl) : Promise.resolve(null),
@@ -7948,7 +7971,6 @@
         if (dataChanged || firstLoad) {
           render(dataChanged && !firstLoad);
 
-
           // Save to cache!
           if (activeTrainingId && (mainSuccess || evalSuccess)) {
             try {
@@ -7961,16 +7983,17 @@
             } catch (e) { }
           }
         }
-        setOnline(mainSuccess || evalSuccess);
+        const hasAnySuccess = mainSuccess || evalSuccess || !!(sheet2Rows && sheet2Rows.length > 1) || !!(sheet4Rows && sheet4Rows.length > 1) || !!(sheet5Rows && sheet5Rows.length > 1) || !!(sheet6Rows && sheet6Rows.length > 1);
+        setOnline(hasAnySuccess);
       } catch (err) {
         setOnline(false);
         console.error("fetchData total crash:", err);
         // Render fallbacks if we completely crashed before rendering
         if (firstLoad) {
           render(false);
-          firstLoad = false;
         }
       } finally {
+        firstLoad = false;
         if (manual) setTimeout(() => btn.classList.remove("spinning"), 600);
         document.getElementById("lastUpdated").textContent =
           new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -8519,18 +8542,28 @@
 
     async function fetchSheetCsv(sheetName, customSheetId = null, customCsvUrl = null) {
       if (customCsvUrl) {
-        let finalUrl = customCsvUrl;
-        if (finalUrl.endsWith("/pubhtml")) finalUrl = finalUrl.replace("/pubhtml", "/pub?output=csv");
-        const sep = finalUrl.includes("?") ? "&" : "?";
-        try {
-          const res = await fetch(`${finalUrl}${sep}_cb=${Date.now()}`, { cache: "no-store" });
-          if (res.ok) {
-            const text = await res.text();
-            if (!text.trimStart().startsWith("<")) return parseCSV(text);
+        let finalUrl = (customCsvUrl || "").trim();
+        if (finalUrl.includes("/spreadsheets/d/") && !finalUrl.includes("/d/e/")) {
+          const extractedId = extractSheetId(finalUrl);
+          if (extractedId && !customSheetId) {
+            customSheetId = extractedId;
           }
-        } catch (e) { }
+        } else if (finalUrl) {
+          if (finalUrl.endsWith("/pubhtml")) finalUrl = finalUrl.replace("/pubhtml", "/pub?output=csv");
+          const sep = finalUrl.includes("?") ? "&" : "?";
+          try {
+            const res = await fetch(`${finalUrl}${sep}_cb=${Date.now()}`, { cache: "no-store" });
+            if (res.ok) {
+              const text = await res.text();
+              if (!text.trimStart().startsWith("<")) return parseCSV(text);
+            }
+          } catch (e) { }
+        }
       }
-      const targetSheetId = customSheetId || CONFIG.sheetId || SHEET_ID || "1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY";
+      const cleanCustomId = extractSheetId(customSheetId);
+      const cleanConfigId = extractSheetId(CONFIG.sheetId);
+      const cleanMainId = extractSheetId(SHEET_ID);
+      const targetSheetId = cleanCustomId || cleanConfigId || cleanMainId || "1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY";
       if (!targetSheetId) return null;
 
       const csvUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
@@ -8545,8 +8578,8 @@
       return await new Promise((resolve) => {
         const cb = `_gsheetCb_${sheetName.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`;
         const script = document.createElement("script");
-        const timer = setTimeout(() => { cleanup(); resolve(null) }, 10000);
-        function cleanup() { clearTimeout(timer); delete window[cb]; script.remove() }
+        const timer = setTimeout(() => { cleanup(); resolve(null); }, 10000);
+        function cleanup() { clearTimeout(timer); delete window[cb]; script.remove(); }
         window[cb] = function (resp) {
           cleanup();
           try {
