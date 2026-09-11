@@ -10654,6 +10654,52 @@
         iframe.contentWindow.postMessage({ type: 'switchTab', tabId: tab }, '*');
       };
 
+      // Listen for Action Plan updates from iframe or child windows and sync to cloud
+      window.addEventListener('message', async function (e) {
+        if (!e.data) return;
+        if (e.data.type === 'saveActionPlan') {
+          const formId = e.data.formId;
+          const trainingId = formId ? String(formId).replace('form_', '') : activeTrainingId;
+          if (!loggedClient || !trainingId) return;
+          const t = (loggedClient.trainings || []).find(x => String(x.id) === String(trainingId));
+          if (!t) return;
+          t.actionPlan = e.data.data || [];
+          CONFIG.actionPlan = t.actionPlan;
+          try {
+            localStorage.setItem('mdi_participants_form_' + trainingId, JSON.stringify(t.actionPlan));
+            localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb));
+          } catch (err) { }
+          try {
+            await fetch(WEB_APP_URL, {
+              method: "POST",
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: "updateClient", client: loggedClient })
+            });
+          } catch (err) { console.warn("Failed to sync Action Plan to cloud:", err); }
+          try { renderActiveClientSections(); } catch (err) { }
+        } else if (e.data.type === 'saveActionPlanFormConfig') {
+          const formId = e.data.formId;
+          const trainingId = formId ? String(formId).replace('form_', '') : activeTrainingId;
+          if (!loggedClient || !trainingId) return;
+          const t = (loggedClient.trainings || []).find(x => String(x.id) === String(trainingId));
+          if (!t) return;
+          t.actionPlanFormConfig = e.data.formConfig || null;
+          CONFIG.actionPlanFormConfig = t.actionPlanFormConfig;
+          try {
+            localStorage.setItem('mdi_form_config_form_' + trainingId, JSON.stringify(t.actionPlanFormConfig));
+            localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb));
+          } catch (err) { }
+          try {
+            await fetch(WEB_APP_URL, {
+              method: "POST",
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: "updateClient", client: loggedClient })
+            });
+          } catch (err) { console.warn("Failed to sync Form Config to cloud:", err); }
+          try { renderActiveClientSections(); } catch (err) { }
+        }
+      });
+
       // Pane tab switcher handler
       document.querySelectorAll(".nav-pill").forEach(pill => {
         pill.addEventListener("click", e => {
@@ -10798,22 +10844,19 @@
                       CONFIG.evaluasi = freshTraining.evaluasi || "";
                       CONFIG.komentarTrainer = freshTraining.komentarTrainer || "";
                       CONFIG.dokumentasi = freshTraining.dokumentasi || [];
-                      CONFIG.actionPlan = (Array.isArray(freshTraining.actionPlan) && freshTraining.actionPlan.length > 0)
-                        ? freshTraining.actionPlan
-                        : (function () {
-                          try {
-                            const raw = localStorage.getItem('mdi_participants_form_' + activeTrainingId);
-                            if (raw) { const p = JSON.parse(raw); if (Array.isArray(p) && p.length > 0) return p; }
-                          } catch (e) { }
-                          return CONFIG.actionPlan || [];
-                        })();
-                      CONFIG.actionPlanFormConfig = freshTraining.actionPlanFormConfig || (function () {
+                      if (Array.isArray(freshTraining.actionPlan) && freshTraining.actionPlan.length > 0) {
+                        CONFIG.actionPlan = freshTraining.actionPlan;
+                        try { localStorage.setItem('mdi_participants_form_' + activeTrainingId, JSON.stringify(freshTraining.actionPlan)); } catch (e) { }
+                      } else {
                         try {
-                          const raw = localStorage.getItem('mdi_form_config_form_' + activeTrainingId);
-                          if (raw) return JSON.parse(raw);
+                          const raw = localStorage.getItem('mdi_participants_form_' + activeTrainingId);
+                          if (raw) { const p = JSON.parse(raw); if (Array.isArray(p) && p.length > 0) CONFIG.actionPlan = p; }
                         } catch (e) { }
-                        return CONFIG.actionPlanFormConfig || null;
-                      })();
+                      }
+                      if (freshTraining.actionPlanFormConfig) {
+                        CONFIG.actionPlanFormConfig = freshTraining.actionPlanFormConfig;
+                        try { localStorage.setItem('mdi_form_config_form_' + activeTrainingId, JSON.stringify(freshTraining.actionPlanFormConfig)); } catch (e) { }
+                      }
                       CONFIG.aiSummary = freshTraining.aiSummary || null;
                       CONFIG.trainerPhotos = freshTraining.trainerPhotos || "";
                       CONFIG.leadershipEnabled = !!freshTraining.leadershipEnabled;

@@ -5959,6 +5959,40 @@ function shareApLinkToWhatsApp() {
   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
 }
 
+// Listen for postMessage from Action Plan iframe or child windows
+window.addEventListener('message', function(e) {
+  if (!e.data) return;
+  if (e.data.type === 'saveActionPlan') {
+    const formId = e.data.formId;
+    const trainingId = formId ? String(formId).replace('form_', '') : currentTrainingId;
+    if (!currentClientId || !trainingId) return;
+    const c = clientsDb.find(x => String(x.id) === String(currentClientId));
+    if (!c || !c.trainings) return;
+    const t = c.trainings.find(x => String(x.id) === String(trainingId));
+    if (!t) return;
+    t.actionPlan = e.data.data || [];
+    updateLocalClientArray(c);
+    apiUpdateClient(c, "✓ Cloud Sync: Action Plan tersimpan ke server!");
+    const fId = `form_${trainingId}`;
+    try { localStorage.setItem(`mdi_participants_${fId}`, JSON.stringify(t.actionPlan)); } catch(err){}
+    if (typeof renderApTrackerTable === 'function') renderApTrackerTable();
+  } else if (e.data.type === 'saveActionPlanFormConfig') {
+    const formId = e.data.formId;
+    const trainingId = formId ? String(formId).replace('form_', '') : currentTrainingId;
+    if (!currentClientId || !trainingId) return;
+    const c = clientsDb.find(x => String(x.id) === String(currentClientId));
+    if (!c || !c.trainings) return;
+    const t = c.trainings.find(x => String(x.id) === String(trainingId));
+    if (!t) return;
+    t.actionPlanFormConfig = e.data.formConfig || null;
+    updateLocalClientArray(c);
+    apiUpdateClient(c, "✓ Cloud Sync: Konfigurasi Form tersimpan ke server!");
+    const fId = `form_${trainingId}`;
+    try { localStorage.setItem(`mdi_form_config_${fId}`, JSON.stringify(t.actionPlanFormConfig)); } catch(err){}
+    if (typeof renderApConfiguratorUI === 'function') renderApConfiguratorUI();
+  }
+});
+
 // Fetch initial data & check mode
 fetchDatabase();
 setTimeout(checkStandaloneFormMode, 300);

@@ -381,12 +381,22 @@
         const i = clientsDb.findIndex(x => String(x.id) === String(c.id));
         if (i > -1) clientsDb[i] = c;
         localStorage.setItem("clientsDb", JSON.stringify(clientsDb));
+        localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb));
+        localStorage.setItem("mdi_participants_form_" + currentTrainingId, JSON.stringify(participants));
       } catch (e) { console.warn(e); }
+
+      // PostMessage to parent if embedded
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'saveActionPlan', formId: 'form_' + currentTrainingId, data: participants }, '*');
+        }
+      } catch (e) { }
 
       // Remote GAS API save
       try {
         await fetch(WEB_APP_URL, {
           method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({action: 'updateClient', client: c})
         });
       } catch (e) { console.warn("GAS save warning:", e); }
