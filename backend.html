@@ -3106,7 +3106,8 @@ function bindAnalysisTestBtn(btnId, iconId, resultId, customSheetIdInput, csvInp
     box.classList.add("show");
     const customIdRaw = $(customSheetIdInput)?.value.trim() || "";
     const csvUrl = $(csvInputId)?.value.trim() || "";
-    const id = extractSheetId(customIdRaw);
+    const mainId = extractSheetId($("cfgSheetId")?.value) || "1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY";
+    const id = extractSheetId(customIdRaw) || mainId;
 
     if (!id && !csvUrl) {
       box.innerHTML = `<div class="test-status err"><span class="dot"></span>Gagal: Link atau ID Google Sheet belum diisi. Harap masukkan ID/URL Spreadsheet terlebih dahulu.</div>`;

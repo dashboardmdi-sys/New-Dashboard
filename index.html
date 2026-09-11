@@ -8502,10 +8502,10 @@
     function raNormalizeStatus(raw) {
       const v = String(raw || "").trim().toLowerCase();
       if (!v) return "kosong";
-      if (v.includes("hadir") || /^(h|y|yes|present|true|1|✓|v)$/.test(v)) return "hadir";
-      if (v.includes("sakit") || v === "s") return "sakit";
-      if (v.includes("izin") || v === "i") return "izin";
-      if (v.includes("tidak") || v.includes("absen") || v.includes("alpa") || /^(a|no|false|0)$/.test(v)) return "tidak";
+      if (v.includes("hadir") || v.includes("masuk") || v.includes("ada") || v.includes("datang") || v.includes("check") || /^(h|y|ya|yes|p|present|true|1|✓|v|✔)$/.test(v)) return "hadir";
+      if (v.includes("sakit") || /^(s|sick)$/.test(v)) return "sakit";
+      if (v.includes("izin") || v.includes("ijin") || v.includes("cuti") || v.includes("dinas") || v.includes("tugas") || /^(i|permission|leave)$/.test(v)) return "izin";
+      if (v.includes("tidak") || v.includes("absen") || v.includes("alpa") || v.includes("alpha") || v.includes("tanpa") || /^(a|th|ta|no|false|0|-)$/.test(v)) return "tidak";
       return "kosong";
     }
     function raStatusBadgeHTML(status) {
@@ -8743,33 +8743,60 @@
       };
     }
 
-    // Column A = Nama, columns B.. = one per session/date, cell = attendance status text.
-    // Google Forms exports usually put a Timestamp column first — detect and skip it (like
-    // parseEvaluationSheet does) so "Nama" is read from the right column. Every training's
-    // sheet can have a different number of session columns AND different extra metadata
-    // columns mixed in (e.g. "Alamat Email") — rather than assuming everything after Nama
-    // is a session, only columns whose non-empty values actually look like an attendance
-    // status (Hadir/Tidak/Izin/Sakit) are treated as real sessions; anything else (email,
-    // phone, notes, etc.) is ignored regardless of its header text.
+    // Column detection: accurately find Nama column and Session columns
     function raParseHeaders(rows) {
+      if (!rows || rows.length < 1) return { nameIdx: 0, sessionLabels: [], sessionColIdxs: [] };
       const headers = (rows[0] || []).map(h => (h || "").toString().trim());
-      const first = (headers[0] || "").toLowerCase();
-      const hasTimestamp = first.includes("timestamp") || first.includes("waktu");
-      const nameIdx = hasTimestamp ? 1 : 0;
 
+      // 1. Detect Nama Column
+      let nameIdx = -1;
+      for (let c = 0; c < headers.length; c++) {
+        const hLow = headers[c].toLowerCase();
+        if (/^(nama|nama peserta|peserta|nama lengkap|name|participant|karyawan|employee)$/i.test(hLow) || (hLow.includes("nama") && !hLow.includes("trainer") && !hLow.includes("perusahaan"))) {
+          nameIdx = c;
+          break;
+        }
+      }
+      if (nameIdx === -1) {
+        const first = (headers[0] || "").toLowerCase();
+        const hasTimestampOrNo = first.includes("timestamp") || first.includes("waktu") || /^(no|nomor|no\.|id)$/i.test(first);
+        nameIdx = (hasTimestampOrNo && headers.length > 1) ? 1 : 0;
+      }
+
+      // 2. Detect Session Columns
       const sessionColIdxs = [];
-      for (let c = nameIdx + 1; c < headers.length; c++) {
+      const metaRegex = /^(no|nomor|no\.|id|timestamp|waktu|email|e-mail|mail|hp|telp|telepon|phone|jabatan|posisi|divisi|departemen|unit|total|jumlah|hadir|tidak hadir|persen|persentase|%|keterangan|catatan|notes|status)$/i;
+
+      for (let c = 0; c < headers.length; c++) {
+        if (c === nameIdx) continue;
         if (!headers[c]) continue;
+        const hLow = headers[c].toLowerCase();
+        if (metaRegex.test(hLow)) continue;
+
         let checked = 0, recognized = 0;
-        for (let r = 1; r < rows.length && checked < 20; r++) {
+        for (let r = 1; r < rows.length && checked < 30; r++) {
           const raw = rows[r][c];
           if (raw === "" || raw == null) continue;
           checked++;
           if (raNormalizeStatus(raw) !== "kosong") recognized++;
         }
-        if (checked > 0 && recognized / checked >= 0.5) sessionColIdxs.push(c);
+        if ((checked > 0 && recognized / checked >= 0.25) || (checked === 0 && /^(sesi|session|tgl|tanggal|date|day|hari|materi|modul|pertemuan)/i.test(hLow))) {
+          sessionColIdxs.push(c);
+        }
       }
-      const sessionLabels = sessionColIdxs.map(c => headers[c]);
+
+      // Fallback: If no session columns were recognized via data, include non-metadata columns after nameIdx
+      if (sessionColIdxs.length === 0) {
+        for (let c = nameIdx + 1; c < headers.length; c++) {
+          if (!headers[c]) continue;
+          const hLow = headers[c].toLowerCase();
+          if (!metaRegex.test(hLow)) {
+            sessionColIdxs.push(c);
+          }
+        }
+      }
+
+      const sessionLabels = sessionColIdxs.map(c => headers[c] || `Sesi ${sessionColIdxs.indexOf(c) + 1}`);
       return { nameIdx, sessionLabels, sessionColIdxs };
     }
 
