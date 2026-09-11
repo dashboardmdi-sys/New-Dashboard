@@ -2436,6 +2436,11 @@ function openEditTraining(tid){
    "cfgTrainerNames","cfgTrainerPhotos","cfgTrainingTitle","cfgTrainingDateStart","cfgTrainingDateEnd",
    "cfgSheetId","cfgCsvUrl","cfgSheet1Name","cfgSheet2Name","cfgPollSec"
   ].forEach(id=>{ try{ $(id).value=""; }catch(e){} });
+  // "Uji & Preview" result boxes aren't populated until clicked, so without this they'd
+  // keep showing the PREVIOUS session's test results/preview table after switching —
+  // looking like the new session is somehow sharing the old one's sheet data.
+  ["cfgTestResult","cfgEvalTestResult","testLeadershipResult","testWewenangResult","testInterpersonalResult","testAbsenResult"
+  ].forEach(id=>{ const el=document.getElementById(id); if(el){ el.innerHTML=""; el.classList.remove("show"); } });
   // Reset AI prompt fields
   ["aiPromptFeedback","aiPromptTopikBermanfaat","aiPromptTopikSelanjutnya"
   ].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
