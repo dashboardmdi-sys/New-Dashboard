@@ -5110,8 +5110,70 @@ function generateMdiPdfReportBackend(cfg) {
       <td class="tc">${p.pct != null ? p.pct+'%' : 'N/A'}</td>
     </tr>`).join('');
 
-  let page4Html = '';
-  let page5Html = '';
+  // Auto-split Pre & Post test table into multiple A4 pages if list is long (>18 participants)
+  function chunkArray(arr, size) {
+    const chunks = [];
+    for (let i = 0; i < arr.length; i += size) {
+      chunks.push(arr.slice(i, i + size));
+    }
+    return chunks;
+  }
+
+  const prePostChunks = participants.length > 18 ? chunkArray(participants, 20) : [participants];
+  const prePostPagesHtml = prePostChunks.map((chunk, pIdx) => {
+    const isFirst = pIdx === 0;
+    const isLast = pIdx === prePostChunks.length - 1;
+    const pageTitle = isFirst 
+      ? 'HASIL PRE-TEST DAN POST-TEST' 
+      : `HASIL PRE-TEST DAN POST-TEST (LANJUTAN - HAL. ${pIdx + 1})`;
+
+    const avgRowHtml = isLast ? `
+      <tr style="background:#fef3c7; font-weight:800;">
+        <td colspan="2" class="tc fb" style="font-size:11px;">Rata-Rata</td>
+        <td class="tc fb" style="font-size:11px;">${avgPre}</td>
+        <td class="tc fb" style="font-size:11px;">${avgPost}</td>
+        <td class="tc fb" style="font-size:11px;">${avgPct}%</td>
+      </tr>` : '';
+
+    const acardHtml = isLast ? `
+      <div class="acard" style="padding:11px 16px; margin-top:8px; font-size:10px; line-height:1.55;">
+        <ul style="margin-left:14px;">
+          <li style="margin-bottom:3px;"><i>Rentang nilai: <b>80 &lt; N ≤ 100 Sangat Baik</b> · <b>60 &lt; N ≤ 80 Baik</b> · <b>40 &lt; N ≤ 60 Cukup</b> · <b>20 &lt; N ≤ 40 Kurang</b> · <b>N ≤ 20 Sangat Kurang</b></i></li>
+          <li style="margin-bottom:3px;">Berdasarkan penilaian terhadap <b>${participants.length} peserta</b>, rata-rata pre-test <b>${avgPre}</b> (kategori <b>${avgPre >= 60 ? 'Baik' : 'Cukup'}</b>).</li>
+          <li style="margin-bottom:3px;">Setelah pelatihan, rata-rata post-test <b>meningkat menjadi ${avgPost}</b> (kategori <b>${avgPost >= 80 ? 'Sangat Baik' : 'Baik'}</b>), mengindikasikan efektivitas pelatihan yang signifikan.</li>
+          <li>Rata-rata peningkatan pemahaman peserta mencapai <b>${avgPct}%</b>, menegaskan dampak positif pelatihan secara menyeluruh.</li>
+        </ul>
+      </div>` : '';
+
+    return `
+<!-- HALAMAN PRE-POST TEST ${pIdx + 1} -->
+<div class="page">
+  <div>
+    <div class="hdr"><img src="${logoMdi}" alt="MDI"><div style="font-weight:800;">${escHtml(clientName)}</div></div>
+    <h2 class="ptitle">${pageTitle}</h2>
+    <table class="dt" style="margin-bottom:8px;">
+      <thead>
+        <tr>
+          <th style="width:7%">No</th>
+          <th style="width:45%">Nama Peserta</th>
+          <th style="width:16%">Tes Awal (Pre)</th>
+          <th style="width:16%">Tes Akhir (Post)</th>
+          <th style="width:16%">% Peningkatan</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows(chunk)}
+        ${avgRowHtml}
+      </tbody>
+    </table>
+    ${acardHtml}
+  </div>
+  <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
+</div>`;
+  }).join('');
+
+  let analysisTablePagesHtml = '';
+  let analysisChartPageHtml = '';
 
   if (analisisType && analisisType !== 'none') {
     let colHeadings = {
@@ -5127,7 +5189,7 @@ function generateMdiPdfReportBackend(cfg) {
     };
     const analisisTitle = analisisTitles[analisisType] || 'ANALISIS GAYA';
 
-    const wewRows = (arr) => arr.slice(0, 20).map(p => `
+    const wewRows = (arr) => arr.map(p => `
       <tr>
         <td class="tc">${p.no}</td>
         <td>${escHtml(p.name)}</td>
@@ -5155,20 +5217,30 @@ function generateMdiPdfReportBackend(cfg) {
       ? 'Gaya Interpersonal menunjukkan kecenderungan peserta dalam berinteraksi dan berkolaborasi secara profesional di lingkungan kerja.'
       : 'Gaya Wewenang Moral mendominasi. Sebagian besar peserta cenderung menggunakan pendekatan berbasis etika, integritas, keteladanan, dan tanggung jawab dalam mempengaruhi serta memimpin orang lain.';
 
-    page4Html = `
+    const analisisChunks = participants.length > 22 ? chunkArray(participants, 22) : [participants];
+    analysisTablePagesHtml = analisisChunks.map((chunk, aIdx) => {
+      const isFirst = aIdx === 0;
+      const pageTitle = isFirst 
+        ? analisisTitle 
+        : `${analisisTitle} (LANJUTAN - HAL. ${aIdx + 1})`;
+
+      return `
+<!-- HALAMAN TABEL ANALISIS ${aIdx + 1} -->
 <div class="page">
   <div>
     <div class="hdr"><img src="${logoMdi}" alt="MDI"><div style="font-weight:800;">${escHtml(clientName)}</div></div>
-    <h2 class="ptitle">${analisisTitle}</h2>
+    <h2 class="ptitle">${pageTitle}</h2>
     <table class="dt">
       <thead><tr><th style="width:6%">No</th><th style="width:30%">Nama</th><th style="width:22%">High Scoring Type</th><th style="width:10.5%">${cHeads[0]}</th><th style="width:10.5%">${cHeads[1]}</th><th style="width:10.5%">${cHeads[2]}</th><th style="width:10.5%">${cHeads[3]}</th></tr></thead>
-      <tbody>${wewRows(participants)}</tbody>
+      <tbody>${wewRows(chunk)}</tbody>
     </table>
   </div>
   <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
 </div>`;
+    }).join('');
 
-    page5Html = `
+    analysisChartPageHtml = `
+<!-- HALAMAN CHART & KESIMPULAN ANALISIS -->
 <div class="page">
   <div>
     <div class="hdr"><img src="${logoMdi}" alt="MDI"><div style="font-weight:800;">${escHtml(clientName)}</div></div>
@@ -5196,63 +5268,173 @@ function generateMdiPdfReportBackend(cfg) {
       const avatarStyle = formattedPhoto ? `background-image:url('${escHtml(formattedPhoto)}');` : `background:#fef08a;`;
       const initials = (tr.name || 'Fasilitator').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 
+      // Collect discrete sections
+      const sections = [];
+
+      // Section: Intro
       const introParas = String(tr.intro || '')
         .split(/\n\s*\n/)
         .map(p => p.trim())
-        .filter(Boolean)
-        .map(p => `<p style="margin-bottom:12px;">${escHtml(p)}</p>`)
-        .join('');
+        .filter(Boolean);
+      
+      if (introParas.length > 0) {
+        introParas.forEach(p => {
+          sections.push({
+            type: 'intro',
+            charCount: p.length,
+            html: `<p style="margin-bottom:11px;">${escHtml(p)}</p>`
+          });
+        });
+      }
 
-      const daysHtml = (Array.isArray(tr.days) ? tr.days : []).map(d => {
+      // Section: Days / Highlights
+      (Array.isArray(tr.days) ? tr.days : []).forEach(d => {
         const textLines = String(d.text || '').split('\n').map(s=>s.trim()).filter(Boolean);
         const hasBullets = textLines.some(l => l.startsWith('•') || l.startsWith('-') || l.startsWith('*'));
         let bodyHtml = '';
         if (hasBullets) {
           const intro = textLines.filter(l => !l.startsWith('•') && !l.startsWith('-') && !l.startsWith('*')).join(' ');
           const items = textLines.filter(l => l.startsWith('•') || l.startsWith('-') || l.startsWith('*')).map(l => l.replace(/^[•\-\*]\s*/, ''));
-          bodyHtml = `${intro ? `<p style="margin-bottom:6px;">${escHtml(intro)}</p>` : ''}<ul style="margin-left:20px; margin-bottom:10px;">${items.map(it=>`<li style="margin-bottom:4px;">${escHtml(it)}</li>`).join('')}</ul>`;
+          bodyHtml = `${intro ? `<p style="margin-bottom:5px;">${escHtml(intro)}</p>` : ''}<ul style="margin-left:18px; margin-bottom:8px;">${items.map(it=>`<li style="margin-bottom:3px;">${escHtml(it)}</li>`).join('')}</ul>`;
         } else {
-          bodyHtml = `<p style="margin-bottom:12px;">${escHtml(d.text)}</p>`;
+          bodyHtml = `<p style="margin-bottom:10px;">${escHtml(d.text)}</p>`;
         }
-        return `
-          <div style="margin-bottom:12px;">
-            <div style="font-weight:800; font-size:12.5px; color:#0f172a; margin-bottom:4px; margin-top:6px;">${escHtml(d.title || 'Highlight')}</div>
+        const fullDayHtml = `
+          <div style="margin-bottom:11px;">
+            <div style="font-weight:800; font-size:12px; color:#0f172a; margin-bottom:3px; margin-top:5px;">${escHtml(d.title || 'Highlight')}</div>
             ${bodyHtml}
           </div>`;
-      }).join('');
+        sections.push({
+          type: 'day',
+          charCount: (d.title || '').length + (d.text || '').length,
+          html: fullDayHtml
+        });
+      });
 
-      const quoteHtml = tr.quote ? `
-        <div style="margin-top:10px;">
-          <div style="font-weight:800; font-size:12.5px; color:#0f172a; margin-bottom:4px;">Penutup</div>
-          <p style="margin-bottom:10px;">${escHtml(tr.quote)}</p>
-        </div>` : '';
+      // Section: Quote / Penutup
+      if (tr.quote && tr.quote.trim()) {
+        const quoteHtml = `
+          <div style="margin-top:8px;">
+            <div style="font-weight:800; font-size:12px; color:#0f172a; margin-bottom:3px;">Penutup</div>
+            <p style="margin-bottom:8px;">${escHtml(tr.quote)}</p>
+          </div>`;
+        sections.push({
+          type: 'quote',
+          charCount: tr.quote.length + 30,
+          html: quoteHtml
+        });
+      }
 
-      return `
+      // Calculate total characters
+      const totalChars = sections.reduce((acc, s) => acc + s.charCount, 0);
+
+      // If total content fits comfortably within 1 page (<= 1150 chars)
+      if (totalChars <= 1150 || sections.length <= 3) {
+        const allHtml = sections.map(s => s.html).join('');
+        const dynamicFontSize = totalChars > 900 ? '10.5px' : '11.2px';
+        const dynamicLineHeight = totalChars > 900 ? '1.6' : '1.65';
+
+        return `
+<!-- HALAMAN: FEEDBACK DARI FASILITATOR (1 HALAMAN) -->
 <div class="page" style="padding-top:14mm; position:relative; overflow:visible;">
   <div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
-      <img src="${logoMdi}" alt="MDI" style="height:46px; object-fit:contain;">
-      <h1 style="font-size:19px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.6px; margin:0 auto; padding-right:52px;">FEEDBACK DARI FASILITATOR</h1>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <img src="${logoMdi}" alt="MDI" style="height:44px; object-fit:contain;">
+      <h1 style="font-size:18px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; margin:0 auto; padding-right:50px;">FEEDBACK DARI FASILITATOR</h1>
     </div>
 
-    <div style="border:4.5px solid #f59e0b; border-radius:24px; padding:54px 28px 36px; position:relative; background:#fff; margin:36px 6px 20px; box-sizing:border-box;">
-      <div style="position:absolute; top:-52px; left:50%; transform:translateX(-50%); width:96px; height:96px; border-radius:50%; border:4px solid #f59e0b; ${avatarStyle} background-size:cover; background-position:center; box-shadow:0 4px 14px rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; color:#92400e; overflow:hidden; background-color:#fff;">
+    <div style="border:4px solid #f59e0b; border-radius:24px; padding:50px 26px 34px; position:relative; background:#fff; margin:32px 6px 18px; box-sizing:border-box;">
+      <div style="position:absolute; top:-48px; left:50%; transform:translateX(-50%); width:92px; height:92px; border-radius:50%; border:4px solid #f59e0b; ${avatarStyle} background-size:cover; background-position:center; box-shadow:0 4px 14px rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; color:#92400e; overflow:hidden; background-color:#fff;">
         ${!formattedPhoto ? initials : ''}
       </div>
 
-      <div style="font-size:11.5px; line-height:1.7; color:#1e293b; text-align:justify;">
-        ${introParas}
-        ${daysHtml}
-        ${quoteHtml}
+      <div style="font-size:${dynamicFontSize}; line-height:${dynamicLineHeight}; color:#1e293b; text-align:justify;">
+        ${allHtml}
       </div>
 
-      <div style="position:absolute; bottom:-24px; left:50%; transform:translateX(-50%); background:#f59e0b; color:#0f172a; border-radius:14px; padding:10px 32px; box-shadow:0 4px 14px rgba(245,158,11,0.4); text-align:center; z-index:10; white-space:nowrap;">
-        <div style="font-weight:800; font-size:15px; line-height:1.2; color:#0f172a;">${escHtml(tr.name || 'Arif Hidayat')}</div>
-        <div style="font-size:11px; font-weight:600; color:#334155; margin-top:2px;">${escHtml(tr.role || 'Facilitator MDI Tack')}</div>
+      <div style="position:absolute; bottom:-22px; left:50%; transform:translateX(-50%); background:#f59e0b; color:#0f172a; border-radius:14px; padding:9px 30px; box-shadow:0 4px 14px rgba(245,158,11,0.4); text-align:center; z-index:10; white-space:nowrap;">
+        <div style="font-weight:800; font-size:14.5px; line-height:1.2; color:#0f172a;">${escHtml(tr.name || 'Arif Hidayat')}</div>
+        <div style="font-size:10.5px; font-weight:600; color:#334155; margin-top:2px;">${escHtml(tr.role || 'Facilitator MDI Tack')}</div>
       </div>
     </div>
-    <div style="position:absolute; bottom:28px; left:2px; width:56px; height:56px; border-radius:50%; background:#fef08a; opacity:0.65; z-index:-1;"></div>
+
+    <div style="position:absolute; bottom:26px; left:2px; width:52px; height:52px; border-radius:50%; background:#fef08a; opacity:0.65; z-index:-1;"></div>
   </div>
+
+  <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
+</div>`;
+      }
+
+      // If content is longer (> 1150 chars), automatically split into 2 A4 pages
+      const midPoint = Math.ceil(sections.length / 2);
+      const page1Sections = [];
+      const page2Sections = [];
+      let accChars = 0;
+
+      sections.forEach((s) => {
+        if (accChars < 1000 && page1Sections.length < midPoint + 1) {
+          page1Sections.push(s);
+          accChars += s.charCount;
+        } else {
+          page2Sections.push(s);
+        }
+      });
+
+      // Ensure at least 1 section on each page
+      if (page2Sections.length === 0 && page1Sections.length > 1) {
+        page2Sections.push(page1Sections.pop());
+      }
+
+      const p1Html = page1Sections.map(s => s.html).join('');
+      const p2Html = page2Sections.map(s => s.html).join('');
+
+      return `
+<!-- HALAMAN 1: FEEDBACK DARI FASILITATOR (BAGIAN 1) -->
+<div class="page" style="padding-top:14mm; position:relative; overflow:visible;">
+  <div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <img src="${logoMdi}" alt="MDI" style="height:44px; object-fit:contain;">
+      <h1 style="font-size:18px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; margin:0 auto; padding-right:50px;">FEEDBACK DARI FASILITATOR</h1>
+    </div>
+
+    <div style="border:4px solid #f59e0b; border-radius:24px; padding:50px 26px 26px; position:relative; background:#fff; margin:32px 6px 18px; box-sizing:border-box;">
+      <div style="position:absolute; top:-48px; left:50%; transform:translateX(-50%); width:92px; height:92px; border-radius:50%; border:4px solid #f59e0b; ${avatarStyle} background-size:cover; background-position:center; box-shadow:0 4px 14px rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; color:#92400e; overflow:hidden; background-color:#fff;">
+        ${!formattedPhoto ? initials : ''}
+      </div>
+
+      <div style="font-size:11px; line-height:1.65; color:#1e293b; text-align:justify;">
+        ${p1Html}
+      </div>
+    </div>
+
+    <div style="position:absolute; bottom:26px; left:2px; width:52px; height:52px; border-radius:50%; background:#fef08a; opacity:0.65; z-index:-1;"></div>
+  </div>
+
+  <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
+</div>
+
+<!-- HALAMAN 2: FEEDBACK DARI FASILITATOR (LANJUTAN) -->
+<div class="page" style="padding-top:14mm; position:relative; overflow:visible;">
+  <div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <img src="${logoMdi}" alt="MDI" style="height:44px; object-fit:contain;">
+      <h1 style="font-size:18px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; margin:0 auto; padding-right:50px;">FEEDBACK DARI FASILITATOR (LANJUTAN)</h1>
+    </div>
+
+    <div style="border:4px solid #f59e0b; border-radius:24px; padding:28px 26px 36px; position:relative; background:#fff; margin:16px 6px 18px; box-sizing:border-box;">
+      <div style="font-size:11px; line-height:1.65; color:#1e293b; text-align:justify;">
+        ${p2Html}
+      </div>
+
+      <div style="position:absolute; bottom:-22px; left:50%; transform:translateX(-50%); background:#f59e0b; color:#0f172a; border-radius:14px; padding:9px 30px; box-shadow:0 4px 14px rgba(245,158,11,0.4); text-align:center; z-index:10; white-space:nowrap;">
+        <div style="font-weight:800; font-size:14.5px; line-height:1.2; color:#0f172a;">${escHtml(tr.name || 'Arif Hidayat')}</div>
+        <div style="font-size:10.5px; font-weight:600; color:#334155; margin-top:2px;">${escHtml(tr.role || 'Facilitator MDI Tack')}</div>
+      </div>
+    </div>
+
+    <div style="position:absolute; bottom:26px; left:2px; width:52px; height:52px; border-radius:50%; background:#fef08a; opacity:0.65; z-index:-1;"></div>
+  </div>
+
   <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
 </div>`;
     }).join('');
@@ -5315,7 +5497,7 @@ table.dt tr:nth-child(even) td{background:#fffdf5}
   <button class="print-btn" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
 </div>
 
-<!-- PAGE 1 -->
+<!-- PAGE 1: COVER INFOGRAPHIC -->
 <div class="page">
   <div>
     <div class="hdr">
@@ -5357,46 +5539,14 @@ table.dt tr:nth-child(even) td{background:#fffdf5}
   <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
 </div>
 
-<!-- PAGE 2 -->
-<div class="page">
-  <div>
-    <div class="hdr"><img src="${logoMdi}" alt="MDI"><div style="font-weight:800;">${escHtml(clientName)}</div></div>
-    <h2 class="ptitle">HASIL PRE-TEST DAN POST-TEST</h2>
-    <table class="dt" style="margin-bottom:10px;">
-      <thead>
-        <tr>
-          <th style="width:7%">No</th>
-          <th style="width:45%">Nama Peserta</th>
-          <th style="width:16%">Tes Awal (Pre)</th>
-          <th style="width:16%">Tes Akhir (Post)</th>
-          <th style="width:16%">% Peningkatan</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${tableRows(participants)}
-        <tr style="background:#fef3c7; font-weight:800;">
-          <td colspan="2" class="tc fb" style="font-size:11px;">Rata-Rata</td>
-          <td class="tc fb" style="font-size:11px;">${avgPre}</td>
-          <td class="tc fb" style="font-size:11px;">${avgPost}</td>
-          <td class="tc fb" style="font-size:11px;">${avgPct}%</td>
-        </tr>
-      </tbody>
-    </table>
+<!-- PAGES 2+: PRE-TEST & POST-TEST -->
+${prePostPagesHtml}
 
-    <div class="acard" style="padding:11px 16px; margin-top:6px; font-size:10px; line-height:1.55;">
-      <ul style="margin-left:14px;">
-        <li style="margin-bottom:3px;"><i>Rentang nilai: <b>80 &lt; N ≤ 100 Sangat Baik</b> · <b>60 &lt; N ≤ 80 Baik</b> · <b>40 &lt; N ≤ 60 Cukup</b> · <b>20 &lt; N ≤ 40 Kurang</b> · <b>N ≤ 20 Sangat Kurang</b></i></li>
-        <li style="margin-bottom:3px;">Berdasarkan penilaian terhadap <b>${participants.length} peserta</b>, rata-rata pre-test <b>${avgPre}</b> (kategori <b>${avgPre >= 60 ? 'Baik' : 'Cukup'}</b>).</li>
-        <li style="margin-bottom:3px;">Setelah pelatihan, rata-rata post-test <b>meningkat menjadi ${avgPost}</b> (kategori <b>${avgPost >= 80 ? 'Sangat Baik' : 'Baik'}</b>), mengindikasikan efektivitas pelatihan yang signifikan.</li>
-        <li>Rata-rata peningkatan pemahaman peserta mencapai <b>${avgPct}%</b>, menegaskan dampak positif pelatihan secara menyeluruh.</li>
-      </ul>
-    </div>
-  </div>
-  <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
-</div>
+<!-- PAGES ANALISIS (TABLES & CHART) -->
+${analysisTablePagesHtml}
+${analysisChartPageHtml}
 
-${page4Html}
-${page5Html}
+<!-- PAGES FEEDBACK FASILITATOR -->
 ${facilitatorPagesHtml}
 
 </body></html>`;
