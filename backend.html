@@ -2944,10 +2944,6 @@ $("cfgEvalSaveBtn").addEventListener("click",()=>{
     evalTrainersData: window.evalTrainersData || []
   };
   updateTraining(cfg);
-  
-  // SELALU aktifkan dan sinkronkan sesi ini ke dashboard saat disimpan
-  activateTraining(currentTrainingId);
-  
   toast("✓ Konfigurasi tersimpan & otomatis disinkronkan ke Dashboard");
 });
 
@@ -3155,7 +3151,6 @@ if ($("saveLeadershipCfgBtn")) {
       leadershipCsvUrl: $("cfgLeadershipCsvUrl")?.value.trim(),
       leadershipSheetName: $("cfgLeadershipSheetName")?.value.trim() || "Sheet2"
     });
-    activateTraining(currentTrainingId);
     toast("✓ Konfigurasi Sheet2 (Gaya Kepemimpinan) tersimpan & disinkronkan");
   });
 }
@@ -3167,7 +3162,6 @@ if ($("saveWewenangCfgBtn")) {
       wewenangCsvUrl: $("cfgWewenangCsvUrl")?.value.trim(),
       wewenangSheetName: $("cfgWewenangSheetName")?.value.trim() || "Sheet4"
     });
-    activateTraining(currentTrainingId);
     toast("✓ Konfigurasi Sheet4 (Analisis Wewenang) tersimpan & disinkronkan");
   });
 }
@@ -3179,7 +3173,6 @@ if ($("saveInterpersonalCfgBtn")) {
       interpersonalCsvUrl: $("cfgInterpersonalCsvUrl")?.value.trim(),
       interpersonalSheetName: $("cfgInterpersonalSheetName")?.value.trim() || "Sheet5"
     });
-    activateTraining(currentTrainingId);
     toast("✓ Konfigurasi Sheet5 (Gaya Interpersonal) tersimpan & disinkronkan");
   });
 }
@@ -3190,8 +3183,8 @@ if ($("saveAbsenCfgBtn")) {
       absenSheetId: extractSheetId($("cfgAbsenSheetId")?.value),
       absenCsvUrl: $("cfgAbsenCsvUrl")?.value.trim(),
       absenSheetName: $("cfgAbsenSheetName")?.value.trim() || "Sheet6"
-    }, "✓ Konfigurasi Sheet6 (Rekap Absen) tersimpan & disinkronkan");
-    activateTraining(currentTrainingId);
+    });
+    toast("✓ Konfigurasi Sheet6 (Rekap Absen) tersimpan & disinkronkan");
   });
 }
 
