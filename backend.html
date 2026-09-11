@@ -1877,8 +1877,61 @@ async function fetchDatabase() {
   } finally {
     hideLoader();
     initApp();
+    retryPendingSyncs();
   }
 }
+
+// ===========================
+// PENDING SYNC QUEUE — when a save to the cloud fails (network blip, Apps Script
+// briefly slow, etc.), the change already lives in localStorage as a safety net,
+// but nothing used to retry sending it — if the tab closed before the next
+// successful save, that change could be stuck on just this one browser forever.
+// Queued changes are retried automatically on load, when connectivity returns,
+// and on a periodic interval as a fallback.
+// ===========================
+const PENDING_SYNC_KEY = "mdp-pending-syncs";
+
+function getPendingSyncs() {
+  try { return JSON.parse(localStorage.getItem(PENDING_SYNC_KEY) || "[]"); } catch(e) { return []; }
+}
+function savePendingSyncs(list) {
+  try { localStorage.setItem(PENDING_SYNC_KEY, JSON.stringify(list)); } catch(e) {}
+}
+function queuePendingSync(action, client) {
+  // Only the latest queued change per client id matters — no need to replay
+  // superseded intermediate states once a newer one for the same client exists.
+  const list = getPendingSyncs().filter(item => item.client.id !== client.id);
+  list.push({ action, client, queuedAt: new Date().toISOString() });
+  savePendingSyncs(list);
+}
+
+let __retryingPendingSyncs = false;
+async function retryPendingSyncs() {
+  if (__retryingPendingSyncs) return;
+  const list = getPendingSyncs();
+  if (!list.length) return;
+  __retryingPendingSyncs = true;
+  const stillPending = [];
+  for (const item of list) {
+    try {
+      const res = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: item.action, client: item.client })
+      });
+      const json = await res.json();
+      if (!json || !json.success) stillPending.push(item);
+    } catch(e) {
+      stillPending.push(item);
+    }
+  }
+  savePendingSyncs(stillPending);
+  __retryingPendingSyncs = false;
+  const syncedCount = list.length - stillPending.length;
+  if (syncedCount > 0) toast(`✓ ${syncedCount} perubahan tertunda berhasil disinkronkan ke cloud`);
+}
+window.addEventListener("online", retryPendingSyncs);
+setInterval(retryPendingSyncs, 60000);
 
 async function apiAddClient(c) {
   try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
@@ -1891,10 +1944,11 @@ async function apiAddClient(c) {
     });
     const json = await res.json();
     if(json.success) toast(`✅ Akun "${c.name}" berhasil dibuat | PIN: ${String(c.pin).padStart(4, '0')}`);
-    else toast("⚠️ Gagal menyimpan client ke cloud");
+    else { queuePendingSync('addClient', c); toast("⚠️ Gagal menyimpan ke cloud — akan dicoba otomatis lagi"); }
   } catch(e) {
     console.warn("apiAddClient error:", e);
-    toast(`✅ Akun "${c.name}" tersimpan di lokal browser`);
+    queuePendingSync('addClient', c);
+    toast(`✅ Akun "${c.name}" tersimpan di lokal — sinkronisasi cloud akan dicoba otomatis`);
   }
 }
 
@@ -1909,10 +1963,11 @@ async function apiUpdateClient(c, successMsg="✅ Tersimpan!") {
     });
     const json = await res.json();
     if(json.success) toast(successMsg);
-    else toast("⚠️ Gagal update di cloud (Data tetap tersimpan di lokal)");
+    else { queuePendingSync('updateClient', c); toast("⚠️ Gagal update di cloud — akan dicoba sinkron ulang otomatis"); }
   } catch(e) {
     console.warn("apiUpdateClient error:", e);
-    toast("✓ Tersimpan di browser lokal (Sinkronisasi cloud tertunda)");
+    queuePendingSync('updateClient', c);
+    toast("✓ Tersimpan di browser lokal — sinkronisasi cloud akan dicoba otomatis");
   }
 }
 
