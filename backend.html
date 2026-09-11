@@ -5328,38 +5328,50 @@ function generateMdiPdfReportBackend(cfg) {
       // Calculate total characters
       const totalChars = sections.reduce((acc, s) => acc + s.charCount, 0);
 
-      // If total content <= 1600 characters, keep within exactly 1 single A4 page
-      if (totalChars <= 1600) {
-        let dynamicFontSize = '11.2px';
-        let dynamicLineHeight = '1.65';
-        let dynamicPadding = '48px 26px 30px';
-        let dynamicMargin = '28px 6px 16px';
+      // Standard training feedback (<= 2600 chars) fits perfectly within 1 A4 page with proportional typography
+      if (totalChars <= 2600) {
+        let dynamicFontSize = '10.8px';
+        let dynamicLineHeight = '1.58';
+        let dynamicPadding = '46px 26px 28px';
+        let dynamicMargin = '26px 6px 14px';
+        let dynamicParaMargin = '9px';
 
-        if (totalChars > 1250) {
-          dynamicFontSize = '9.8px';
-          dynamicLineHeight = '1.45';
-          dynamicPadding = '40px 22px 22px';
-          dynamicMargin = '22px 6px 14px';
-        } else if (totalChars > 900) {
-          dynamicFontSize = '10.5px';
-          dynamicLineHeight = '1.55';
-          dynamicPadding = '44px 24px 26px';
-          dynamicMargin = '26px 6px 16px';
+        if (totalChars > 1800) {
+          dynamicFontSize = '9.5px';
+          dynamicLineHeight = '1.42';
+          dynamicPadding = '38px 22px 22px';
+          dynamicMargin = '18px 4px 10px';
+          dynamicParaMargin = '6px';
+        } else if (totalChars > 1300) {
+          dynamicFontSize = '10.2px';
+          dynamicLineHeight = '1.50';
+          dynamicPadding = '42px 24px 24px';
+          dynamicMargin = '22px 5px 12px';
+          dynamicParaMargin = '7px';
+        } else if (totalChars < 700) {
+          dynamicFontSize = '11.5px';
+          dynamicLineHeight = '1.68';
+          dynamicPadding = '52px 28px 34px';
+          dynamicMargin = '32px 6px 18px';
+          dynamicParaMargin = '12px';
         }
 
-        const allHtml = sections.map(s => s.html).join('');
+        const allHtml = sections.map(s => {
+          if (s.type === 'intro') return `<p style="margin-bottom:${dynamicParaMargin};">${escHtml(s.text || s.html.replace(/<\/?p[^>]*>/g,''))}</p>`;
+          return s.html;
+        }).join('');
 
         return `
-<!-- HALAMAN: FEEDBACK DARI FASILITATOR (1 HALAMAN) -->
-<div class="page" style="padding-top:12mm; position:relative; overflow:visible;">
+<!-- HALAMAN: FEEDBACK DARI FASILITATOR (1 HALAMAN PROPORSIONAL) -->
+<div class="page" style="padding-top:10mm; position:relative; overflow:visible;">
   <div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <img src="${logoMdi}" alt="MDI" style="height:42px; object-fit:contain;">
-      <h1 style="font-size:18px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; margin:0 auto; padding-right:48px;">FEEDBACK DARI FASILITATOR</h1>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+      <img src="${logoMdi}" alt="MDI" style="height:40px; object-fit:contain;">
+      <h1 style="font-size:17.5px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; margin:0 auto; padding-right:44px;">FEEDBACK DARI FASILITATOR</h1>
     </div>
 
     <div style="border:4px solid #f59e0b; border-radius:22px; padding:${dynamicPadding}; position:relative; background:#fff; margin:${dynamicMargin}; box-sizing:border-box;">
-      <div style="position:absolute; top:-46px; left:50%; transform:translateX(-50%); width:88px; height:88px; border-radius:50%; border:4px solid #f59e0b; ${avatarStyle} background-size:cover; background-position:center; box-shadow:0 4px 14px rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; color:#92400e; overflow:hidden; background-color:#fff;">
+      <div style="position:absolute; top:-44px; left:50%; transform:translateX(-50%); width:86px; height:86px; border-radius:50%; border:4px solid #f59e0b; ${avatarStyle} background-size:cover; background-position:center; box-shadow:0 4px 14px rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; color:#92400e; overflow:hidden; background-color:#fff;">
         ${!formattedPhoto ? initials : ''}
       </div>
 
@@ -5367,20 +5379,20 @@ function generateMdiPdfReportBackend(cfg) {
         ${allHtml}
       </div>
 
-      <div style="position:absolute; bottom:-22px; left:50%; transform:translateX(-50%); background:#f59e0b; color:#0f172a; border-radius:14px; padding:8px 28px; box-shadow:0 4px 14px rgba(245,158,11,0.4); text-align:center; z-index:10; white-space:nowrap;">
-        <div style="font-weight:800; font-size:14px; line-height:1.2; color:#0f172a;">${escHtml(tr.name || 'Arif Hidayat')}</div>
+      <div style="position:absolute; bottom:-20px; left:50%; transform:translateX(-50%); background:#f59e0b; color:#0f172a; border-radius:14px; padding:7px 28px; box-shadow:0 4px 14px rgba(245,158,11,0.4); text-align:center; z-index:10; white-space:nowrap;">
+        <div style="font-weight:800; font-size:13.5px; line-height:1.2; color:#0f172a;">${escHtml(tr.name || 'Arif Hidayat')}</div>
         <div style="font-size:10px; font-weight:600; color:#334155; margin-top:2px;">${escHtml(tr.role || 'Facilitator MDI Tack')}</div>
       </div>
     </div>
 
-    <div style="position:absolute; bottom:26px; left:2px; width:50px; height:50px; border-radius:50%; background:#fef08a; opacity:0.65; z-index:-1;"></div>
+    <div style="position:absolute; bottom:26px; left:2px; width:48px; height:48px; border-radius:50%; background:#fef08a; opacity:0.65; z-index:-1;"></div>
   </div>
 
   <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
 </div>`;
       }
 
-      // If content > 1600 characters, split into 2 A4 pages
+      // If content > 2600 characters, split into 2 A4 pages
       const midPoint = Math.ceil(sections.length / 2);
       const page1Sections = [];
       const page2Sections = [];
