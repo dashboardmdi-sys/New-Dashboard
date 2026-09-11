@@ -2466,6 +2466,7 @@ function openEditTraining(tid){
   $("cfgEvalSheetName").value = t.evalSheetName || "Sheet2";
   $("cfgEvalDataRange").value = t.evalDataRange || "";
   $("cfgEvalRatingScale").value = t.ratingScale || 5;
+  refreshEvalCfgPreview();
   
   let evalTrainers = [];
   if (t.evalTrainersData && Array.isArray(t.evalTrainersData) && t.evalTrainersData.length > 0) {
@@ -2498,6 +2499,7 @@ function openEditTraining(tid){
   if ($("cfgLeadershipSheetId")) $("cfgLeadershipSheetId").value = t.leadershipSheetId || "";
   if ($("cfgLeadershipCsvUrl"))  $("cfgLeadershipCsvUrl").value  = t.leadershipCsvUrl || "";
   if ($("cfgLeadershipSheetName")) $("cfgLeadershipSheetName").value = t.leadershipSheetName || "Sheet2";
+  refreshSheetIdEcho("cfgLeadershipSheetId", "cfgLeadershipIdEcho");
 
   if ($("cfgWewenangEnabled")) {
     $("cfgWewenangEnabled").checked = !!t.wewenangEnabled;
@@ -2506,6 +2508,7 @@ function openEditTraining(tid){
   if ($("cfgWewenangSheetId")) $("cfgWewenangSheetId").value = t.wewenangSheetId || "";
   if ($("cfgWewenangCsvUrl"))  $("cfgWewenangCsvUrl").value  = t.wewenangCsvUrl || "";
   if ($("cfgWewenangSheetName")) $("cfgWewenangSheetName").value = t.wewenangSheetName || "Sheet4";
+  refreshSheetIdEcho("cfgWewenangSheetId", "cfgWewenangIdEcho");
 
   if ($("cfgInterpersonalEnabled")) {
     $("cfgInterpersonalEnabled").checked = !!t.interpersonalEnabled;
@@ -2514,6 +2517,7 @@ function openEditTraining(tid){
   if ($("cfgInterpersonalSheetId")) $("cfgInterpersonalSheetId").value = t.interpersonalSheetId || "";
   if ($("cfgInterpersonalCsvUrl"))  $("cfgInterpersonalCsvUrl").value  = t.interpersonalCsvUrl || "";
   if ($("cfgInterpersonalSheetName")) $("cfgInterpersonalSheetName").value = t.interpersonalSheetName || "Sheet5";
+  refreshSheetIdEcho("cfgInterpersonalSheetId", "cfgInterpersonalIdEcho");
 
   if ($("cfgAbsenEnabled")) {
     $("cfgAbsenEnabled").checked = !!t.absenEnabled;
@@ -2522,6 +2526,7 @@ function openEditTraining(tid){
   if ($("cfgAbsenSheetId")) $("cfgAbsenSheetId").value = t.absenSheetId || "";
   if ($("cfgAbsenCsvUrl"))  $("cfgAbsenCsvUrl").value  = t.absenCsvUrl || "";
   if ($("cfgAbsenSheetName")) $("cfgAbsenSheetName").value = t.absenSheetName || "Sheet6";
+  refreshSheetIdEcho("cfgAbsenSheetId", "cfgAbsenIdEcho");
 
   let kt = t.komentarTrainer;
   if(typeof kt === "string"){
@@ -3038,21 +3043,24 @@ $("cfgEvalTestBtn").addEventListener("click", async()=>{
 /* ===========================
    ANALYSIS TABS BACKEND (Leadership, Wewenang, Interpersonal)
    =========================== */
-function setupSheetIdEcho(inputId, echoId) {
+function refreshSheetIdEcho(inputId, echoId) {
   const inp = $(inputId);
   const echo = $(echoId);
   if (!inp || !echo) return;
-  inp.addEventListener("input", () => {
-    const raw = inp.value.trim();
-    const id = extractSheetId(raw);
-    if (raw && /\/spreadsheets\/d\/e\//.test(raw)) {
-      echo.textContent = "⚠ Ini URL publish, bukan URL sheet.";
-      echo.style.color = "var(--danger)";
-    } else {
-      echo.textContent = id || "Menggunakan Sheet Utama";
-      echo.style.color = "";
-    }
-  });
+  const raw = inp.value.trim();
+  const id = extractSheetId(raw);
+  if (raw && /\/spreadsheets\/d\/e\//.test(raw)) {
+    echo.textContent = "⚠ Ini URL publish, bukan URL sheet.";
+    echo.style.color = "var(--danger)";
+  } else {
+    echo.textContent = id || "Menggunakan Sheet Utama";
+    echo.style.color = "";
+  }
+}
+function setupSheetIdEcho(inputId, echoId) {
+  const inp = $(inputId);
+  if (!inp) return;
+  inp.addEventListener("input", () => refreshSheetIdEcho(inputId, echoId));
 }
 setupSheetIdEcho("cfgLeadershipSheetId", "cfgLeadershipIdEcho");
 setupSheetIdEcho("cfgWewenangSheetId", "cfgWewenangIdEcho");
