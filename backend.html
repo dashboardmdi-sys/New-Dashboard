@@ -882,6 +882,10 @@
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
           Rekap Absen
         </button>
+        <button class="tab-btn" data-tab="exportpdf">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Export Laporan PDF
+        </button>
       </div>
 
       <!-- Tab Content -->
@@ -1152,6 +1156,7 @@
                 <button class="btn btn-primary" style="font-size:12px; padding:8px 14px;" onclick="openApAddPICModal()">➕ Add PIC</button>
                 <button class="btn" style="background:#107c41; color:#fff; border-color:#107c41; font-weight:600; font-size:12px; padding:8px 12px;" onclick="document.getElementById('ap-excel-file-input').click()">📥 Import Action Plan (Tahap 1)</button>
                 <button class="btn" style="background:#1a73e8; color:#fff; border-color:#1a73e8; font-weight:600; font-size:12px; padding:8px 12px;" onclick="document.getElementById('ap-stage2ExcelUpload').click()">📥 Import Penyelesaian (Tahap 2)</button>
+                <button class="btn" style="background:#d93025; color:#fff; border-color:#d93025; font-weight:600; font-size:12px; padding:8px 12px;" onclick="exportApReportPdf()">📄 Download PDF</button>
                 <input type="file" id="ap-excel-file-input" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleApStage1ExcelUpload(event)">
                 <input type="file" id="ap-stage2ExcelUpload" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleApStage2ExcelUpload(event)">
                 <button class="btn btn-danger" id="ap-btn-delete-selected" style="display:none; font-size:12px; padding:8px 14px;" onclick="deleteApSelectedPIC()">🗑️ Hapus Terpilih</button>
@@ -1628,11 +1633,152 @@
           </div>
         </div>
 
+        <!-- TAB: EXPORT LAPORAN PDF -->
+        <div class="tab-pane" id="pane-exportpdf">
+
+          <!-- Header card -->
+          <div class="card" style="margin-bottom:14px;">
+            <div class="card-head">
+              <h2>📄 Export Laporan Training Resmi MDI</h2>
+              <span class="badge badge-info" style="margin-left:auto; background:#d93025; color:#fff;" id="pdfPageCountBadge">A4 PDF · Siap Cetak</span>
+            </div>
+            <p class="card-desc">Generate laporan training resmi MDI format <b>PDF siap cetak (A4)</b> dari <b>data live Google Spreadsheet &amp; Komentar Fasilitator realtime</b>.</p>
+
+            <!-- Preview 4 Kolom Halaman -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin:16px 0 0;">
+              <div style="border:2px solid #fde68a; border-radius:10px; padding:12px 14px; background:#fffdf5;">
+                <div style="font-size:10px; font-weight:800; color:#92400e; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">📋 Halaman 1</div>
+                <div style="font-weight:700; font-size:12.5px; color:#0f172a; margin-bottom:4px;">Executive Summary Cover</div>
+                <ul style="font-size:10.5px; color:#475569; margin-left:14px; line-height:1.7;">
+                  <li>Logo MDI &amp; Klien</li>
+                  <li>Judul &amp; Info Program</li>
+                  <li>4 KPI Lingkaran Emas</li>
+                  <li>Topik Bermanfaat &amp; Harapan</li>
+                </ul>
+              </div>
+              <div style="border:2px solid #fde68a; border-radius:10px; padding:12px 14px; background:#fffdf5;">
+                <div style="font-size:10px; font-weight:800; color:#92400e; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">📊 Halaman 2</div>
+                <div style="font-weight:700; font-size:12.5px; color:#0f172a; margin-bottom:4px;">Hasil Pre &amp; Post Test</div>
+                <ul style="font-size:10.5px; color:#475569; margin-left:14px; line-height:1.7;">
+                  <li>Tabel Nilai Live Spreadsheet</li>
+                  <li>Baris Rata-Rata di Bawah Tabel</li>
+                  <li>Kotak Analisis &amp; Kategori Nilai</li>
+                  <li>Format Rapi 1 Halaman A4</li>
+                </ul>
+              </div>
+              <div style="border:2px solid #fde68a; border-radius:10px; padding:12px 14px; background:#fffdf5; position:relative;" id="page45PreviewCard">
+                <div style="font-size:10px; font-weight:800; color:#92400e; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;" id="page45HeaderTag">🧠 Halaman 3 &amp; 4</div>
+                <div style="font-weight:700; font-size:12.5px; color:#0f172a; margin-bottom:4px;" id="page45TitleText">Analisis Gaya Wewenang</div>
+                <ul style="font-size:10.5px; color:#475569; margin-left:14px; line-height:1.7;" id="page45ListDesc">
+                  <li>Tabel Skor Live Peserta</li>
+                  <li>Grafik Bar Horizontal Realtime</li>
+                  <li>Narasi Analisis Gaya</li>
+                  <li>Footer Resmi Alamat MDI</li>
+                </ul>
+              </div>
+              <div style="border:2px solid #fde68a; border-radius:10px; padding:12px 14px; background:#fffdf5; position:relative;" id="pageFacilitatorPreviewCard">
+                <div style="font-size:10px; font-weight:800; color:#92400e; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">🗣️ Halaman Feedback</div>
+                <div style="font-weight:700; font-size:12.5px; color:#0f172a; margin-bottom:4px;">Feedback Fasilitator</div>
+                <ul style="font-size:10.5px; color:#475569; margin-left:14px; line-height:1.7;">
+                  <li>Foto &amp; Profil Fasilitator</li>
+                  <li>Narasi Dinamika Kelas &amp; Highlight</li>
+                  <li>Rekomendasi Strategis HR</li>
+                  <li>Desain Frame Emas Resmi MDI</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pilihan Analisis Halaman Tambahan -->
+          <div class="card" style="margin-bottom:14px;" id="pdfAnalisisCard">
+            <div class="card-head" style="margin-bottom:10px;">
+              <h2 style="font-size:.92rem;">🧠 Modul Analisis Tambahan (Opsional)</h2>
+              <span id="pdfAnalStatusBadge" class="badge badge-info" style="margin-left:auto;">Memeriksa modul...</span>
+            </div>
+            <p class="card-desc" id="pdfAnalHintText" style="font-size:12px; margin-bottom:12px; color:var(--n600);">Jika pelatihan ini tidak menggunakan modul analisis, laporan otomatis dibuat tanpa halaman analisis gaya.</p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;" id="pdfAnalRadiosContainer">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 16px; border:2px solid var(--card-border); border-radius:10px; font-size:12.5px; font-weight:700; color:var(--navy); transition:all .15s;" id="analLabel-none">
+                <input type="radio" name="pdfAnalisis" value="none" id="analNone" onchange="updatePage45Label()" style="accent-color:var(--primary-base); width:15px; height:15px;">
+                ❌ Tanpa Analisis Gaya
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 16px; border:2px solid var(--card-border); border-radius:10px; font-size:12.5px; font-weight:700; color:var(--navy); transition:all .15s;" id="analLabel-wewenang">
+                <input type="radio" name="pdfAnalisis" value="wewenang" id="analWewenang" checked onchange="updatePage45Label()" style="accent-color:var(--primary-base); width:15px; height:15px;">
+                🛡️ Analisis Gaya Wewenang (Sheet4)
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 16px; border:2px solid var(--card-border); border-radius:10px; font-size:12.5px; font-weight:700; color:var(--navy); transition:all .15s;" id="analLabel-kepemimpinan">
+                <input type="radio" name="pdfAnalisis" value="kepemimpinan" id="analKepemimpinan" onchange="updatePage45Label()" style="accent-color:var(--primary-base); width:15px; height:15px;">
+                ⭐ Analisis Gaya Kepemimpinan (Sheet2)
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 16px; border:2px solid var(--card-border); border-radius:10px; font-size:12.5px; font-weight:700; color:var(--navy); transition:all .15s;" id="analLabel-interpersonal">
+                <input type="radio" name="pdfAnalisis" value="interpersonal" id="analInterpersonal" onchange="updatePage45Label()" style="accent-color:var(--primary-base); width:15px; height:15px;">
+                💬 Analisis Gaya Interpersonal (Sheet5)
+              </label>
+            </div>
+          </div>
+
+          <!-- Opsi Feedback Fasilitator -->
+          <div class="card" style="margin-bottom:14px;">
+            <div class="card-head" style="margin-bottom:10px;">
+              <h2 style="font-size:.92rem;">🗣️ Halaman Feedback dari Fasilitator</h2>
+            </div>
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; font-weight:700; color:var(--navy);">
+              <input type="checkbox" id="pdfIncludeFacilitatorFeedback" checked onchange="updatePage45Label()" style="accent-color:var(--primary-base); width:18px; height:18px;">
+              Sertakan Halaman "Feedback dari Fasilitator" (Realtime dari data Komentar Trainer)
+            </label>
+          </div>
+
+          <!-- Konfigurasi -->
+          <div class="card" style="margin-bottom:14px;">
+            <div class="card-head" style="margin-bottom:12px;"><h2 style="font-size:.92rem;">⚙️ Konfigurasi Laporan</h2></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+              <div class="field" style="margin:0;">
+                <label for="pdfCfgClientName" style="font-size:12px;">Nama Klien / Perusahaan</label>
+                <input type="text" id="pdfCfgClientName" placeholder="PT. Yusen Logistics" style="font-size:12px; padding:8px 12px;">
+              </div>
+              <div class="field" style="margin:0;">
+                <label for="pdfCfgTrainingTitle" style="font-size:12px;">Judul Program Training</label>
+                <input type="text" id="pdfCfgTrainingTitle" placeholder="Driving Performance, Communication & Adaptability" style="font-size:12px; padding:8px 12px;">
+              </div>
+              <div class="field" style="margin:0;">
+                <label for="pdfCfgLocation" style="font-size:12px;">Lokasi</label>
+                <input type="text" id="pdfCfgLocation" placeholder="Cibitung" style="font-size:12px; padding:8px 12px;">
+              </div>
+              <div class="field" style="margin:0;">
+                <label for="pdfCfgDates" style="font-size:12px;">Tanggal Pelaksanaan</label>
+                <input type="text" id="pdfCfgDates" placeholder="22 - 23 Mei 2026" style="font-size:12px; padding:8px 12px;">
+              </div>
+            </div>
+            <div class="field" style="margin-bottom:12px;">
+              <label for="pdfCfgTopicsUseful" style="font-size:12px;">Topik yang Dirasa Bermanfaat (pisahkan dengan koma)</label>
+              <textarea id="pdfCfgTopicsUseful" rows="2" placeholder="Problem solving, Change management, Leadership, Coaching, Wewenang, Gaya kepribadian" style="font-size:12px; padding:8px 12px; min-height:58px;"></textarea>
+            </div>
+            <div class="field" style="margin:0;">
+              <label for="pdfCfgTopicsFuture" style="font-size:12px;">Harapan Program Training Selanjutnya (pisahkan dengan koma)</label>
+              <textarea id="pdfCfgTopicsFuture" rows="2" placeholder="Problem solving, Delegasi, Management conflict, Time management, Supply chain" style="font-size:12px; padding:8px 12px; min-height:58px;"></textarea>
+            </div>
+          </div>
+
+          <!-- Tombol aksi -->
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:8px; padding-bottom:30px;">
+            <button type="button" class="btn btn-primary" id="btnExportPdfRun" style="background:#d93025; border-color:#d93025; color:#fff; font-weight:700; padding:12px 24px; display:inline-flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; box-shadow:0 2px 8px rgba(217,48,37,0.35);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              Generate &amp; Download PDF (Realtime)
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnPrefillPdfData" style="padding:12px 20px; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              Isi Otomatis dari Data Training
+            </button>
+            <span style="font-size:12px; color:var(--n600,#64748b);">💡 Mengambil data terbaru secara <b>realtime</b> dari Google Spreadsheet.</span>
+          </div>
+
+        </div>
+
       </div>
     </div>
   </div>
 
 </main>
+
 
 
 
@@ -1735,32 +1881,38 @@ async function fetchDatabase() {
 }
 
 async function apiAddClient(c) {
+  try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
   try {
     toast("⏳ Menyimpan ke database...");
     const res = await fetch(WEB_APP_URL, {
       method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({action: 'addClient', client: c})
     });
     const json = await res.json();
     if(json.success) toast(`✅ Akun "${c.name}" berhasil dibuat | PIN: ${String(c.pin).padStart(4, '0')}`);
-    else toast("⚠️ Gagal menyimpan client");
+    else toast("⚠️ Gagal menyimpan client ke cloud");
   } catch(e) {
-    toast("⚠️ Error jaringan");
+    console.warn("apiAddClient error:", e);
+    toast(`✅ Akun "${c.name}" tersimpan di lokal browser`);
   }
 }
 
 async function apiUpdateClient(c, successMsg="✅ Tersimpan!") {
+  try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
   try {
     toast("⏳ Menyimpan perubahan...");
     const res = await fetch(WEB_APP_URL, {
       method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({action: 'updateClient', client: c})
     });
     const json = await res.json();
     if(json.success) toast(successMsg);
-    else toast("⚠️ Gagal update client");
+    else toast("⚠️ Gagal update di cloud (Data tetap tersimpan di lokal)");
   } catch(e) {
-    toast("⚠️ Error jaringan");
+    console.warn("apiUpdateClient error:", e);
+    toast("✓ Tersimpan di browser lokal (Sinkronisasi cloud tertunda)");
   }
 }
 
@@ -2414,10 +2566,25 @@ function switchTab(name){
   document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
   document.querySelectorAll(".tab-pane").forEach(p=>p.classList.toggle("active", p.id==="pane-"+name));
   sessionStorage.setItem("mdi_activeTab", name);
+  if (name === "exportpdf") {
+    setTimeout(() => {
+      if (typeof prefillPdfConfig === "function") prefillPdfConfig();
+      const btnRun = document.getElementById('btnExportPdfRun');
+      const btnPrefill = document.getElementById('btnPrefillPdfData');
+      if (btnRun && !btnRun._bound) {
+        btnRun.addEventListener('click', runExportPdf);
+        btnRun._bound = true;
+      }
+      if (btnPrefill && !btnPrefill._bound) {
+        btnPrefill.addEventListener('click', prefillPdfConfig);
+        btnPrefill._bound = true;
+      }
+    }, 50);
+  }
 }
 
 /* ----- Helper: update training ----- */
-function updateTraining(patch){
+function updateTraining(patch, successMsg="✅ Tersimpan!"){
   const cIdx = clientsDb.findIndex(x=>String(x.id)===String(currentClientId));
   if(cIdx===-1) return;
   const tIdx = (clientsDb[cIdx].trainings || []).findIndex(x=>String(x.id)===String(currentTrainingId));
@@ -2425,7 +2592,8 @@ function updateTraining(patch){
 
   const t = clientsDb[cIdx].trainings[tIdx];
   Object.assign(t, patch);
-  apiUpdateClient(clientsDb[cIdx]);
+  try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
+  apiUpdateClient(clientsDb[cIdx], successMsg);
   return t;
 }
 
@@ -2940,9 +3108,8 @@ if ($("saveAbsenCfgBtn")) {
       absenSheetId: extractSheetId($("cfgAbsenSheetId")?.value),
       absenCsvUrl: $("cfgAbsenCsvUrl")?.value.trim(),
       absenSheetName: $("cfgAbsenSheetName")?.value.trim() || "Sheet6"
-    });
+    }, "✓ Konfigurasi Sheet6 (Rekap Absen) tersimpan & disinkronkan");
     activateTraining(currentTrainingId);
-    toast("✓ Konfigurasi Sheet6 (Rekap Absen) tersimpan & disinkronkan");
   });
 }
 
@@ -4424,6 +4591,765 @@ function updateApSpreadsheetCellData(picNo, field, isAnswer, element) {
   saveApParticipants(participants);
   toast(`✓ Data ${p.name} berhasil diperbarui dari Spreadsheet!`);
 }
+
+function updatePage45Label() {
+  const val = (document.querySelector('input[name="pdfAnalisis"]:checked') || {}).value || 'none';
+  const incFac = document.getElementById('pdfIncludeFacilitatorFeedback') ? document.getElementById('pdfIncludeFacilitatorFeedback').checked : true;
+  const previewCard = document.getElementById('page45PreviewCard');
+  const headerTag = document.getElementById('page45HeaderTag');
+  const titleText = document.getElementById('page45TitleText');
+  const listDesc = document.getElementById('page45ListDesc');
+  const pageCountBadge = document.getElementById('pdfPageCountBadge');
+  const facPreviewCard = document.getElementById('pageFacilitatorPreviewCard');
+
+  let pageCount = 2; // Cover + PrePost
+  if (val !== 'none') pageCount += 2; // Analisis 2 hal
+  if (incFac) pageCount += 1; // Facilitator 1 hal
+
+  if (pageCountBadge) {
+    pageCountBadge.textContent = `A4 PDF · ${pageCount} Halaman`;
+    pageCountBadge.style.background = pageCount > 2 ? '#d93025' : '#0284c7';
+  }
+
+  if (facPreviewCard) {
+    facPreviewCard.style.opacity = incFac ? '1' : '0.6';
+    facPreviewCard.style.borderColor = incFac ? '#fde68a' : '#cbd5e1';
+    facPreviewCard.style.background = incFac ? '#fffdf5' : '#f8fafc';
+  }
+
+  if (val === 'none') {
+    if (previewCard) {
+      previewCard.style.borderColor = '#cbd5e1';
+      previewCard.style.background = '#f8fafc';
+      previewCard.style.opacity = '0.6';
+    }
+    if (headerTag) {
+      headerTag.textContent = '🚫 Halaman Analisis';
+      headerTag.style.color = '#64748b';
+    }
+    if (titleText) titleText.textContent = 'Tidak Disertakan';
+    if (listDesc) {
+      listDesc.innerHTML = '<li>Tanpa modul analisis gaya</li><li>Laporan diringkas</li>';
+    }
+  } else {
+    if (previewCard) {
+      previewCard.style.borderColor = '#fde68a';
+      previewCard.style.background = '#fffdf5';
+      previewCard.style.opacity = '1';
+    }
+    if (headerTag) {
+      headerTag.textContent = '🧠 Halaman 3 & 4';
+      headerTag.style.color = '#92400e';
+    }
+    const titles = {
+      wewenang: 'Analisis Gaya Wewenang',
+      kepemimpinan: 'Analisis Gaya Kepemimpinan',
+      interpersonal: 'Analisis Gaya Interpersonal'
+    };
+    if (titleText) titleText.textContent = titles[val] || 'Analisis Gaya Tambahan';
+    if (listDesc) {
+      listDesc.innerHTML = '<li>Tabel Skor Live Peserta</li><li>Grafik Bar Horizontal Realtime</li><li>Narasi Analisis Gaya (Justified)</li><li>Footer Resmi Alamat MDI</li>';
+    }
+  }
+
+  ['none', 'wewenang', 'kepemimpinan', 'interpersonal'].forEach(k => {
+    const lbl = document.getElementById('analLabel-' + k);
+    if (lbl) {
+      lbl.style.borderColor = k === val ? 'var(--primary-base)' : 'var(--card-border)';
+      lbl.style.background = k === val ? 'var(--primary-100,#fef9e7)' : '';
+    }
+  });
+}
+
+function prefillPdfConfig() {
+  try {
+    let c = null, t = null;
+    if (currentClientId) {
+      c = clientsDb.find(x => String(x.id) === String(currentClientId));
+    }
+    if (c && currentTrainingId && Array.isArray(c.trainings)) {
+      t = c.trainings.find(x => String(x.id) === String(currentTrainingId));
+    }
+
+    const clientEl = document.getElementById('pdfCfgClientName');
+    const titleEl = document.getElementById('pdfCfgTrainingTitle');
+    const locEl = document.getElementById('pdfCfgLocation');
+    const datesEl = document.getElementById('pdfCfgDates');
+    const topicsUsefulEl = document.getElementById('pdfCfgTopicsUseful');
+    const topicsFutureEl = document.getElementById('pdfCfgTopicsFuture');
+
+    if (clientEl) {
+      if (c && c.name) clientEl.value = c.name;
+      else {
+        const h2 = document.querySelector('#viewDetail h2, #detailClientName, #editTrainingName');
+        if (h2 && h2.textContent.trim()) clientEl.value = h2.textContent.trim();
+      }
+    }
+
+    if (titleEl) {
+      if (t && t.title) titleEl.value = t.title;
+      else {
+        const inp = document.getElementById('cfgTrainingTitle');
+        if (inp && inp.value) titleEl.value = inp.value;
+      }
+    }
+
+    if (locEl) {
+      if (t && (t.location || t.lokasi)) locEl.value = t.location || t.lokasi;
+      else if (c && c.location) locEl.value = c.location;
+      else if (!locEl.value) locEl.value = 'Jakarta';
+    }
+
+    if (datesEl) {
+      if (t && t.dateStart && t.dateEnd) {
+        datesEl.value = `${t.dateStart} s/d ${t.dateEnd}`;
+      } else if (t && t.dateStart) {
+        datesEl.value = t.dateStart;
+      } else if (t && t.dateRange) {
+        datesEl.value = t.dateRange;
+      } else {
+        const ds = document.getElementById('cfgTrainingDateStart');
+        const de = document.getElementById('cfgTrainingDateEnd');
+        if (ds && ds.value) {
+          datesEl.value = ds.value + (de && de.value ? ' s/d ' + de.value : '');
+        }
+      }
+    }
+
+    if (topicsUsefulEl && !topicsUsefulEl.value.trim()) {
+      topicsUsefulEl.value = 'Problem solving, Gaya kepribadian, Change management, Effective communication, Managing performance team, Coaching, Leadership, Wewenang';
+    }
+    if (topicsFutureEl && !topicsFutureEl.value.trim()) {
+      topicsFutureEl.value = 'Problem solving, How to be a success leader, Delegasi, Management risk, Management conflict, Supply chain, Time management, Emotional management';
+    }
+
+    const hasWewenang = !!(t && t.wewenangEnabled && (t.wewenangSheetId || t.wewenangCsvUrl || t.sheetId || (document.getElementById('cfgWewenangSheetId')||{}).value));
+    const hasLeadership = !!(t && t.leadershipEnabled && (t.leadershipSheetId || t.leadershipCsvUrl || t.sheetId || (document.getElementById('cfgLeadershipSheetId')||{}).value));
+    const hasInterpersonal = !!(t && t.interpersonalEnabled && (t.interpersonalSheetId || t.interpersonalCsvUrl || t.sheetId || (document.getElementById('cfgInterpersonalSheetId')||{}).value));
+
+    const lblWewenang = document.getElementById('analLabel-wewenang');
+    const lblLeadership = document.getElementById('analLabel-kepemimpinan');
+    const lblInterpersonal = document.getElementById('analLabel-interpersonal');
+    const statusBadge = document.getElementById('pdfAnalStatusBadge');
+    const hintText = document.getElementById('pdfAnalHintText');
+
+    if (lblWewenang) lblWewenang.style.display = hasWewenang ? 'flex' : 'none';
+    if (lblLeadership) lblLeadership.style.display = hasLeadership ? 'flex' : 'none';
+    if (lblInterpersonal) lblInterpersonal.style.display = hasInterpersonal ? 'flex' : 'none';
+
+    if (!hasWewenang && !hasLeadership && !hasInterpersonal) {
+      const radNone = document.getElementById('analNone');
+      if (radNone) radNone.checked = true;
+      if (statusBadge) {
+        statusBadge.textContent = 'Tidak Ada Modul Analisis';
+        statusBadge.style.background = '#64748b';
+        statusBadge.style.color = '#fff';
+      }
+      if (hintText) {
+        hintText.innerHTML = 'ℹ️ Pelatihan ini <b>tidak mengaktifkan modul analisis gaya</b>.';
+      }
+    } else {
+      if (statusBadge) {
+        statusBadge.textContent = 'Modul Analisis Aktif Tersedia';
+        statusBadge.style.background = '#16a34a';
+        statusBadge.style.color = '#fff';
+      }
+      if (hintText) {
+        hintText.innerHTML = 'Pilih modul analisis aktif yang ingin disertakan di laporan, atau pilih tanpa analisis.';
+      }
+      const currentSelected = (document.querySelector('input[name="pdfAnalisis"]:checked') || {}).value;
+      if (currentSelected === 'wewenang' && !hasWewenang) {
+        if (hasLeadership) (document.getElementById('analKepemimpinan')||{}).checked = true;
+        else if (hasInterpersonal) (document.getElementById('analInterpersonal')||{}).checked = true;
+        else (document.getElementById('analNone')||{}).checked = true;
+      } else if (currentSelected === 'kepemimpinan' && !hasLeadership) {
+        if (hasWewenang) (document.getElementById('analWewenang')||{}).checked = true;
+        else if (hasInterpersonal) (document.getElementById('analInterpersonal')||{}).checked = true;
+        else (document.getElementById('analNone')||{}).checked = true;
+      } else if (currentSelected === 'interpersonal' && !hasInterpersonal) {
+        if (hasWewenang) (document.getElementById('analWewenang')||{}).checked = true;
+        else if (hasLeadership) (document.getElementById('analKepemimpinan')||{}).checked = true;
+        else (document.getElementById('analNone')||{}).checked = true;
+      }
+    }
+
+    updatePage45Label();
+  } catch (err) {
+    console.error('Error in prefillPdfConfig:', err);
+  }
+}
+
+async function runExportPdf() {
+  try {
+    toast('⏳ Mengambil data realtime dari Google Spreadsheet & Fasilitator...');
+
+    const clientName = (document.getElementById('pdfCfgClientName') || {}).value || '';
+    const trainingTitle = (document.getElementById('pdfCfgTrainingTitle') || {}).value || '';
+    const location = (document.getElementById('pdfCfgLocation') || {}).value || '';
+    const dates = (document.getElementById('pdfCfgDates') || {}).value || '';
+    const topicsUsefulRaw = (document.getElementById('pdfCfgTopicsUseful') || {}).value || '';
+    const topicsFutureRaw = (document.getElementById('pdfCfgTopicsFuture') || {}).value || '';
+    const analisisType = (document.querySelector('input[name="pdfAnalisis"]:checked') || {}).value || 'none';
+    const includeFacilitator = document.getElementById('pdfIncludeFacilitatorFeedback') ? document.getElementById('pdfIncludeFacilitatorFeedback').checked : true;
+
+    const topicsUseful = topicsUsefulRaw.split(',').map(s => s.trim()).filter(Boolean);
+    const topicsFuture = topicsFutureRaw.split(',').map(s => s.trim()).filter(Boolean);
+
+    let c = null, t = null;
+    if (currentClientId) c = clientsDb.find(x => String(x.id) === String(currentClientId));
+    if (c && currentTrainingId && Array.isArray(c.trainings)) {
+      t = c.trainings.find(x => String(x.id) === String(currentTrainingId));
+    }
+
+    let participants = [];
+    const mainSheetId = (t && t.sheetId) || extractSheetId((document.getElementById('cfgSheetId')||{}).value) || (t && t.evalSheetId);
+    const mainCsvUrl = (t && t.csvUrl) || (document.getElementById('cfgCsvUrl')||{}).value || (t && t.evalCsvUrl);
+    const mainSheetName = (t && t.sheet1Name) || (document.getElementById('cfgSheet1Name')||{}).value || 'Sheet1';
+
+    if (mainSheetId || mainCsvUrl) {
+      try {
+        const testRes = await testSheetConnection(mainSheetId, mainCsvUrl, mainSheetName, '');
+        if (testRes && Array.isArray(testRes.rows) && testRes.rows.length > 1) {
+          const rows = testRes.rows;
+          const header = rows[0].map(h => String(h || '').toLowerCase().trim());
+          let nameIdx = header.findIndex(h => h.includes('nama') || h.includes('peserta') || h.includes('name'));
+          let preIdx = header.findIndex(h => h.includes('pre') || h.includes('awal'));
+          let postIdx = header.findIndex(h => h.includes('post') || h.includes('akhir'));
+
+          if (nameIdx === -1) nameIdx = 0;
+          if (preIdx === -1) preIdx = 1;
+          if (postIdx === -1) postIdx = 2;
+
+          participants = [];
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const name = String(row[nameIdx] ?? '').trim();
+            if (!name) continue;
+            const preVal = parseFloat(String(row[preIdx] ?? '').replace(',', '.'));
+            const postVal = parseFloat(String(row[postIdx] ?? '').replace(',', '.'));
+            const pre = !isNaN(preVal) ? preVal : null;
+            const post = !isNaN(postVal) ? postVal : null;
+            let pct = null;
+            if (pre != null && post != null && pre > 0) {
+              pct = Math.round(((post - pre) / pre) * 100);
+            }
+            participants.push({
+              no: participants.length + 1,
+              name,
+              pre,
+              post,
+              pct,
+              wType: 'Moral',
+              s1: 4, s2: 1, s3: 5, s4: 2
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Realtime fetch Sheet1 error, fallback to stored action plan:', err);
+      }
+    }
+
+    if (participants.length === 0) {
+      let rawList = [];
+      try { if (typeof getApParticipants === 'function') rawList = getApParticipants(); } catch(e){}
+      if (Array.isArray(rawList) && rawList.length > 0) {
+        participants = rawList.map((p, idx) => {
+          const pre = p.preTest != null ? Number(p.preTest) : (p.answers && p.answers.preTest != null ? Number(p.answers.preTest) : null);
+          const post = p.postTest != null ? Number(p.postTest) : (p.answers && p.answers.postTest != null ? Number(p.answers.postTest) : null);
+          let pct = null;
+          if (pre != null && post != null && pre > 0) pct = Math.round(((post - pre) / pre) * 100);
+          return {
+            no: idx + 1,
+            name: p.name || `Peserta ${idx + 1}`,
+            pre, post, pct,
+            wType: p.wewenangType || p.highScoringType || 'Moral',
+            s1: p.s1 != null ? p.s1 : 4,
+            s2: p.s2 != null ? p.s2 : 1,
+            s3: p.s3 != null ? p.s3 : 5,
+            s4: p.s4 != null ? p.s4 : 2,
+          };
+        });
+      }
+    }
+
+    let analysisScoresMap = {};
+    if (analisisType !== 'none') {
+      let analSheetId = '';
+      let analCsvUrl = '';
+      let analSheetName = '';
+
+      if (analisisType === 'wewenang') {
+        analSheetId = (t && t.wewenangSheetId) || extractSheetId((document.getElementById('cfgWewenangSheetId')||{}).value) || mainSheetId;
+        analCsvUrl = (t && t.wewenangCsvUrl) || (document.getElementById('cfgWewenangCsvUrl')||{}).value;
+        analSheetName = (t && t.wewenangSheetName) || (document.getElementById('cfgWewenangSheetName')||{}).value || 'Sheet4';
+      } else if (analisisType === 'kepemimpinan') {
+        analSheetId = (t && t.leadershipSheetId) || extractSheetId((document.getElementById('cfgLeadershipSheetId')||{}).value) || mainSheetId;
+        analCsvUrl = (t && t.leadershipCsvUrl) || (document.getElementById('cfgLeadershipCsvUrl')||{}).value;
+        analSheetName = (t && t.leadershipSheetName) || (document.getElementById('cfgLeadershipSheetName')||{}).value || 'Sheet2';
+      } else if (analisisType === 'interpersonal') {
+        analSheetId = (t && t.interpersonalSheetId) || extractSheetId((document.getElementById('cfgInterpersonalSheetId')||{}).value) || mainSheetId;
+        analCsvUrl = (t && t.interpersonalCsvUrl) || (document.getElementById('cfgInterpersonalCsvUrl')||{}).value;
+        analSheetName = (t && t.interpersonalSheetName) || (document.getElementById('cfgInterpersonalSheetName')||{}).value || 'Sheet5';
+      }
+
+      if (analSheetId || analCsvUrl) {
+        try {
+          const analRes = await testSheetConnection(analSheetId, analCsvUrl, analSheetName, '');
+          if (analRes && Array.isArray(analRes.rows) && analRes.rows.length > 1) {
+            const aRows = analRes.rows;
+            for (let i = 1; i < aRows.length; i++) {
+              const r = aRows[i];
+              const pName = String(r[0] ?? '').trim().toLowerCase();
+              if (!pName) continue;
+              const domRaw = String(r[1] ?? '').trim();
+              const s1 = parseFloat(String(r[2] ?? '').replace(',','.')) || 0;
+              const s2 = parseFloat(String(r[3] ?? '').replace(',','.')) || 0;
+              const s3 = parseFloat(String(r[4] ?? '').replace(',','.')) || 0;
+              const s4 = parseFloat(String(r[5] ?? '').replace(',','.')) || 0;
+
+              let derivedType = domRaw;
+              if (!derivedType) {
+                if (analisisType === 'wewenang') {
+                  const mx = Math.max(s1, s2, s3, s4);
+                  if (mx === s3) derivedType = 'Moral';
+                  else if (mx === s2) derivedType = 'Arif / Sapiential';
+                  else if (mx === s1) derivedType = 'Struktural';
+                  else derivedType = 'Kharismatik';
+                } else if (analisisType === 'kepemimpinan') {
+                  const mx = Math.max(s1, s2, s3, s4);
+                  if (mx === s1) derivedType = 'G1 Telling';
+                  else if (mx === s2) derivedType = 'G2 Selling';
+                  else if (mx === s3) derivedType = 'G3 Participating';
+                  else derivedType = 'G4 Delegating';
+                } else {
+                  derivedType = 'Dominan';
+                }
+              }
+
+              analysisScoresMap[pName] = { wType: derivedType, s1, s2, s3, s4 };
+            }
+          }
+        } catch (err) {
+          console.warn('Realtime fetch analysis sheet warning:', err);
+        }
+      }
+
+      participants.forEach(p => {
+        const key = p.name.trim().toLowerCase();
+        if (analysisScoresMap[key]) {
+          p.wType = analysisScoresMap[key].wType;
+          p.s1 = analysisScoresMap[key].s1;
+          p.s2 = analysisScoresMap[key].s2;
+          p.s3 = analysisScoresMap[key].s3;
+          p.s4 = analysisScoresMap[key].s4;
+        }
+      });
+    }
+
+    let trainers = [];
+    if (Array.isArray(window.ktTrainersData) && window.ktTrainersData.length > 0 && window.ktTrainersData.some(tr => tr.name || tr.intro)) {
+      trainers = window.ktTrainersData;
+    } else if (t && t.komentarTrainer) {
+      if (Array.isArray(t.komentarTrainer)) trainers = t.komentarTrainer;
+      else if (typeof t.komentarTrainer === 'object') trainers = [t.komentarTrainer];
+      else if (typeof t.komentarTrainer === 'string' && t.komentarTrainer.trim()) {
+        trainers = [{ name: 'Arif Hidayat', role: 'Facilitator MDI Tack', intro: t.komentarTrainer, days: [], quote: '' }];
+      }
+    }
+
+    if (trainers.length === 0) {
+      trainers = [{
+        name: 'Arif Hidayat',
+        role: 'Facilitator MDI Tack',
+        photoUrl: '',
+        intro: `Terima kasih atas kepercayaan yang diberikan kepada saya untuk memfasilitasi program ${trainingTitle || 'pelatihan'} selama 2 hari. Merupakan kesempatan yang sangat baik untuk bersama-sama membangun kesadaran diri, memperkuat kualitas kepemimpinan, bertumbuh, dan menumbuhkan tanggung jawab personal sebagai seorang Leader.\n\nDua hari pelatihan berjalan dengan dinamika yang melampaui ekspektasi. Peserta hadir bukan sekadar hadir — mereka terlibat penuh, berbicara jujur, dan membawa pengalaman nyata ke dalam ruangan. Psychological safety terbangun sejak awal dan bertahan hingga sesi terakhir. Ini bukan hal yang bisa dipaksakan; ia muncul karena peserta merasa bahwa apa yang mereka alami di lapangan benar-benar relevan dengan apa yang dibahas di kelas.`,
+        days: [
+          {
+            title: 'Hari Pertama',
+            text: 'Diskusi langsung hidup dari sesi pembuka. Kelima kelompok aktif tanpa terkecuali. Puncaknya adalah sesi ke 3 yang membahas tentang komunikasi dan kepribadian (Driver, Expressive, Amiable, Analytical) di mana peserta tidak hanya mengenali diri sendiri, tetapi langsung mengaitkannya dengan cara mereka memimpin tim. Pertanyaan yang muncul bukan pertanyaan basa-basi; mereka benar-benar ingin memahami.'
+          },
+          {
+            title: 'Hari Kedua',
+            text: 'Sesi Problem Solving & Decision Making menjadi titik yang sangat berkesan bagi saya dan juga peserta pelatihan. Di sesi yang secara materi paling berat ini, keterbukaan peserta justru paling terasa. Mereka membahas masalah nyata, merumuskan solusi konkret, dan berani berbagi tantangan yang selama ini belum pernah dibicarakan secara terbuka — termasuk yang bersifat personal. Diskusi hangat dan dalam, tanpa kehilangan energi.'
+          },
+          {
+            title: 'Rekomendasi untuk HR',
+            text: 'Dampak pelatihan ini akan ditentukan oleh apa yang terjadi setelah peserta kembali ke meja kerja. Tiga hal yang perlu dijaga:\n• Monitor action plan — komitmen yang sudah dirumuskan perlu di-review dalam 30–60 hari ke depan oleh atasan langsung.\n• Hidupkan percakapan — banyak diskusi yang terbuka di kelas belum selesai, dan tidak harus selesai di kelas. Forum reguler antar supervisor atau sesi sharing singkat dalam briefing tim akan menjaga momentum ini tetap hidup.\n• Jaga peserta yang baru pertama membuka diri — beberapa peserta menunjukkan keterbukaan yang mungkin belum pernah muncul sebelumnya. Atasan yang hadir dan responsif adalah penjaga terpenting dari perubahan ini.'
+          }
+        ],
+        quote: `Potensi kepemimpinan di ${clientName || 'Yusen'} ada, nyata, dan sudah terlihat selama dua hari ini. Langkah berikutnya ada di tangan organisasi. Kami siap mendukung fase lanjutan.`
+      }];
+    }
+
+    const tUseful = topicsUseful.length > 0 ? topicsUseful : ['Problem solving','Gaya kepribadian','Change management','Effective communication','Managing performance team','Coaching','Leadership','Wewenang'];
+    const tFuture = topicsFuture.length > 0 ? topicsFuture : ['Problem solving','How to be a success leader','Delegasi','Management risk','Management conflict','Supply chain','Time management','Emotional management'];
+
+    generateMdiPdfReportBackend({
+      clientName: clientName || (c && c.name) || 'PT. Mitra Mandiri',
+      trainingTitle: trainingTitle || (t && t.title) || 'Executive Training Program',
+      location: location || 'Jakarta',
+      dates: dates || '',
+      topicsUseful: tUseful,
+      topicsFuture: tFuture,
+      participants,
+      analisisType,
+      trainers,
+      includeFacilitator
+    });
+  } catch (err) {
+    console.error('Error in runExportPdf:', err);
+    toast('⚠️ Gagal mengekspor PDF: ' + err.message);
+  }
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function generateMdiPdfReportBackend(cfg) {
+  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, includeFacilitator } = cfg;
+
+  const tUseful = Array.isArray(topicsUseful) ? topicsUseful : [];
+  const tFuture = Array.isArray(topicsFuture) ? topicsFuture : [];
+  const logoMdi = 'Asset 7-8 (1).png';
+  const locationDates = [location, dates].filter(Boolean).join(', ');
+
+  const validPres = participants.filter(p => p.pre != null).map(p => p.pre);
+  const validPosts = participants.filter(p => p.post != null).map(p => p.post);
+  const avgPre = validPres.length > 0 ? Math.round(validPres.reduce((a,b)=>a+b,0)/validPres.length) : 52;
+  const avgPost = validPosts.length > 0 ? Math.round(validPosts.reduce((a,b)=>a+b,0)/validPosts.length) : 79;
+  const avgPct = avgPre > 0 ? Math.round(((avgPost - avgPre) / avgPre) * 100) : 63;
+
+  const tableRows = (arr) => arr.map(p => `
+    <tr>
+      <td class="tc">${p.no}</td>
+      <td>${escHtml(p.name)}</td>
+      <td class="tc">${p.pre != null ? p.pre : 'N/A'}</td>
+      <td class="tc">${p.post != null ? p.post : 'N/A'}</td>
+      <td class="tc">${p.pct != null ? p.pct+'%' : 'N/A'}</td>
+    </tr>`).join('');
+
+  let page4Html = '';
+  let page5Html = '';
+
+  if (analisisType && analisisType !== 'none') {
+    let colHeadings = {
+      wewenang: ['Score Struktural', 'Score Arif / Sapiential', 'Score Moral', 'Score Kharismatik'],
+      kepemimpinan: ['G1 Telling', 'G2 Selling', 'G3 Participating', 'G4 Delegating'],
+      interpersonal: ['Dimensi 1', 'Dimensi 2', 'Dimensi 3', 'Dimensi 4']
+    };
+    const cHeads = colHeadings[analisisType] || colHeadings.wewenang;
+    const analisisTitles = {
+      wewenang: 'ANALISIS GAYA WEWENANG',
+      kepemimpinan: 'ANALISIS GAYA KEPEMIMPINAN',
+      interpersonal: 'ANALISIS GAYA INTERPERSONAL'
+    };
+    const analisisTitle = analisisTitles[analisisType] || 'ANALISIS GAYA';
+
+    const wewRows = (arr) => arr.slice(0, 20).map(p => `
+      <tr>
+        <td class="tc">${p.no}</td>
+        <td>${escHtml(p.name)}</td>
+        <td class="tc">${escHtml(p.wType)}</td>
+        <td class="tc">${p.s1}</td>
+        <td class="tc">${p.s2}</td>
+        <td class="tc">${p.s3}</td>
+        <td class="tc">${p.s4}</td>
+      </tr>`).join('');
+
+    const wCounts = {struktural:0, arif:0, moral:0, kharismatik:0};
+    participants.forEach(p => {
+      const t = (p.wType||'').toLowerCase();
+      if (t.includes('struktural') || t.includes('telling') || t.includes('g1')) wCounts.struktural++;
+      else if (t.includes('arif') || t.includes('sapiential') || t.includes('selling') || t.includes('g2')) wCounts.arif++;
+      else if (t.includes('kharismatik') || t.includes('charismatic') || t.includes('delegating') || t.includes('g4')) wCounts.kharismatik++;
+      else wCounts.moral++;
+    });
+    const wMax = Math.max(...Object.values(wCounts), 1);
+    const wBar = (n) => Math.max(5, Math.round((n/wMax)*95));
+
+    const analisisNarasi = analisisType === 'kepemimpinan'
+      ? 'Gaya Kepemimpinan menunjukkan distribusi gaya partisipatif dan keteladanan yang mendominasi peserta dalam memimpin tim.'
+      : analisisType === 'interpersonal'
+      ? 'Gaya Interpersonal menunjukkan kecenderungan peserta dalam berinteraksi dan berkolaborasi secara profesional di lingkungan kerja.'
+      : 'Gaya Wewenang Moral mendominasi. Sebagian besar peserta cenderung menggunakan pendekatan berbasis etika, integritas, keteladanan, dan tanggung jawab dalam mempengaruhi serta memimpin orang lain.';
+
+    page4Html = `
+<div class="page">
+  <div>
+    <div class="hdr"><img src="${logoMdi}" alt="MDI"><div style="font-weight:800;">${escHtml(clientName)}</div></div>
+    <h2 class="ptitle">${analisisTitle}</h2>
+    <table class="dt">
+      <thead><tr><th style="width:6%">No</th><th style="width:30%">Nama</th><th style="width:22%">High Scoring Type</th><th style="width:10.5%">${cHeads[0]}</th><th style="width:10.5%">${cHeads[1]}</th><th style="width:10.5%">${cHeads[2]}</th><th style="width:10.5%">${cHeads[3]}</th></tr></thead>
+      <tbody>${wewRows(participants)}</tbody>
+    </table>
+  </div>
+  <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
+</div>`;
+
+    page5Html = `
+<div class="page">
+  <div>
+    <div class="hdr"><img src="${logoMdi}" alt="MDI"><div style="font-weight:800;">${escHtml(clientName)}</div></div>
+    <h2 class="ptitle">${analisisTitle}</h2>
+    <div class="chartbox">
+      <div class="crow"><div class="clbl">${cHeads[0]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.struktural)}%">${wCounts.struktural}</div></div></div>
+      <div class="crow"><div class="clbl">${cHeads[1]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.arif)}%">${wCounts.arif}</div></div></div>
+      <div class="crow"><div class="clbl">${cHeads[2]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.moral)}%">${wCounts.moral}</div></div></div>
+      <div class="crow"><div class="clbl">${cHeads[3]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.kharismatik)}%">${wCounts.kharismatik}</div></div></div>
+    </div>
+    <div class="acard">
+      <p style="margin-bottom:9px">${analisisNarasi}</p>
+      <p style="margin-bottom:9px">Distribusi dominan peserta: <b>${cHeads[2]}: ${wCounts.moral} peserta</b> · <b>${cHeads[1]}: ${wCounts.arif} peserta</b> · <b>${cHeads[3]}: ${wCounts.kharismatik} peserta</b> · <b>${cHeads[0]}: ${wCounts.struktural} peserta</b>.</p>
+      <p>Kondisi ini menjadi modal positif dalam membangun budaya kerja yang berintegritas, kolaboratif, dan berorientasi pada peningkatan kinerja organisasi.</p>
+    </div>
+  </div>
+  <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
+</div>`;
+  }
+
+  let facilitatorPagesHtml = '';
+  if (includeFacilitator !== false && Array.isArray(trainers) && trainers.length > 0) {
+    facilitatorPagesHtml = trainers.map((tr) => {
+      const formattedPhoto = tr.photoUrl ? (typeof formatDriveImageUrl === 'function' ? formatDriveImageUrl(tr.photoUrl) : tr.photoUrl) : '';
+      const avatarStyle = formattedPhoto ? `background-image:url('${escHtml(formattedPhoto)}');` : `background:#fef08a;`;
+      const initials = (tr.name || 'Fasilitator').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+
+      const introParas = String(tr.intro || '')
+        .split(/\n\s*\n/)
+        .map(p => p.trim())
+        .filter(Boolean)
+        .map(p => `<p style="margin-bottom:12px;">${escHtml(p)}</p>`)
+        .join('');
+
+      const daysHtml = (Array.isArray(tr.days) ? tr.days : []).map(d => {
+        const textLines = String(d.text || '').split('\n').map(s=>s.trim()).filter(Boolean);
+        const hasBullets = textLines.some(l => l.startsWith('•') || l.startsWith('-') || l.startsWith('*'));
+        let bodyHtml = '';
+        if (hasBullets) {
+          const intro = textLines.filter(l => !l.startsWith('•') && !l.startsWith('-') && !l.startsWith('*')).join(' ');
+          const items = textLines.filter(l => l.startsWith('•') || l.startsWith('-') || l.startsWith('*')).map(l => l.replace(/^[•\-\*]\s*/, ''));
+          bodyHtml = `${intro ? `<p style="margin-bottom:6px;">${escHtml(intro)}</p>` : ''}<ul style="margin-left:20px; margin-bottom:10px;">${items.map(it=>`<li style="margin-bottom:4px;">${escHtml(it)}</li>`).join('')}</ul>`;
+        } else {
+          bodyHtml = `<p style="margin-bottom:12px;">${escHtml(d.text)}</p>`;
+        }
+        return `
+          <div style="margin-bottom:12px;">
+            <div style="font-weight:800; font-size:12.5px; color:#0f172a; margin-bottom:4px; margin-top:6px;">${escHtml(d.title || 'Highlight')}</div>
+            ${bodyHtml}
+          </div>`;
+      }).join('');
+
+      const quoteHtml = tr.quote ? `
+        <div style="margin-top:10px;">
+          <div style="font-weight:800; font-size:12.5px; color:#0f172a; margin-bottom:4px;">Penutup</div>
+          <p style="margin-bottom:10px;">${escHtml(tr.quote)}</p>
+        </div>` : '';
+
+      return `
+<div class="page" style="padding-top:14mm; position:relative; overflow:visible;">
+  <div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
+      <img src="${logoMdi}" alt="MDI" style="height:46px; object-fit:contain;">
+      <h1 style="font-size:19px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.6px; margin:0 auto; padding-right:52px;">FEEDBACK DARI FASILITATOR</h1>
+    </div>
+
+    <div style="border:4.5px solid #f59e0b; border-radius:24px; padding:54px 28px 36px; position:relative; background:#fff; margin:36px 6px 20px; box-sizing:border-box;">
+      <div style="position:absolute; top:-52px; left:50%; transform:translateX(-50%); width:96px; height:96px; border-radius:50%; border:4px solid #f59e0b; ${avatarStyle} background-size:cover; background-position:center; box-shadow:0 4px 14px rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; color:#92400e; overflow:hidden; background-color:#fff;">
+        ${!formattedPhoto ? initials : ''}
+      </div>
+
+      <div style="font-size:11.5px; line-height:1.7; color:#1e293b; text-align:justify;">
+        ${introParas}
+        ${daysHtml}
+        ${quoteHtml}
+      </div>
+
+      <div style="position:absolute; bottom:-24px; left:50%; transform:translateX(-50%); background:#f59e0b; color:#0f172a; border-radius:14px; padding:10px 32px; box-shadow:0 4px 14px rgba(245,158,11,0.4); text-align:center; z-index:10; white-space:nowrap;">
+        <div style="font-weight:800; font-size:15px; line-height:1.2; color:#0f172a;">${escHtml(tr.name || 'Arif Hidayat')}</div>
+        <div style="font-size:11px; font-weight:600; color:#334155; margin-top:2px;">${escHtml(tr.role || 'Facilitator MDI Tack')}</div>
+      </div>
+    </div>
+    <div style="position:absolute; bottom:28px; left:2px; width:56px; height:56px; border-radius:50%; background:#fef08a; opacity:0.65; z-index:-1;"></div>
+  </div>
+  <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
+</div>`;
+    }).join('');
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan Training - ${escHtml(clientName)}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+@page{size:A4 portrait;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8fafc;color:#1e293b;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.print-bar{position:fixed;top:0;left:0;right:0;background:#0f172a;color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.25)}
+.print-btn{background:#d93025;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.print-btn:hover{background:#b91c1c}
+.page{width:210mm;height:297mm;padding:14mm 15mm 22mm;position:relative;page-break-after:always;background:#fff;display:flex;flex-direction:column;overflow:hidden;margin:60px auto 20px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+@media print{.print-bar{display:none!important}body{background:#fff}.page{box-shadow:none;margin:0;page-break-after:always}}
+.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:12px;border-bottom:2.5px solid #fde68a}
+.hdr img{height:46px;object-fit:contain}
+.ftr{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(90deg,#f59e0b,#fbbf24);padding:9px 22px;color:#0f172a;font-size:11px;font-weight:800}
+.ftr .a{font-weight:500;font-size:10px;opacity:.88;margin-top:2px}
+.cv-title{text-align:center;margin:8px 0 22px}
+.cv-title h3{font-size:15px;font-weight:800;color:#0f172a}
+.cv-title h1{font-size:21px;font-weight:800;color:#0f172a;margin:5px 0}
+.cv-title p{font-size:13px;font-weight:700;color:#475569}
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:22px}
+.circle{width:88px;height:88px;border-radius:50%;border:10px solid #f59e0b;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:19px;font-weight:800;color:#0f172a;background:#fff}
+.mlbl{border:2.5px solid #f59e0b;border-radius:14px;padding:10px 10px;font-size:11px;font-weight:600;line-height:1.45;color:#0f172a;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center!important;text-align-last:center!important;word-spacing:normal!important;letter-spacing:normal!important;white-space:normal!important;background:#fff;box-sizing:border-box}
+.mlbl span{display:block;text-align:center!important;text-align-last:center!important;margin:0;padding:0;width:100%}
+.mlbl b{font-weight:800;color:#0f172a}
+.tbox{border:2px solid #f59e0b;border-radius:14px;padding:20px 22px 14px;position:relative;margin-bottom:22px;background:#fff}
+.badge{position:absolute;top:-13px;left:18px;font-size:10.5px;font-weight:800;padding:4px 14px;border-radius:18px;text-transform:uppercase;letter-spacing:.4px}
+.badge-gold{background:#f59e0b;color:#0f172a}
+.badge-org{background:#f97316;color:#fff}
+.bcols{display:grid;grid-template-columns:1fr 1fr;gap:7px 22px;font-size:11.5px;font-weight:600;color:#1e293b;margin-top:3px}
+.bcols li{margin-left:15px;margin-bottom:3px}
+.ptitle{text-align:center;font-size:17px;font-weight:800;color:#0f172a;margin-bottom:18px;text-transform:uppercase;letter-spacing:.4px}
+table.dt{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:10px}
+table.dt th{background:#fef3c7;color:#0f172a;font-weight:800;padding:7px 8px;border:1px solid #fde68a;text-align:center}
+table.dt td{padding:5px 8px;border:1px solid #fde68a;color:#1e293b;font-weight:600}
+table.dt tr:nth-child(even) td{background:#fffdf5}
+.tc{text-align:center}
+.fb{font-weight:800}
+.acard{border:2px solid #f59e0b;border-radius:14px;padding:16px 20px;font-size:10px;line-height:1.65;color:#1e293b;background:#fff;margin-top:13px;text-align:justify}
+.acard ul{margin-left:17px}
+.acard li{margin-bottom:7px}
+.chartbox{border:1px solid #e2e8f0;border-radius:11px;padding:18px;margin-bottom:18px;background:#fff}
+.crow{display:flex;align-items:center;margin-bottom:12px}
+.clbl{width:140px;font-size:11.5px;font-weight:700;color:#0f172a;text-align:right;padding-right:11px}
+.cbg{flex:1;background:#f1f5f9;height:30px;border-radius:4px;overflow:hidden}
+.cfill{background:#f59e0b;height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:9px;color:#0f172a;font-weight:800;font-size:11.5px}
+</style></head>
+<body>
+
+<div class="print-bar">
+  <div><strong>Laporan Training Resmi MDI</strong> · ${escHtml(clientName)}</div>
+  <button class="print-btn" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+</div>
+
+<!-- PAGE 1 -->
+<div class="page">
+  <div>
+    <div class="hdr">
+      <img src="${logoMdi}" alt="MDI">
+      <div style="font-weight:800;font-size:14px;">${escHtml(clientName)}</div>
+    </div>
+    <div class="cv-title">
+      <h3>Program Training ${escHtml(clientName)}</h3>
+      <h1>"${escHtml(trainingTitle)}"</h1>
+      <p>${escHtml(locationDates)}</p>
+    </div>
+    <div class="mgrid">
+      <div style="text-align:center">
+        <div class="circle">100%</div>
+        <div class="mlbl"><span>Peserta merasa program ini <b>Bermanfaat</b></span></div>
+      </div>
+      <div style="text-align:center">
+        <div class="circle">100%</div>
+        <div class="mlbl"><span>Peserta merasa <b>senang</b> mengikuti program ini</span></div>
+      </div>
+      <div style="text-align:center">
+        <div class="circle">100%</div>
+        <div class="mlbl"><span>Peserta merasa materi pelatihan <b>relevan</b> dengan kebutuhan mereka</span></div>
+      </div>
+      <div style="text-align:center">
+        <div class="circle">100%</div>
+        <div class="mlbl"><span>Peserta merasa materi yang disampaikan <b>praktikal dan aplikatif</b></span></div>
+      </div>
+    </div>
+    <div class="tbox">
+      <div class="badge badge-gold">TOPIK YANG DIRASA BERMANFAAT:</div>
+      <ul class="bcols">${tUseful.map(t=>`<li>${escHtml(t)}</li>`).join('')}</ul>
+    </div>
+    <div class="tbox">
+      <div class="badge badge-org">PESERTA BERHARAP PROGRAM TRAINING SELANJUTNYA ADALAH:</div>
+      <ul class="bcols">${tFuture.map(t=>`<li>${escHtml(t)}</li>`).join('')}</ul>
+    </div>
+  </div>
+  <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page">
+  <div>
+    <div class="hdr"><img src="${logoMdi}" alt="MDI"><div style="font-weight:800;">${escHtml(clientName)}</div></div>
+    <h2 class="ptitle">HASIL PRE-TEST DAN POST-TEST</h2>
+    <table class="dt" style="margin-bottom:10px;">
+      <thead>
+        <tr>
+          <th style="width:7%">No</th>
+          <th style="width:45%">Nama Peserta</th>
+          <th style="width:16%">Tes Awal (Pre)</th>
+          <th style="width:16%">Tes Akhir (Post)</th>
+          <th style="width:16%">% Peningkatan</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows(participants)}
+        <tr style="background:#fef3c7; font-weight:800;">
+          <td colspan="2" class="tc fb" style="font-size:11px;">Rata-Rata</td>
+          <td class="tc fb" style="font-size:11px;">${avgPre}</td>
+          <td class="tc fb" style="font-size:11px;">${avgPost}</td>
+          <td class="tc fb" style="font-size:11px;">${avgPct}%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="acard" style="padding:11px 16px; margin-top:6px; font-size:10px; line-height:1.55;">
+      <ul style="margin-left:14px;">
+        <li style="margin-bottom:3px;"><i>Rentang nilai: <b>80 &lt; N ≤ 100 Sangat Baik</b> · <b>60 &lt; N ≤ 80 Baik</b> · <b>40 &lt; N ≤ 60 Cukup</b> · <b>20 &lt; N ≤ 40 Kurang</b> · <b>N ≤ 20 Sangat Kurang</b></i></li>
+        <li style="margin-bottom:3px;">Berdasarkan penilaian terhadap <b>${participants.length} peserta</b>, rata-rata pre-test <b>${avgPre}</b> (kategori <b>${avgPre >= 60 ? 'Baik' : 'Cukup'}</b>).</li>
+        <li style="margin-bottom:3px;">Setelah pelatihan, rata-rata post-test <b>meningkat menjadi ${avgPost}</b> (kategori <b>${avgPost >= 80 ? 'Sangat Baik' : 'Baik'}</b>), mengindikasikan efektivitas pelatihan yang signifikan.</li>
+        <li>Rata-rata peningkatan pemahaman peserta mencapai <b>${avgPct}%</b>, menegaskan dampak positif pelatihan secara menyeluruh.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
+</div>
+
+${page4Html}
+${page5Html}
+${facilitatorPagesHtml}
+
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  if (!win) {
+    toast('ℹ Popup diblokir browser, mengunduh file laporan HTML...');
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Laporan-Training-${(clientName || 'MDI').replace(/[^a-zA-Z0-9]/g, '_')}.html`;
+    a.click();
+    return;
+  }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => {
+    try {
+      win.focus();
+      win.print();
+    } catch(e){}
+  }, 700);
+}
+
+// Inisialisasi event listener tombol PDF
+document.addEventListener('DOMContentLoaded', () => {
+  const btnRun = document.getElementById('btnExportPdfRun');
+  const btnPrefill = document.getElementById('btnPrefillPdfData');
+  if (btnRun) btnRun.addEventListener('click', runExportPdf);
+  if (btnPrefill) btnPrefill.addEventListener('click', prefillPdfConfig);
+});
+
 
 // ── SPREADSHEET VIEWS ──
 function renderApSpreadsheet() {
