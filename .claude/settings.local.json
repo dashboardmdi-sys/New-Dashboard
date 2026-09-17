@@ -28,7 +28,10 @@
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{try{const j=JSON.parse\\(d\\);console.log\\('findings:',j.length\\); const w=j.filter\\(f=>f.line>=1383&&f.line<=1470\\); console.log\\('near trainer-deck CSS:', JSON.stringify\\(w.map\\(x=>x.antipattern+':'+x.line\\)\\)\\);}catch\\(e\\){console.log\\(d\\);}}\\)\")",
       "mcp__plugin_claude-video-vision_claude-video-vision__video_info",
       "mcp__plugin_claude-video-vision_claude-video-vision__video_watch",
-      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{try{const j=JSON.parse\\(d\\);console.log\\('findings:',j.length\\); const w=j.filter\\(f=>f.line>=1383&&f.line<=1475\\); console.log\\('in trainer CSS block:', JSON.stringify\\(w.map\\(x=>x.antipattern+':'+x.line\\)\\)\\);}catch\\(e\\){console.log\\(d\\);}}\\)\")"
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{try{const j=JSON.parse\\(d\\);console.log\\('findings:',j.length\\); const w=j.filter\\(f=>f.line>=1383&&f.line<=1475\\); console.log\\('in trainer CSS block:', JSON.stringify\\(w.map\\(x=>x.antipattern+':'+x.line\\)\\)\\);}catch\\(e\\){console.log\\(d\\);}}\\)\")",
+      "Bash(curl -sL -m 20 \"https://script.google.com/macros/s/AKfycbxCAAAkpGxp0tq4MwL2xz8Uq9DjYJS-Jlj9GdnEUPx2zXy5RP6q2vLj8NEXa-Bb--tr2g/exec?action=getClients\" -o \"/c/Users/trainer/AppData/Local/Temp/claude/C--Users-trainer-Downloads-dashboard-new/efb79990-183a-45f8-9bba-914cde055e7c/scratchpad/live_check4.json\" -w \"HTTP %{http_code}\\\\n\")",
+      "Bash(curl -sL -m 30 \"https://script.google.com/macros/s/AKfycbxCAAAkpGxp0tq4MwL2xz8Uq9DjYJS-Jlj9GdnEUPx2zXy5RP6q2vLj8NEXa-Bb--tr2g/exec?action=getClients\" -o \"/c/Users/trainer/AppData/Local/Temp/claude/C--Users-trainer-Downloads-dashboard-new/efb79990-183a-45f8-9bba-914cde055e7c/scratchpad/live_check4.json\" -w \"HTTP %{http_code}\\\\n\" -v)",
+      "Bash(python3 -c ' *)"
     ]
   },
   "hooks": {

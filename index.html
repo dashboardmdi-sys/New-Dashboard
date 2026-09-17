@@ -6884,13 +6884,18 @@
         p.rank = (i > 0 && scoreOf(p) === scoreOf(byScore[i - 1])) ? byScore[i - 1].rank : i + 1;
         p.sheetRank = p.rank; // sinkronkan agar podium ikut
       });
+      // Peserta tanpa data pembanding sama sekali (belum isi post-test & tidak ada
+      // skor kolom G) tidak layak masuk podium Top/Bottom — kalau dipaksa, angka yang
+      // tampil di podium jadi fallback ke Pre-test dan terlihat seperti skor tingkat
+      // pemahaman padahal bukan.
+      const rankable = list.filter(p => scoreOf(p) !== -Infinity);
       return {
         total: list.length,
         avgPre: avg(pres), minPre: pres.length ? Math.min(...pres) : null, maxPre: pres.length ? Math.max(...pres) : null,
         avgPost: avg(posts), minPost: posts.length ? Math.min(...posts) : null, maxPost: posts.length ? Math.max(...posts) : null,
         avgDelta: avg(deltas), postCount: posts.length,
-        top3: list.filter(p => p.sheetRank != null).sort((a, b) => a.sheetRank - b.sheetRank).slice(0, 3),
-        bottom3: list.filter(p => p.sheetRank != null).sort((a, b) => b.sheetRank - a.sheetRank).slice(0, 3),
+        top3: rankable.filter(p => p.sheetRank != null).sort((a, b) => a.sheetRank - b.sheetRank).slice(0, 3),
+        bottom3: rankable.filter(p => p.sheetRank != null).sort((a, b) => b.sheetRank - a.sheetRank).slice(0, 3),
         usingPost: posts.length > 0,
       };
     }
