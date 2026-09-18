@@ -3341,8 +3341,11 @@ $("ktAddTrainerBtn").addEventListener("click", () => {
 });
 
 $("komentarSaveBtn").addEventListener("click",()=>{
-  updateTraining({komentarTrainer: window.ktTrainersData || []});
-  toast("✓ Komentar trainer sesi tersimpan");
+  // Jangan tampilkan toast "tersimpan" di sini secara optimis — updateTraining()
+  // sudah memicu apiUpdateClient() yang menampilkan toast sesuai hasil ASLI (berhasil
+  // ke cloud, gagal & masuk antrian retry, atau cuma tersimpan lokal). Toast ganda di
+  // sini dulu membuat admin mengira sudah tersinkron ke cloud padahal belum tentu.
+  updateTraining({komentarTrainer: window.ktTrainersData || []}, "✅ Komentar trainer tersimpan & tersinkron ke cloud");
 });
 
 /* ===========================

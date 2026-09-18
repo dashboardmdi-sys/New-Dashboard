@@ -5434,6 +5434,7 @@
         "login.rememberMe": "Remember me",
         "login.submit": "Masuk Dashboard",
         "login.validating": "Memvalidasi...",
+        "login.validatingSlow": "Masih menghubungkan ke server...",
         "login.footer": "Dengan melanjutkan, Anda menyetujui kebijakan penggunaan portal MDI TACK.",
         "login.errPinRequired": "Masukkan PIN!",
         "login.errPin4Digit": "PIN harus 4 digit angka!",
@@ -5684,6 +5685,7 @@
         "login.rememberMe": "Remember me",
         "login.submit": "Enter Dashboard",
         "login.validating": "Validating...",
+        "login.validatingSlow": "Still connecting to the server...",
         "login.footer": "By continuing, you agree to the MDI TACK portal usage policy.",
         "login.errPinRequired": "Please enter your PIN!",
         "login.errPin4Digit": "PIN must be a 4-digit number!",
@@ -6264,12 +6266,19 @@
           btnSubmitLogin.disabled = true;
           const originalHTML = btnSubmitLogin.innerHTML;
           btnSubmitLogin.innerHTML = `<span class="btn-spinner"></span>${t("login.validating")}`;
+          // Apps Script kadang "cold start" dan butuh belasan detik untuk merespons
+          // pertama kali — tanpa ini, tombol yang diam di teks yang sama selama itu
+          // terlihat seperti macet/error padahal sebenarnya masih berjalan normal.
+          const slowHintTimer = setTimeout(() => {
+            if (isChecking) btnSubmitLogin.innerHTML = `<span class="btn-spinner"></span>${t("login.validatingSlow")}`;
+          }, 6000);
           try {
             serverLoadOk = await loadPromise;
           } catch (e) {
             console.warn("Failed to load clients database during login validation:", e);
             serverLoadOk = false;
           } finally {
+            clearTimeout(slowHintTimer);
             isChecking = false;
             btnSubmitLogin.disabled = false;
             btnSubmitLogin.innerHTML = originalHTML;
