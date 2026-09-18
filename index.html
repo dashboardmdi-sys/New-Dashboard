@@ -343,6 +343,18 @@
       animation: spin .8s linear infinite
     }
 
+    .btn-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      margin-right: 8px;
+      vertical-align: -2px;
+      border: 2px solid rgba(255, 255, 255, .4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
     @keyframes spin {
       to {
         transform: rotate(360deg)
@@ -5426,6 +5438,7 @@
         "login.errPinRequired": "Masukkan PIN!",
         "login.errPin4Digit": "PIN harus 4 digit angka!",
         "login.errWrongCred": "Nama Perusahaan atau PIN salah. Coba lagi.",
+        "login.errServerUnreachable": "Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.",
         "header.backToHome": "Kembali ke Beranda",
         "header.themeToggle": "Ganti tema terang/gelap",
         "header.refreshTitle": "Muat ulang data sekarang",
@@ -5675,6 +5688,7 @@
         "login.errPinRequired": "Please enter your PIN!",
         "login.errPin4Digit": "PIN must be a 4-digit number!",
         "login.errWrongCred": "Company name or PIN is incorrect. Please try again.",
+        "login.errServerUnreachable": "Failed to connect to the server. Please check your internet connection and try again.",
         "header.backToHome": "Back to Home",
         "header.themeToggle": "Toggle light/dark theme",
         "header.refreshTitle": "Reload data now",
@@ -6016,8 +6030,7 @@
 
       // Jika sedang ada fetch yang berjalan, gunakan promise tersebut (debouncing/collapsing)
       if (loadClientsActivePromise) {
-        await loadClientsActivePromise;
-        return;
+        return await loadClientsActivePromise;
       }
 
       loadClientsActivePromise = (async () => {
@@ -6056,12 +6069,15 @@
           });
           try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch (e) { }
         }
+        // Beritahu pemanggil (mis. login) apakah fetch benar-benar berhasil, supaya
+        // gagal-konek ke server tidak disalahartikan sebagai "PIN salah".
+        return !!data;
       })();
 
       window.__loadClientsPromise = loadClientsActivePromise;
 
       try {
-        await loadClientsActivePromise;
+        return await loadClientsActivePromise;
       } finally {
         loadClientsActivePromise = null;
       }
@@ -6181,24 +6197,23 @@
     }
 
     /* =============== SCREEN FUNCTIONS =============== */
-    function showPinGate() {
-      const header = document.querySelector("header");
-      const footer = document.querySelector("footer");
-      if (header) header.style.visibility = "hidden";
-      if (footer) footer.style.visibility = "hidden";
+    // showPinGate() bisa terpanggil berkali-kali dalam satu sesi halaman (tombol
+    // back/forward browser lewat popstate, atau restore dari bfcache lewat pageshow) —
+    // bukan cuma sekali saat boot. Listener klik login HARUS dipasang sekali saja di
+    // sini; kalau tidak, setiap panggilan ulang menumpuk listener duplikat di tombol
+    // yang sama, dan begitu server lambat merespons, beberapa attemptLogin() yang
+    // jalan bersamaan saling menimpa innerHTML tombol — membuatnya macet permanen di
+    // "Memvalidasi..." walau proses aslinya sudah selesai.
+    let __pinGateBound = false;
+    function bindPinGateOnce() {
+      if (__pinGateBound) return;
+      __pinGateBound = true;
 
-      const gate = document.getElementById("pinGate");
       const box = document.getElementById("pinBox");
       const err = document.getElementById("pinErr");
       const nameInput = document.getElementById("companyNameInput");
       const companyPinInput = document.getElementById("companyPinInput");
       const btnSubmitLogin = document.getElementById("btnSubmitLogin");
-
-      gate.style.display = "flex";
-      err.classList.remove("show");
-      nameInput.value = "";
-      companyPinInput.value = "";
-      setTimeout(() => nameInput.focus(), 50);
 
       let isChecking = false;
       async function attemptLogin() {
@@ -6238,19 +6253,21 @@
         });
 
         // 2. Jika belum cocok di lokal dan database sedang dimuat dari server, tunggu proses server selesai
+        let serverLoadOk = true;
         if (!found && window.__loadClientsPromise) {
           isChecking = true;
           btnSubmitLogin.disabled = true;
-          const originalText = btnSubmitLogin.textContent;
-          btnSubmitLogin.textContent = t("login.validating");
+          const originalHTML = btnSubmitLogin.innerHTML;
+          btnSubmitLogin.innerHTML = `<span class="btn-spinner"></span>${t("login.validating")}`;
           try {
-            await window.__loadClientsPromise;
+            serverLoadOk = await window.__loadClientsPromise;
           } catch (e) {
             console.warn("Failed to load clients database during login validation:", e);
+            serverLoadOk = false;
           } finally {
             isChecking = false;
             btnSubmitLogin.disabled = false;
-            btnSubmitLogin.textContent = originalText;
+            btnSubmitLogin.innerHTML = originalHTML;
           }
 
           // Cek kembali setelah database cloud selesai dimuat
@@ -6259,6 +6276,17 @@
             const pinMatch = String(c.pin).padStart(4, '0') === pinInput;
             return nameMatch && pinMatch;
           });
+        }
+
+        // Gagal konek/timeout ke server BUKAN berarti PIN salah — jangan sesatkan
+        // pengguna dengan pesan "kredensial salah" saat sebenarnya server yang tidak merespons.
+        if (!found && !serverLoadOk) {
+          companyPinInput.value = "";
+          err.textContent = t("login.errServerUnreachable");
+          err.classList.add("show");
+          box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
+          setTimeout(() => { err.classList.remove("show"); }, 3500);
+          return;
         }
 
         if (found) {
@@ -6289,6 +6317,26 @@
       btnSubmitLogin.addEventListener("click", attemptLogin);
       nameInput.addEventListener("keydown", e => { if (e.key === "Enter") companyPinInput.focus(); });
       companyPinInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptLogin(); });
+    }
+
+    function showPinGate() {
+      const header = document.querySelector("header");
+      const footer = document.querySelector("footer");
+      if (header) header.style.visibility = "hidden";
+      if (footer) footer.style.visibility = "hidden";
+
+      const gate = document.getElementById("pinGate");
+      const err = document.getElementById("pinErr");
+      const nameInput = document.getElementById("companyNameInput");
+      const companyPinInput = document.getElementById("companyPinInput");
+
+      gate.style.display = "flex";
+      err.classList.remove("show");
+      nameInput.value = "";
+      companyPinInput.value = "";
+      setTimeout(() => nameInput.focus(), 50);
+
+      bindPinGateOnce();
     }
 
     function applyClientConfig(client) {
