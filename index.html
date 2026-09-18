@@ -6083,7 +6083,7 @@
       }
     }
 
-    function formatDriveImageUrl(url) {
+    function formatDriveImageUrl(url, size = "") {
       if (!url || typeof url !== "string") return "";
       let trimmed = url.trim();
       if (!trimmed) return "";
@@ -6096,7 +6096,8 @@
         fileId = matchIdParam[1];
       }
       if (fileId) {
-        return `https://lh3.googleusercontent.com/d/${fileId}`;
+        const sizeParam = size ? `=${size}` : "";
+        return `https://lh3.googleusercontent.com/d/${fileId}${sizeParam}`;
       }
       return trimmed;
     }
@@ -7563,7 +7564,7 @@
             evalTrainersEl.innerHTML = trainers.map((tr, i) => {
               const ktMatch = ktByName[(tr.name || "").trim().toLowerCase()];
               const rawPhoto = evalPhotosList[i] || (ktMatch && ktMatch.photoUrl ? ktMatch.photoUrl : "");
-              const photoUrl = rawPhoto ? formatDriveImageUrl(rawPhoto) : "";
+              const photoUrl = rawPhoto ? formatDriveImageUrl(rawPhoto, "w600") : "";
               const bgStyle = photoUrl ? ` style="background-image:url('${esc(photoUrl)}')"` : "";
               return `
           <div class="trainer${i === 0 ? " active" : ""}${photoUrl ? "" : " trainer--nophoto"}" aria-hidden="${i === 0 ? "false" : "true"}"${bgStyle}>
@@ -10272,7 +10273,7 @@
             allHtml += ktArr.map((kt) => {
               const initial = ((kt.name || "T").trim().charAt(0) || "T").toUpperCase();
               const title = kt.apresiasi ? kt.apresiasi : t("nav.komentar");
-              const photo = kt.photoUrl ? formatDriveImageUrl(kt.photoUrl) : "";
+              const photo = kt.photoUrl ? formatDriveImageUrl(kt.photoUrl, "w400") : "";
               const daysHtml = (kt.days && kt.days.length > 0)
                 ? `<div class="kt-days">` + kt.days.map((d, i) => `
                 <section class="kt-day">
@@ -10286,7 +10287,7 @@
               <div class="kt-rule kt-anim" style="animation-delay:0ms"></div>
               <h3 class="kt-title kt-anim" style="animation-delay:70ms">${esc(title)}</h3>
               <div class="kt-byline kt-anim" style="animation-delay:140ms">
-                <div class="kt-photo">${esc(initial)}${photo ? `<img src="${esc(photo)}" alt="" onerror="this.remove()">` : ""}</div>
+                <div class="kt-photo">${esc(initial)}${photo ? `<img src="${esc(photo)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</div>
                 <div>
                   <div class="kt-name">${esc(kt.name || "Trainer")}</div>
                   <div class="kt-role">${esc(kt.role || "Fasilitator")}</div>
@@ -10320,8 +10321,9 @@
               const photosHtml = day.photos && day.photos.length > 0
                 ? `<div class="gallery-grid">${day.photos.map(ph => {
                   const pUrl = formatDriveImageUrl(ph.url);
+                  const pThumb = formatDriveImageUrl(ph.url, "w800");
                   return `<div class="gallery-img-wrap" onclick="window.open('${esc(pUrl)}')">
-                  <img src="${esc(pUrl)}" alt="Foto Dokumentasi" onerror="this.parentElement.style.display='none'">
+                  <img src="${esc(pThumb)}" alt="Foto Dokumentasi" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'">
                 </div>`;
                 }).join("")}</div>`
                 : `<div style="text-align:center;padding:12px;color:var(--n500);font-size:.8rem">${t("doc.noPhotos")}</div>`;

@@ -3209,7 +3209,7 @@ $("evalSaveBtn").addEventListener("click",()=>{
   toast("✓ Evaluasi manual tersimpan");
 });
 
-function formatDriveImageUrl(url) {
+function formatDriveImageUrl(url, size = "") {
   if (!url || typeof url !== "string") return "";
   let trimmed = url.trim();
   if (!trimmed) return "";
@@ -3222,7 +3222,8 @@ function formatDriveImageUrl(url) {
     fileId = matchIdParam[1];
   }
   if (fileId) {
-    return `https://lh3.googleusercontent.com/d/${fileId}`;
+    const sizeParam = size ? `=${size}` : "";
+    return `https://lh3.googleusercontent.com/d/${fileId}${sizeParam}`;
   }
   return trimmed;
 }
@@ -3334,7 +3335,7 @@ function renderDayList(docs){
   list.innerHTML=docs.map((day,di)=>{
     const thumbs=day.photos.map((ph,pi)=>`
       <div class="photo-thumb">
-        <img src="${esc(formatDriveImageUrl(ph.url))}" alt="Foto ${pi+1}" onerror="this.parentElement.style.display='none'">
+        <img src="${esc(formatDriveImageUrl(ph.url, "w300"))}" alt="Foto ${pi+1}" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'">
         <button class="remove-photo" onclick="removePhoto(${di},${pi})" title="Hapus foto">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
