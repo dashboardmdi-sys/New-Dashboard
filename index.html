@@ -6209,6 +6209,7 @@
       if (__pinGateBound) return;
       __pinGateBound = true;
 
+      const gate = document.getElementById("pinGate");
       const box = document.getElementById("pinBox");
       const err = document.getElementById("pinErr");
       const nameInput = document.getElementById("companyNameInput");
@@ -6245,22 +6246,25 @@
           return;
         }
 
+        const norm = s => (s || "").replace(/\s+/g, " ").trim().toLowerCase();
+
         // 1. Cek langsung ke cache database lokal (Login Instan tanpa delay!)
-        let found = clientsDb.find(c => {
-          const nameMatch = (c.name || "").trim().toLowerCase() === companyNameVal.toLowerCase();
-          const pinMatch = String(c.pin).padStart(4, '0') === pinInput;
+        let found = (clientsDb || []).find(c => {
+          const nameMatch = norm(c.name) === norm(companyNameVal);
+          const pinMatch = String(c.pin || "").trim().padStart(4, "0") === pinInput || String(c.pin || "").trim() === pinInput;
           return nameMatch && pinMatch;
         });
 
-        // 2. Jika belum cocok di lokal dan database sedang dimuat dari server, tunggu proses server selesai
+        // 2. Jika belum cocok di lokal dan database sedang dimuat dari server (atau clientsDb kosong), tunggu proses server selesai
         let serverLoadOk = true;
-        if (!found && window.__loadClientsPromise) {
+        let loadPromise = window.__loadClientsPromise || ((!clientsDb || clientsDb.length === 0) ? loadClientsDbAsync() : null);
+        if (!found && loadPromise) {
           isChecking = true;
           btnSubmitLogin.disabled = true;
           const originalHTML = btnSubmitLogin.innerHTML;
           btnSubmitLogin.innerHTML = `<span class="btn-spinner"></span>${t("login.validating")}`;
           try {
-            serverLoadOk = await window.__loadClientsPromise;
+            serverLoadOk = await loadPromise;
           } catch (e) {
             console.warn("Failed to load clients database during login validation:", e);
             serverLoadOk = false;
@@ -6271,9 +6275,9 @@
           }
 
           // Cek kembali setelah database cloud selesai dimuat
-          found = clientsDb.find(c => {
-            const nameMatch = (c.name || "").trim().toLowerCase() === companyNameVal.toLowerCase();
-            const pinMatch = String(c.pin).padStart(4, '0') === pinInput;
+          found = (clientsDb || []).find(c => {
+            const nameMatch = norm(c.name) === norm(companyNameVal);
+            const pinMatch = String(c.pin || "").trim().padStart(4, "0") === pinInput || String(c.pin || "").trim() === pinInput;
             return nameMatch && pinMatch;
           });
         }
@@ -6297,11 +6301,13 @@
           } else {
             localStorage.removeItem("mdp-logged-client");
           }
-          gate.classList.add("unlocked");
+          if (gate) gate.classList.add("unlocked");
           loggedClient = found;
           setTimeout(() => {
-            gate.style.display = "none";
-            gate.classList.remove("unlocked");
+            if (gate) {
+              gate.style.display = "none";
+              gate.classList.remove("unlocked");
+            }
             applyClientConfig(loggedClient);
             showMainMenu();
           }, 50);
@@ -6330,11 +6336,11 @@
       const nameInput = document.getElementById("companyNameInput");
       const companyPinInput = document.getElementById("companyPinInput");
 
-      gate.style.display = "flex";
-      err.classList.remove("show");
-      nameInput.value = "";
-      companyPinInput.value = "";
-      setTimeout(() => nameInput.focus(), 50);
+      if (gate) gate.style.display = "flex";
+      if (err) err.classList.remove("show");
+      if (nameInput) nameInput.value = "";
+      if (companyPinInput) companyPinInput.value = "";
+      if (nameInput) setTimeout(() => nameInput.focus(), 50);
 
       bindPinGateOnce();
     }
