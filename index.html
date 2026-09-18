@@ -6556,6 +6556,7 @@
         pollMs: training.pollMs || 10000,
         evaluasi: training.evaluasi || "",
         komentarTrainer: training.komentarTrainer || "",
+        dokumentasi: Array.isArray(training.dokumentasi) ? training.dokumentasi : [],
         actionPlan: (Array.isArray(training.actionPlan) && training.actionPlan.length > 0) ? training.actionPlan : (function () {
           try {
             const raw = localStorage.getItem('mdi_participants_form_' + training.id);
