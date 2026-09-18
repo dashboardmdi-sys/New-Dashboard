@@ -1943,17 +1943,22 @@ setInterval(retryPendingSyncs, 60000);
 
 async function apiAddClient(c) {
   try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
   try {
     toast("⏳ Menyimpan ke database...");
     const res = await fetch(WEB_APP_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({action: 'addClient', client: c})
+      body: JSON.stringify({action: 'addClient', client: c}),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
     const json = await res.json();
     if(json.success) toast(`✅ Akun "${c.name}" berhasil dibuat | PIN: ${String(c.pin).padStart(4, '0')}`);
     else { queuePendingSync('addClient', c); toast("⚠️ Gagal menyimpan ke cloud — akan dicoba otomatis lagi"); }
   } catch(e) {
+    clearTimeout(timeoutId);
     console.warn("apiAddClient error:", e);
     queuePendingSync('addClient', c);
     toast(`✅ Akun "${c.name}" tersimpan di lokal — sinkronisasi cloud akan dicoba otomatis`);
@@ -1962,17 +1967,22 @@ async function apiAddClient(c) {
 
 async function apiUpdateClient(c, successMsg="✅ Tersimpan!") {
   try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
   try {
     toast("⏳ Menyimpan perubahan...");
     const res = await fetch(WEB_APP_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({action: 'updateClient', client: c})
+      body: JSON.stringify({action: 'updateClient', client: c}),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
     const json = await res.json();
     if(json.success) toast(successMsg);
     else { queuePendingSync('updateClient', c); toast("⚠️ Gagal update di cloud — akan dicoba sinkron ulang otomatis"); }
   } catch(e) {
+    clearTimeout(timeoutId);
     console.warn("apiUpdateClient error:", e);
     queuePendingSync('updateClient', c);
     toast("✓ Tersimpan di browser lokal — sinkronisasi cloud akan dicoba otomatis");
@@ -2081,14 +2091,26 @@ async function apiGenerateAISummary(training, client) {
       `;
       document.getElementById("saveAiPreviewBtn").onclick = async () => {
         const btn = document.getElementById("saveAiPreviewBtn");
-        btn.innerText = "Menyimpan...";
-        btn.disabled = true;
-        training.aiSummary = cleanedData;
-        updateLocalClientArray(client);
-        await apiUpdateClient(client, "Ringkasan AI Berhasil Disimpan!");
-        renderTrainingList();
-        notifyIframeTrainingChanged();
-        openEditTraining(training.id);
+        if (btn) {
+          btn.innerText = "⏳ Menyimpan...";
+          btn.disabled = true;
+        }
+        try {
+          training.aiSummary = cleanedData;
+          updateLocalClientArray(client);
+          await apiUpdateClient(client, "✅ Ringkasan AI Berhasil Disimpan!");
+          renderTrainingList();
+          notifyIframeTrainingChanged();
+          openEditTraining(training.id);
+          switchTab("evaluasi");
+        } catch(err) {
+          console.error("Save AI Summary error:", err);
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = "Simpan Kesimpulan AI ke Dashboard";
+          }
+          toast("⚠️ Gagal menyimpan ke server, disimpan di lokal");
+        }
       };
     } else {
       toast("⚠️ Gagal memproses AI");
