@@ -10912,20 +10912,15 @@
                   if (typeof activeTrainingId !== "undefined" && activeTrainingId) {
                     const freshTraining = (freshClient.trainings || []).find(t => String(t.id) === String(activeTrainingId));
                     if (freshTraining) {
-                      // Jangan timpa data yang sudah tampil dengan hasil kosong dari satu siklus
-                      // poll yang kebetulan glitch/tidak lengkap (endpoint Apps Script memang
-                      // sering tidak stabil) — kalau tidak, komentar trainer/evaluasi/dokumentasi
-                      // yang sudah muncul bisa hilang sendiri sesaat lalu kembali di poll berikutnya.
-                      const hasContent = v => {
-                        if (v == null) return false;
-                        if (typeof v === "string") return v.trim() !== "";
-                        if (Array.isArray(v)) return v.length > 0;
-                        if (typeof v === "object") return Object.keys(v).length > 0;
-                        return !!v;
-                      };
-                      if (hasContent(freshTraining.evaluasi)) CONFIG.evaluasi = freshTraining.evaluasi;
-                      if (hasContent(freshTraining.komentarTrainer)) CONFIG.komentarTrainer = freshTraining.komentarTrainer;
-                      if (hasContent(freshTraining.dokumentasi)) CONFIG.dokumentasi = freshTraining.dokumentasi;
+                      // json.success di atas sudah memastikan fetch ini benar-benar berhasil dan
+                      // datanya utuh (bukan hasil parsial/glitch) — jadi percayai apa adanya,
+                      // termasuk kalau memang dikosongkan/dihapus oleh admin di Backend. Sempat
+                      // ditambahkan guard "jangan timpa dengan kosong" di sini, tapi itu malah jadi
+                      // bug: penghapusan komentar trainer yang disengaja tidak pernah tercermin di
+                      // frontend karena versi lama terus dipertahankan.
+                      CONFIG.evaluasi = freshTraining.evaluasi || "";
+                      CONFIG.komentarTrainer = freshTraining.komentarTrainer || "";
+                      CONFIG.dokumentasi = Array.isArray(freshTraining.dokumentasi) ? freshTraining.dokumentasi : [];
                       if (Array.isArray(freshTraining.actionPlan) && freshTraining.actionPlan.length > 0) {
                         CONFIG.actionPlan = freshTraining.actionPlan;
                         try { localStorage.setItem('mdi_participants_form_' + activeTrainingId, JSON.stringify(freshTraining.actionPlan)); } catch (e) { }
