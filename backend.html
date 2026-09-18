@@ -1873,10 +1873,34 @@ async function fetchDatabase() {
       clientsDb = data.map(serverClient => {
         const localClient = localMap.get(String(serverClient.id));
         if (!localClient) return serverClient;
+
+        // Jika client lokal lebih baru secara keseluruhan, gunakan lokal
         if ((localClient.updatedAt || 0) > (serverClient.updatedAt || 0)) {
           return localClient;
         }
-        return serverClient;
+
+        // Jika server lebih baru di level client, tapi beberapa training mungkin
+        // sudah diupdate lokal (belum sempat sync ke cloud) — merge per training
+        // agar perubahan lokal yang belum tersinkron tidak tertimpa server lama.
+        const merged = { ...serverClient };
+        const serverTrainings = serverClient.trainings || [];
+        const localTrainings = localClient.trainings || [];
+        if (localTrainings.length > 0) {
+          const localTrainingMap = new Map(localTrainings.map(t => [String(t.id), t]));
+          merged.trainings = serverTrainings.map(serverT => {
+            const localT = localTrainingMap.get(String(serverT.id));
+            if (!localT) return serverT;
+            // Gunakan versi lokal jika updatedAt lebih baru (belum berhasil sync ke cloud)
+            return (localT.updatedAt || 0) > (serverT.updatedAt || 0) ? localT : serverT;
+          });
+          // Tambahkan training lokal yang belum ada di server (baru dibuat, belum sync)
+          localTrainings.forEach(localT => {
+            if (!serverTrainings.find(st => String(st.id) === String(localT.id))) {
+              merged.trainings.push(localT);
+            }
+          });
+        }
+        return merged;
       });
       try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
     } else {
@@ -1968,7 +1992,7 @@ async function apiAddClient(c) {
 async function apiUpdateClient(c, successMsg="✅ Tersimpan!") {
   try { localStorage.setItem("mdp-clients-db", JSON.stringify(clientsDb)); } catch(e){}
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
   try {
     toast("⏳ Menyimpan perubahan...");
     const res = await fetch(WEB_APP_URL, {
@@ -1980,12 +2004,12 @@ async function apiUpdateClient(c, successMsg="✅ Tersimpan!") {
     clearTimeout(timeoutId);
     const json = await res.json();
     if(json.success) toast(successMsg);
-    else { queuePendingSync('updateClient', c); toast("⚠️ Gagal update di cloud — akan dicoba sinkron ulang otomatis"); }
+    else { queuePendingSync('updateClient', c); toast("❌ Gagal disimpan ke cloud — coba klik Simpan lagi"); }
   } catch(e) {
     clearTimeout(timeoutId);
     console.warn("apiUpdateClient error:", e);
     queuePendingSync('updateClient', c);
-    toast("✓ Tersimpan di browser lokal — sinkronisasi cloud akan dicoba otomatis");
+    toast("❌ Gagal terhubung ke server — coba klik Simpan lagi");
   }
 }
 
@@ -3328,10 +3352,12 @@ window.addKtDay = function(ti) {
 window.removeKtDay = function(ti, di) {
   window.ktTrainersData[ti].days.splice(di, 1);
   renderKtTrainers();
+  updateTraining({komentarTrainer: window.ktTrainersData || []}, "✅ Highlight hari dihapus & tersinkron ke cloud");
 }
 window.removeKtTrainer = function(ti) {
   window.ktTrainersData.splice(ti, 1);
   renderKtTrainers();
+  updateTraining({komentarTrainer: window.ktTrainersData || []}, "✅ Trainer dihapus & tersinkron ke cloud");
 }
 $("ktAddTrainerBtn").addEventListener("click", () => {
   window.ktTrainersData = window.ktTrainersData || [];
