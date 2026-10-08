@@ -4513,9 +4513,20 @@
 
     <!-- ============ KPI ============ -->
     <div class="dash-pane active" id="pane-prepost">
-      <div class="overline" data-animate id="section-prepost"><span class="num">01</span> <span
-          data-i18n="sec.prepost01">Ringkasan Program</span></div>
-      <section class="kpi-grid" id="kpiGrid">
+      <!-- Empty State ketika data Pre & Post Test belum ada / kosong -->
+      <div id="prepostEmptyState" style="display: none; padding-top: 10px;">
+        <div class="overline" data-animate><span class="num">01</span> <span data-i18n="sec.prepost01">Ringkasan Program</span></div>
+        <div class="card" style="text-align:center; padding: 56px 20px; color: var(--n500); border-radius: var(--radius-lg); margin-top: 10px;">
+          <div style="font-size: 40px; margin-bottom: 12px;">📝</div>
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 6px;">Belum Ada Data Pre &amp; Post Test</h3>
+          <p style="font-size: 13px; color: var(--n500); max-width: 480px; margin: 0 auto; line-height: 1.6;">Google Sheet respon Pre &amp; Post Test belum dikonfigurasi atau belum memiliki data peserta untuk sesi pelatihan ini.</p>
+        </div>
+      </div>
+
+      <div id="prepostContent">
+        <div class="overline" data-animate id="section-prepost"><span class="num">01</span> <span
+            data-i18n="sec.prepost01">Ringkasan Program</span></div>
+        <section class="kpi-grid" id="kpiGrid">
 
         <div class="card kpi" data-animate id="kpiPeserta">
           <div class="accent" style="background:var(--navy)"></div>
@@ -4661,6 +4672,7 @@
             </table>
           </div>
         </div>
+      </div>
     </div>
 
     <!-- ============ EVALUATION ============ -->
@@ -8053,6 +8065,12 @@
           stats = computeStats(list);
           dataChanged = true;
         }
+      } else if (!targetMainId) {
+        if (participants.length > 0 || stats !== null) {
+          participants = [];
+          stats = null;
+          dataChanged = true;
+        }
       }
 
       if (evalSuccess) {
@@ -8153,6 +8171,22 @@
     }
 
     function render(flash) {
+      const prepostContent = document.getElementById("prepostContent");
+      const prepostEmptyState = document.getElementById("prepostEmptyState");
+
+      const hasPrePostData = participants && participants.length > 0;
+
+      if (!hasPrePostData) {
+        if (prepostContent) prepostContent.style.display = "none";
+        if (prepostEmptyState) prepostEmptyState.style.display = "block";
+        /* --- Evaluation --- */
+        renderDynamicEvaluation(currentEvalData);
+        return;
+      }
+
+      if (prepostEmptyState) prepostEmptyState.style.display = "none";
+      if (prepostContent) prepostContent.style.display = "block";
+
       const s = stats || {
         total: 0,
         avgPre: null,
