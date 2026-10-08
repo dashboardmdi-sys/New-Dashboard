@@ -964,10 +964,10 @@
           <!-- Card 1: Google Sheet Evaluasi (Dinamis) -->
           <div class="card" style="margin-bottom: 16px;">
             <div class="card-head"><h2>Google Sheet Evaluasi</h2></div>
-            <p class="card-desc">Tentukan Google Sheet sumber data respon survei evaluasi sesi pelatihan ini. Jika dikosongkan, akan otomatis menggunakan Google Sheet utama.</p>
+            <p class="card-desc">Tentukan Google Sheet sumber data respon survei evaluasi sesi pelatihan ini. Kosongkan jika sesi ini tidak memiliki survei evaluasi.</p>
             <div class="field">
               <label for="cfgEvalSheetId">Google Sheet ID atau URL Evaluasi</label>
-              <input type="text" id="cfgEvalSheetId" placeholder="Kosongkan jika menggunakan Sheet ID utama">
+              <input type="text" id="cfgEvalSheetId" placeholder="contoh: 1HW6hImcPhcd92Zr34nHpPG6uYXyVQyBNI02CM5aZqgY (kosongkan jika tidak ada)">
               <div class="help">ID terdeteksi: <code id="cfgEvalIdEcho">—</code></div>
             </div>
             <div class="field">
@@ -3070,7 +3070,12 @@ function detectEvalTrainerColumns(rawHeaders, trainerNames) {
 
 $("cfgEvalTestBtn").addEventListener("click", async()=>{
   const box=$("cfgEvalTestResult"); box.classList.add("show");
-  const id=extractSheetId($("cfgEvalSheetId").value) || extractSheetId($("cfgSheetId").value);
+  const id=extractSheetId($("cfgEvalSheetId").value);
+  const csvUrl=$("cfgEvalCsvUrl").value.trim();
+  if(!id && !csvUrl) {
+    box.innerHTML=`<div class="test-status err"><span class="dot"></span>Masukkan Google Sheet ID atau URL CSV Evaluasi terlebih dahulu.</div>`;
+    return;
+  }
   const icon=$("cfgEvalTestIcon"); icon.classList.add("spin");
   box.innerHTML=`<div class="test-status warn"><span class="dot"></span>Menguji koneksi…</div>`;
   try{
