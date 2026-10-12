@@ -5443,8 +5443,8 @@ function generateMdiPdfReportBackend(cfg) {
           </div>
         </div>`;
 
-      // Standard training feedback (<= 1100 chars or <= 1 block) fits comfortably in 1 page without touching the footer
-      if (totalChars <= 1100 || blocks.length <= 1) {
+      // Single page threshold: if all content is <= 1800 chars or only 1 block, fit on 1 page
+      if (totalChars <= 1800 || blocks.length <= 1) {
         const allHtml = blocks.map(s => s.html).join('');
 
         return `
@@ -5472,13 +5472,14 @@ function generateMdiPdfReportBackend(cfg) {
 </div>`;
       }
 
-      // If content > 1100 chars, split evenly across 2 pages
+      // If content > 1800 chars: Penuhi halaman atas dulu (~1950 chars), baru sisanya di halaman lanjutan
       const page1Blocks = [];
       const page2Blocks = [];
       let accChars = 0;
-      const p1Cap = Math.min(1100, Math.ceil(totalChars / 2));
+      const p1Cap = 1950;
 
       blocks.forEach((b, idx) => {
+        // Penuhi halaman 1 hingga batas kapasitas optimal (~1950 chars), sisakan minimal 1 blok untuk halaman 2
         if ((accChars + b.charCount <= p1Cap || page1Blocks.length === 0) && idx < blocks.length - 1) {
           page1Blocks.push(b);
           accChars += b.charCount;
