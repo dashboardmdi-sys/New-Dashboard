@@ -1748,6 +1748,33 @@
                 <input type="text" id="pdfCfgDates" placeholder="22 - 23 Mei 2026" style="font-size:12px; padding:8px 12px;">
               </div>
             </div>
+
+            <!-- Persentase Evaluasi (Halaman Cover Infografis) -->
+            <div style="margin-bottom:12px; padding:12px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:12px; font-weight:700; color:#0f172a;">📊 Metrik Kepuasan Evaluasi (Cover Infografis)</span>
+                <span id="pdfEvalStatusBadge" style="font-size:11px; color:#64748b; font-weight:600;">Otomatis dari Tab Evaluasi</span>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;">
+                <div class="field" style="margin:0;">
+                  <label for="pdfCfgPctBenefit" style="font-size:11px;">% Bermanfaat</label>
+                  <input type="number" id="pdfCfgPctBenefit" placeholder="100" min="0" max="100" style="font-size:12px; padding:7px 10px;">
+                </div>
+                <div class="field" style="margin:0;">
+                  <label for="pdfCfgPctEnjoyment" style="font-size:11px;">% Senang</label>
+                  <input type="number" id="pdfCfgPctEnjoyment" placeholder="100" min="0" max="100" style="font-size:12px; padding:7px 10px;">
+                </div>
+                <div class="field" style="margin:0;">
+                  <label for="pdfCfgPctRelevance" style="font-size:11px;">% Relevan</label>
+                  <input type="number" id="pdfCfgPctRelevance" placeholder="100" min="0" max="100" style="font-size:12px; padding:7px 10px;">
+                </div>
+                <div class="field" style="margin:0;">
+                  <label for="pdfCfgPctPractical" style="font-size:11px;">% Praktikal & Aplikatif</label>
+                  <input type="number" id="pdfCfgPctPractical" placeholder="100" min="0" max="100" style="font-size:12px; padding:7px 10px;">
+                </div>
+              </div>
+            </div>
+
             <div class="field" style="margin-bottom:12px;">
               <label for="pdfCfgTopicsUseful" style="font-size:12px;">Topik yang Dirasa Bermanfaat (pisahkan dengan koma)</label>
               <textarea id="pdfCfgTopicsUseful" rows="2" placeholder="Problem solving, Change management, Leadership, Coaching, Wewenang, Gaya kepribadian" style="font-size:12px; padding:8px 12px; min-height:58px;"></textarea>
@@ -4809,6 +4836,123 @@ function updatePage45Label() {
   });
 }
 
+function parseEvaluationSheetData(rows, ratingScale) {
+  if (!rows || rows.length < 2) return null;
+  const ratingMax = Math.max(2, Math.round(ratingScale) || 5);
+  const headers = rows[0].map(h => String(h || '').trim().toLowerCase());
+
+  const toNum = (val) => {
+    if (!val) return 0;
+    const str = String(val).trim();
+    const direct = parseFloat(str.replace(',', '.'));
+    if (!isNaN(direct) && direct >= 1 && direct <= ratingMax) return direct;
+    const match = str.match(/^(\d+)/);
+    if (match) { const num = parseFloat(match[1]); if (num >= 1 && num <= ratingMax) return num; }
+    const v = str.toLowerCase();
+    if (v.includes('sangat baik') || v.includes('sangat bermanfaat') || v.includes('sangat setuju') || v.includes('sangat relevan') || v.includes('sangat senang') || v.includes('excellent')) return ratingMax;
+    if (v.includes('sangat kurang') || v.includes('sangat buruk') || v.includes('tidak sama sekali')) return 1;
+    if (v.includes('kurang') || v.includes('buruk') || v.includes('tidak')) return Math.max(1, Math.round(ratingMax * 0.4));
+    if (v.includes('baik') || v.includes('bermanfaat') || v.includes('setuju') || v.includes('relevan') || v.includes('senang') || v.includes('good')) return Math.max(1, Math.round(ratingMax * 0.8));
+    if (v.includes('cukup') || v.includes('sedang') || v.includes('biasa') || v.includes('mungkin')) return Math.max(1, Math.round((ratingMax + 1) / 2));
+    return 0;
+  };
+
+  const findCol = (keywords, excludes = []) => {
+    for (let i = 0; i < headers.length; i++) {
+      if (keywords.every(k => headers[i].includes(k)) && excludes.every(x => !headers[i].includes(x))) return i;
+    }
+    return -1;
+  };
+
+  const hasTimestamp = headers[0].includes('timestamp') || headers[0].includes('waktu') || headers[0] === '';
+  const off = hasTimestamp ? 0 : -1;
+  const fb = (v, def) => v !== -1 ? v : (def >= 0 && def < headers.length ? def : -1);
+
+  const colMap = {
+    benefit: fb(
+      findCol(['manfaat'], ['topik', 'penilaian', 'trainer', 'kesan']) !== -1
+        ? findCol(['manfaat'], ['topik', 'penilaian', 'trainer', 'kesan'])
+        : headers.findIndex(h => h.includes('benefit') || h.includes('bermanfaat')),
+      1 + off),
+    enjoyment: fb(
+      findCol(['senang']) !== -1
+        ? findCol(['senang'])
+        : headers.findIndex(h => h.includes('enjoy') || h.includes('menikmati') || h.includes('pengalaman') || h.includes('experience')),
+      2 + off),
+    relevance: fb(
+      findCol(['materi yang diberikan']) !== -1
+        ? findCol(['materi yang diberikan'])
+        : headers.findIndex(h => h.includes('relevan') || h.includes('relevance') || h.includes('sesuai') || h.includes('daily work')),
+      3 + off),
+    practical: fb(
+      headers.findIndex(h => h.includes('praktikal') || h.includes('aplikatif') || h.includes('praktek')),
+      4 + off),
+    topics: fb(
+      findCol(['topik bahasan']) !== -1
+        ? findCol(['topik bahasan'])
+        : headers.findIndex(h => h.includes('topik') && (h.includes('manfaat') || h.includes('bermanfaat') || h.includes('valuable') || h.includes('disukai'))),
+      10 + off),
+    nextTopics: fb(
+      findCol(['harapkan']) !== -1
+        ? findCol(['harapkan'])
+        : (findCol(['selanjutnya']) !== -1
+          ? findCol(['selanjutnya'])
+          : headers.findIndex(h => (h.includes('selanjutnya') || h.includes('next') || h.includes('lanjutan') || h.includes('usulan') || h.includes('request')) && (h.includes('topik') || h.includes('materi') || h.includes('pelatihan')))),
+      11 + off)
+  };
+
+  const extractRatings = (colIdx) => {
+    if (colIdx === -1) return null;
+    const vals = [];
+    for (let i = 1; i < rows.length; i++) {
+      const val = toNum(rows[i][colIdx]);
+      if (val > 0) vals.push(val);
+    }
+    if (!vals.length) return null;
+    const topCount = vals.filter(v => v >= ratingMax - 1).length;
+    return {
+      avg: vals.reduce((a, b) => a + b, 0) / vals.length,
+      pct54: Math.round((topCount / vals.length) * 100),
+      total: vals.length
+    };
+  };
+
+  const extractChips = (colIdx) => {
+    if (colIdx === -1) return [];
+    const counts = {};
+    for (let i = 1; i < rows.length; i++) {
+      const val = String(rows[i][colIdx] || '').trim();
+      if (!val) continue;
+      const parts = val.split(/[;,\n]/);
+      for (const p of parts) {
+        const chip = p.trim().replace(/^["']|["']$/g, '');
+        if (!chip || chip.length < 2) continue;
+        const clean = chip.charAt(0).toUpperCase() + chip.slice(1);
+        counts[clean] = (counts[clean] || 0) + 1;
+      }
+    }
+    return Object.entries(counts)
+      .map(([text, count]) => ({ text, count }))
+      .sort((a, b) => b.count - a.count)
+      .map(x => x.text);
+  };
+
+  const bStats = extractRatings(colMap.benefit);
+  const eStats = extractRatings(colMap.enjoyment);
+  const rStats = extractRatings(colMap.relevance);
+  const pStats = extractRatings(colMap.practical);
+
+  return {
+    benefitPct: bStats ? bStats.pct54 : 100,
+    enjoymentPct: eStats ? eStats.pct54 : 100,
+    relevancePct: rStats ? rStats.pct54 : 100,
+    practicalPct: pStats ? pStats.pct54 : 100,
+    valuableTopics: extractChips(colMap.topics),
+    nextTopics: extractChips(colMap.nextTopics),
+    total: bStats ? bStats.total : (rows.length - 1)
+  };
+}
+
 function prefillPdfConfig() {
   try {
     let c = null, t = null;
@@ -4825,6 +4969,10 @@ function prefillPdfConfig() {
     const datesEl = document.getElementById('pdfCfgDates');
     const topicsUsefulEl = document.getElementById('pdfCfgTopicsUseful');
     const topicsFutureEl = document.getElementById('pdfCfgTopicsFuture');
+    const pctBenEl = document.getElementById('pdfCfgPctBenefit');
+    const pctEnjEl = document.getElementById('pdfCfgPctEnjoyment');
+    const pctRelEl = document.getElementById('pdfCfgPctRelevance');
+    const pctPracEl = document.getElementById('pdfCfgPctPractical');
 
     if (clientEl) {
       if (c && c.name) clientEl.value = c.name;
@@ -4864,11 +5012,62 @@ function prefillPdfConfig() {
       }
     }
 
+    // Prefill from AI summary if available
+    if (t && t.aiSummary) {
+      if (t.aiSummary.topikBermanfaat && topicsUsefulEl && !topicsUsefulEl.value.trim()) {
+        topicsUsefulEl.value = t.aiSummary.topikBermanfaat;
+      }
+      if (t.aiSummary.topikSelanjutnya && topicsFutureEl && !topicsFutureEl.value.trim()) {
+        topicsFutureEl.value = t.aiSummary.topikSelanjutnya;
+      }
+    }
+
     if (topicsUsefulEl && !topicsUsefulEl.value.trim()) {
       topicsUsefulEl.value = 'Problem solving, Gaya kepribadian, Change management, Effective communication, Managing performance team, Coaching, Leadership, Wewenang';
     }
     if (topicsFutureEl && !topicsFutureEl.value.trim()) {
       topicsFutureEl.value = 'Problem solving, How to be a success leader, Delegasi, Management risk, Management conflict, Supply chain, Time management, Emotional management';
+    }
+
+    // Prefill Evaluation metrics from Tab Evaluasi
+    const evalSheetId = (t && t.evalSheetId) || (document.getElementById('cfgEvalSheetId')||{}).value || (t && t.sheetId);
+    const evalCsvUrl = (t && t.evalCsvUrl) || (document.getElementById('cfgEvalCsvUrl')||{}).value;
+    const evalSheetName = (t && t.evalSheetName) || (document.getElementById('cfgEvalSheetName')||{}).value || 'Sheet2';
+    const evalRange = (t && t.evalDataRange) || (document.getElementById('cfgEvalDataRange')||{}).value || '';
+    const ratingScale = (t && t.ratingScale) || (document.getElementById('cfgEvalRatingScale')||{}).value || 5;
+
+    if (evalSheetId || evalCsvUrl) {
+      const badge = document.getElementById('pdfEvalStatusBadge');
+      if (badge) badge.textContent = '⏳ Membaca Tab Evaluasi...';
+      testSheetConnection(evalSheetId, evalCsvUrl, evalSheetName, evalRange).then(res => {
+        if (res && Array.isArray(res.rows) && res.rows.length > 1) {
+          const evalRes = parseEvaluationSheetData(res.rows, ratingScale);
+          if (evalRes) {
+            if (pctBenEl) pctBenEl.value = evalRes.benefitPct;
+            if (pctEnjEl) pctEnjEl.value = evalRes.enjoymentPct;
+            if (pctRelEl) pctRelEl.value = evalRes.relevancePct;
+            if (pctPracEl) pctPracEl.value = evalRes.practicalPct;
+            if (badge) badge.textContent = `✓ Data Terhubung (${evalRes.total} Responden)`;
+            if (topicsUsefulEl && (!t || !t.aiSummary || !t.aiSummary.topikBermanfaat) && evalRes.valuableTopics.length > 0) {
+              topicsUsefulEl.value = evalRes.valuableTopics.slice(0, 8).join(', ');
+            }
+            if (topicsFutureEl && (!t || !t.aiSummary || !t.aiSummary.topikSelanjutnya) && evalRes.nextTopics.length > 0) {
+              topicsFutureEl.value = evalRes.nextTopics.slice(0, 8).join(', ');
+            }
+          }
+        } else {
+          if (badge) badge.textContent = 'Otomatis dari Tab Evaluasi';
+        }
+      }).catch(e => {
+        console.warn('Prefill evaluation sheet warning:', e);
+        const badge = document.getElementById('pdfEvalStatusBadge');
+        if (badge) badge.textContent = 'Otomatis dari Tab Evaluasi';
+      });
+    } else {
+      if (pctBenEl && !pctBenEl.value) pctBenEl.value = 100;
+      if (pctEnjEl && !pctEnjEl.value) pctEnjEl.value = 100;
+      if (pctRelEl && !pctRelEl.value) pctRelEl.value = 100;
+      if (pctPracEl && !pctPracEl.value) pctPracEl.value = 100;
     }
 
     const hasWewenang = !!(t && t.wewenangEnabled && (t.wewenangSheetId || t.wewenangCsvUrl || t.sheetId || (document.getElementById('cfgWewenangSheetId')||{}).value));
@@ -5129,8 +5328,66 @@ async function runExportPdf() {
       }];
     }
 
-    const tUseful = topicsUseful.length > 0 ? topicsUseful : ['Problem solving','Gaya kepribadian','Change management','Effective communication','Managing performance team','Coaching','Leadership','Wewenang'];
-    const tFuture = topicsFuture.length > 0 ? topicsFuture : ['Problem solving','How to be a success leader','Delegasi','Management risk','Management conflict','Supply chain','Time management','Emotional management'];
+    let pctBenefit = parseInt((document.getElementById('pdfCfgPctBenefit') || {}).value, 10);
+    let pctEnjoyment = parseInt((document.getElementById('pdfCfgPctEnjoyment') || {}).value, 10);
+    let pctRelevance = parseInt((document.getElementById('pdfCfgPctRelevance') || {}).value, 10);
+    let pctPractical = parseInt((document.getElementById('pdfCfgPctPractical') || {}).value, 10);
+
+    const evalSheetId = (t && t.evalSheetId) || (document.getElementById('cfgEvalSheetId')||{}).value || (t && t.sheetId);
+    const evalCsvUrl = (t && t.evalCsvUrl) || (document.getElementById('cfgEvalCsvUrl')||{}).value;
+    const evalSheetName = (t && t.evalSheetName) || (document.getElementById('cfgEvalSheetName')||{}).value || 'Sheet2';
+    const evalRange = (t && t.evalDataRange) || (document.getElementById('cfgEvalDataRange')||{}).value || '';
+    const ratingScale = (t && t.ratingScale) || (document.getElementById('cfgEvalRatingScale')||{}).value || 5;
+
+    if (isNaN(pctBenefit) || isNaN(pctEnjoyment) || isNaN(pctRelevance) || isNaN(pctPractical) || topicsUseful.length === 0 || topicsFuture.length === 0) {
+      if (evalSheetId || evalCsvUrl) {
+        try {
+          const evalRes = await testSheetConnection(evalSheetId, evalCsvUrl, evalSheetName, evalRange);
+          if (evalRes && Array.isArray(evalRes.rows) && evalRes.rows.length > 1) {
+            const pEval = parseEvaluationSheetData(evalRes.rows, ratingScale);
+            if (pEval) {
+              if (isNaN(pctBenefit)) pctBenefit = pEval.benefitPct;
+              if (isNaN(pctEnjoyment)) pctEnjoyment = pEval.enjoymentPct;
+              if (isNaN(pctRelevance)) pctRelevance = pEval.relevancePct;
+              if (isNaN(pctPractical)) pctPractical = pEval.practicalPct;
+              if (topicsUseful.length === 0 && pEval.valuableTopics.length > 0) {
+                topicsUseful.push(...pEval.valuableTopics.slice(0, 8));
+              }
+              if (topicsFuture.length === 0 && pEval.nextTopics.length > 0) {
+                topicsFuture.push(...pEval.nextTopics.slice(0, 8));
+              }
+            }
+          }
+        } catch(err) {
+          console.warn('Realtime fetch eval sheet error:', err);
+        }
+      }
+    }
+
+    if (isNaN(pctBenefit)) pctBenefit = 100;
+    if (isNaN(pctEnjoyment)) pctEnjoyment = 100;
+    if (isNaN(pctRelevance)) pctRelevance = 100;
+    if (isNaN(pctPractical)) pctPractical = 100;
+
+    let tUseful = topicsUseful;
+    if (!tUseful || tUseful.length === 0) {
+      if (t && t.aiSummary && t.aiSummary.topikBermanfaat) {
+        tUseful = t.aiSummary.topikBermanfaat.split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+    if (!tUseful || tUseful.length === 0) {
+      tUseful = ['Problem solving','Gaya kepribadian','Change management','Effective communication','Managing performance team','Coaching','Leadership','Wewenang'];
+    }
+
+    let tFuture = topicsFuture;
+    if (!tFuture || tFuture.length === 0) {
+      if (t && t.aiSummary && t.aiSummary.topikSelanjutnya) {
+        tFuture = t.aiSummary.topikSelanjutnya.split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+    if (!tFuture || tFuture.length === 0) {
+      tFuture = ['Problem solving','How to be a success leader','Delegasi','Management risk','Management conflict','Supply chain','Time management','Emotional management'];
+    }
 
     generateMdiPdfReportBackend({
       clientName: clientName || (c && c.name) || 'PT. Mitra Mandiri',
@@ -5139,6 +5396,12 @@ async function runExportPdf() {
       dates: dates || '',
       topicsUseful: tUseful,
       topicsFuture: tFuture,
+      evalMetrics: {
+        benefit: pctBenefit,
+        enjoyment: pctEnjoyment,
+        relevance: pctRelevance,
+        practical: pctPractical
+      },
       participants,
       analisisType,
       trainers,
@@ -5156,7 +5419,12 @@ function escHtml(str) {
 }
 
 function generateMdiPdfReportBackend(cfg) {
-  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, includeFacilitator } = cfg;
+  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, includeFacilitator, evalMetrics = {} } = cfg;
+
+  const pctBenefit = (evalMetrics && evalMetrics.benefit != null) ? evalMetrics.benefit : 100;
+  const pctEnjoyment = (evalMetrics && evalMetrics.enjoyment != null) ? evalMetrics.enjoyment : 100;
+  const pctRelevance = (evalMetrics && evalMetrics.relevance != null) ? evalMetrics.relevance : 100;
+  const pctPractical = (evalMetrics && evalMetrics.practical != null) ? evalMetrics.practical : 100;
 
   const tUseful = Array.isArray(topicsUseful) ? topicsUseful : [];
   const tFuture = Array.isArray(topicsFuture) ? topicsFuture : [];
@@ -5611,19 +5879,19 @@ table.dt tr:nth-child(even) td{background:#fffdf5}
     </div>
     <div class="mgrid">
       <div style="text-align:center">
-        <div class="circle">100%</div>
+        <div class="circle">${pctBenefit}%</div>
         <div class="mlbl"><span>Peserta merasa program ini <b>Bermanfaat</b></span></div>
       </div>
       <div style="text-align:center">
-        <div class="circle">100%</div>
+        <div class="circle">${pctEnjoyment}%</div>
         <div class="mlbl"><span>Peserta merasa <b>senang</b> mengikuti program ini</span></div>
       </div>
       <div style="text-align:center">
-        <div class="circle">100%</div>
+        <div class="circle">${pctRelevance}%</div>
         <div class="mlbl"><span>Peserta merasa materi pelatihan <b>relevan</b> dengan kebutuhan mereka</span></div>
       </div>
       <div style="text-align:center">
-        <div class="circle">100%</div>
+        <div class="circle">${pctPractical}%</div>
         <div class="mlbl"><span>Peserta merasa materi yang disampaikan <b>praktikal dan aplikatif</b></span></div>
       </div>
     </div>

@@ -3884,12 +3884,18 @@ function exportToPDF() {
   generateMdiPdfReport();
 }
 
-function generateMdiPdfReport() {
+function generateMdiPdfReport(evalMetrics) {
   const clientName = FORM_CONFIG.clientName || "PT. Yusen Logistics";
   const trainingTitle = FORM_CONFIG.title || "Driving Performance, Communication & Adaptability";
   const locationDates = (FORM_CONFIG.location || "Cibitung") + ", " + (FORM_CONFIG.dateStart || "22-23 Mei 2026");
   const logoMdi = "Asset 7-8 (1).png";
   const logoClient = FORM_CONFIG.logoUrl || "";
+
+  const evalM = evalMetrics || FORM_CONFIG.evalMetrics || {};
+  const pctBenefit = evalM.benefit != null ? evalM.benefit : 100;
+  const pctEnjoyment = evalM.enjoyment != null ? evalM.enjoyment : 100;
+  const pctRelevance = evalM.relevance != null ? evalM.relevance : 100;
+  const pctPractical = evalM.practical != null ? evalM.practical : 100;
 
   const rawList = Array.isArray(PARTICIPANTS_STAGE1) && PARTICIPANTS_STAGE1.length > 0 ? PARTICIPANTS_STAGE1 : [];
   
@@ -4307,19 +4313,19 @@ function generateMdiPdfReport() {
 
       <div class="metrics-grid">
         <div class="metric-card">
-          <div class="circle-val">100%</div>
+          <div class="circle-val">${pctBenefit}%</div>
           <div class="metric-lbl-card"><span>Peserta merasa program ini <b>Bermanfaat</b></span></div>
         </div>
         <div class="metric-card">
-          <div class="circle-val">100%</div>
+          <div class="circle-val">${pctEnjoyment}%</div>
           <div class="metric-lbl-card"><span>Peserta merasa <b>senang</b> mengikuti program ini</span></div>
         </div>
         <div class="metric-card">
-          <div class="circle-val">100%</div>
+          <div class="circle-val">${pctRelevance}%</div>
           <div class="metric-lbl-card"><span>Peserta merasa materi pelatihan <b>relevan</b> dengan kebutuhan mereka</span></div>
         </div>
         <div class="metric-card">
-          <div class="circle-val">100%</div>
+          <div class="circle-val">${pctPractical}%</div>
           <div class="metric-lbl-card"><span>Peserta merasa materi yang disampaikan <b>praktikal dan aplikatif</b></span></div>
         </div>
       </div>
