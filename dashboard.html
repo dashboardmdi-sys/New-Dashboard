@@ -3940,8 +3940,87 @@ function generateMdiPdfReport() {
   const avgPost = validPosts.length > 0 ? Math.round(validPosts.reduce((a,b)=>a+b,0) / validPosts.length) : 79;
   const avgPct = (avgPre > 0 && avgPost > 0) ? Math.round(((avgPost - avgPre) / avgPre) * 100) : 63;
 
-  const page1Participants = participants.slice(0, 20);
-  const page2Participants = participants.slice(20);
+  function chunkPrePost(arr) {
+    if (arr.length <= 24) return [arr];
+    const numPages = Math.ceil(arr.length / 24);
+    const perPage = Math.ceil(arr.length / numPages);
+    const chunks = [];
+    for (let i = 0; i < arr.length; i += perPage) {
+      chunks.push(arr.slice(i, i + perPage));
+    }
+    return chunks;
+  }
+
+  const prePostChunks = chunkPrePost(participants);
+  const prePostPagesHtml = prePostChunks.map((chunk, pIdx) => {
+    const isFirst = pIdx === 0;
+    const isLast = pIdx === prePostChunks.length - 1;
+    const pageTitle = isFirst 
+      ? 'HASIL PRE-TEST DAN POST-TEST' 
+      : `HASIL PRE-TEST DAN POST-TEST (LANJUTAN - HAL. ${pIdx + 1})`;
+
+    const avgRowHtml = isLast ? `
+      <tr style="background:#fef3c7; font-weight:800;">
+        <td colspan="2" class="text-center font-bold" style="font-size:10.5pt;">Rata-Rata</td>
+        <td class="text-center font-bold" style="font-size:10.5pt;">${avgPre}</td>
+        <td class="text-center font-bold" style="font-size:10.5pt;">${avgPost}</td>
+        <td class="text-center font-bold" style="font-size:10.5pt;">${avgPct}%</td>
+      </tr>` : '';
+
+    const acardHtml = isLast ? `
+      <div class="analysis-card">
+        <ul>
+          <li><i>Rentang nilai: <b>80 &lt; N ≤ 100 Sangat Baik</b> · <b>60 &lt; N ≤ 80 Baik</b> · <b>40 &lt; N ≤ 60 Cukup</b> · <b>20 &lt; N ≤ 40 Kurang</b> · <b>N ≤ 20 Sangat Kurang</b></i></li>
+          <li>Berdasarkan penilaian terhadap <b>${participants.length} peserta</b>, rata-rata pre-test <b>${avgPre}</b> (kategori <b>${avgPre >= 60 ? 'Baik' : 'Cukup'}</b>).</li>
+          <li>Setelah pelatihan, rata-rata post-test <b>meningkat menjadi ${avgPost}</b> (kategori <b>${avgPost >= 80 ? 'Sangat Baik' : 'Baik'}</b>), mengindikasikan efektivitas pelatihan yang signifikan.</li>
+          <li>Rata-rata peningkatan pemahaman peserta mencapai <b>${avgPct}%</b>, menegaskan dampak positif pelatihan secara menyeluruh.</li>
+        </ul>
+      </div>` : '';
+
+    return `
+  <!-- PAGE PRE-POST TEST ${pIdx + 1} -->
+  <div class="page">
+    <div>
+      <div class="header-bar">
+        <img src="${logoMdi}" class="logo-mdi" alt="MDI Logo">
+        ${logoClient ? `<img src="${escapeHtmlPdf(logoClient)}" class="logo-client" alt="Client Logo">` : `<div style="font-weight:800; font-size:12pt;">${escapeHtmlPdf(clientName)}</div>`}
+      </div>
+
+      <h2 class="page-title">${pageTitle}</h2>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:8%;">No</th>
+            <th style="width:42%;">Nama</th>
+            <th style="width:16%;">Tes Awal</th>
+            <th style="width:16%;">Tes Akhir</th>
+            <th style="width:18%;">% Peningkatan Pemahaman</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${chunk.map(p => `
+            <tr>
+              <td class="text-center">${p.no}</td>
+              <td>${escapeHtmlPdf(p.name)}</td>
+              <td class="text-center">${p.pre != null ? p.pre : 'N/A'}</td>
+              <td class="text-center">${p.post != null ? p.post : 'N/A'}</td>
+              <td class="text-center">${p.pct != null ? p.pct + '%' : 'N/A'}</td>
+            </tr>
+          `).join("")}
+          ${avgRowHtml}
+        </tbody>
+      </table>
+
+      ${acardHtml}
+    </div>
+
+    <div class="footer-bar">
+      <div>Management Development International</div>
+      <div class="addr">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div>
+    </div>
+  </div>`;
+  }).join('');
 
   const printHtml = `<!DOCTYPE html>
 <html lang="id">
@@ -3949,8 +4028,6 @@ function generateMdiPdfReport() {
   <meta charset="UTF-8">
   <title>Laporan Training - ${escapeHtmlPdf(clientName)}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-    
     @page {
       size: A4 portrait;
       margin: 0;
@@ -3958,7 +4035,9 @@ function generateMdiPdfReport() {
     
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12pt;
+      line-height: 1.5;
       background: #f8fafc;
       color: #1e293b;
       -webkit-print-color-adjust: exact !important;
@@ -3968,21 +4047,22 @@ function generateMdiPdfReport() {
     .page {
       width: 210mm;
       height: 297mm;
-      padding: 15mm 15mm 20mm 15mm;
+      padding: 30mm;
       position: relative;
       page-break-after: always;
+      break-after: page;
       background: #fff;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
       overflow: hidden;
-      margin: 0 auto 20px;
+      margin: 40px auto 20px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      box-sizing: border-box;
     }
 
     @media print {
       body { background: #fff; }
-      .page { box-shadow: none; margin: 0; }
+      .page { box-shadow: none; margin: 0; page-break-after: always; break-after: page; }
     }
 
     /* Header */
@@ -3990,12 +4070,12 @@ function generateMdiPdfReport() {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
       border-bottom: 2px solid #fde68a;
     }
-    .header-bar img.logo-mdi { height: 48px; object-fit: contain; }
-    .header-bar img.logo-client { height: 42px; object-fit: contain; }
+    .header-bar img.logo-mdi { height: 42px; object-fit: contain; }
+    .header-bar img.logo-client { height: 38px; object-fit: contain; }
 
     /* Footer */
     .footer-bar {
@@ -4004,12 +4084,14 @@ function generateMdiPdfReport() {
       left: 0;
       right: 0;
       background: linear-gradient(90deg, #f59e0b, #fbbf24);
-      padding: 10px 24px;
+      padding: 8px 30mm;
       color: #0f172a;
-      font-size: 11px;
+      font-size: 9.5pt;
       font-weight: 800;
+      font-family: Arial, sans-serif;
+      box-sizing: border-box;
     }
-    .footer-bar .addr { font-weight: 500; font-size: 10px; opacity: 0.9; margin-top: 2px; }
+    .footer-bar .addr { font-weight: 500; font-size: 8.5pt; opacity: 0.9; margin-top: 2px; }
 
     /* Cover Infographic Title */
     .cover-title {
@@ -4266,100 +4348,8 @@ function generateMdiPdfReport() {
     </div>
   </div>
 
-  <!-- PAGE 2: HASIL PRE-TEST DAN POST-TEST (PART 1) -->
-  <div class="page">
-    <div>
-      <div class="header-bar">
-        <img src="${logoMdi}" class="logo-mdi" alt="MDI Logo">
-        ${logoClient ? `<img src="${escapeHtmlPdf(logoClient)}" class="logo-client" alt="Client Logo">` : `<div style="font-weight:800;">${escapeHtmlPdf(clientName)}</div>`}
-      </div>
-
-      <h2 class="page-title">HASIL PRE-TEST DAN POST-TEST</h2>
-
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width:8%;">No</th>
-            <th style="width:42%;">Nama</th>
-            <th style="width:16%;">Tes Awal</th>
-            <th style="width:16%;">Tes Akhir</th>
-            <th style="width:18%;">% Peningkatan Pemahaman</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${page1Participants.map(p => `
-            <tr>
-              <td class="text-center">${p.no}</td>
-              <td>${escapeHtmlPdf(p.name)}</td>
-              <td class="text-center">${p.pre != null ? p.pre : 'N/A'}</td>
-              <td class="text-center">${p.post != null ? p.post : 'N/A'}</td>
-              <td class="text-center">${p.pct != null ? p.pct + '%' : 'N/A'}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="footer-bar">
-      <div>Management Development International</div>
-      <div class="addr">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div>
-    </div>
-  </div>
-
-  <!-- PAGE 3: HASIL PRE-TEST DAN POST-TEST (PART 2 & ANALYSIS) -->
-  <div class="page">
-    <div>
-      <div class="header-bar">
-        <img src="${logoMdi}" class="logo-mdi" alt="MDI Logo">
-        ${logoClient ? `<img src="${escapeHtmlPdf(logoClient)}" class="logo-client" alt="Client Logo">` : `<div style="font-weight:800;">${escapeHtmlPdf(clientName)}</div>`}
-      </div>
-
-      <h2 class="page-title">HASIL PRE-TEST DAN POST-TEST</h2>
-
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width:8%;">No</th>
-            <th style="width:42%;">Nama</th>
-            <th style="width:16%;">Tes Awal</th>
-            <th style="width:16%;">Tes Akhir</th>
-            <th style="width:18%;">% Peningkatan Pemahaman</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${(page2Participants.length > 0 ? page2Participants : page1Participants.slice(10)).map(p => `
-            <tr>
-              <td class="text-center">${p.no}</td>
-              <td>${escapeHtmlPdf(p.name)}</td>
-              <td class="text-center">${p.pre != null ? p.pre : 'N/A'}</td>
-              <td class="text-center">${p.post != null ? p.post : 'N/A'}</td>
-              <td class="text-center">${p.pct != null ? p.pct + '%' : 'N/A'}</td>
-            </tr>
-          `).join("")}
-          <tr style="background:#fef3c7;">
-            <td colspan="2" class="text-center font-bold">Rata-Rata</td>
-            <td class="text-center font-bold">${avgPre}</td>
-            <td class="text-center font-bold">${avgPost}</td>
-            <td class="text-center font-bold">${avgPct}%</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="analysis-card">
-        <ul>
-          <li><i>Rentang nilai keseluruhan pre-post test adalah 0 – 100 dengan penjabaran <b>80 < N ≤ 100 Sangat Baik</b>, <b>60 < N ≤ 80 Baik</b>, <b>40 < N ≤ 60 Cukup</b>, <b>20 < N ≤ 40 Kurang</b>, <b>N ≤ 20 Sangat Kurang</b>.</i></li>
-          <li>Berdasarkan hasil penilaian pre-test dan post-test terhadap <b>${participants.length} peserta pelatihan</b>, diperoleh gambaran peningkatan pengetahuan dan pemahaman peserta yang signifikan. <b>Pada pre-test, rata-rata nilai peserta berada pada angka ${avgPre}</b>, yang termasuk dalam <b>kategori ${avgPre >= 60 ? 'Baik' : 'Cukup'}</b>, menunjukkan bahwa sebelum pelatihan, pemahaman peserta terhadap materi masih relatif terbatas.</li>
-          <li>Setelah mengikuti pelatihan, hasil post-test menunjukkan peningkatan yang jelas pada hampir seluruh peserta. Rata-rata <b>nilai post-test meningkat menjadi ${avgPost}</b>, yang berada pada <b>kategori ${avgPost >= 80 ? 'Sangat Baik' : 'Baik'}</b> yang mengindikasikan efektivitas pelatihan dalam menjembatani kesenjangan pengetahuan awal peserta.</li>
-          <li>Secara keseluruhan, <b>rata-rata peningkatan pemahaman peserta mencapai ${avgPct}%</b>, yang menegaskan bahwa pelatihan memberikan dampak positif dan signifikan terhadap peningkatan pengetahuan dan pemahaman peserta secara menyeluruh.</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="footer-bar">
-      <div>Management Development International</div>
-      <div class="addr">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div>
-    </div>
-  </div>
+  <!-- PAGES PRE-TEST DAN POST-TEST (SMART PAGINATED) -->
+${prePostPagesHtml}
 
   <!-- PAGE 4: ANALISIS GAYA WEWENANG (TABLE) -->
   <div class="page">
