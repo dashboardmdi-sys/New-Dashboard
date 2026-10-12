@@ -3961,18 +3961,18 @@ function generateMdiPdfReport() {
 
     const avgRowHtml = isLast ? `
       <tr style="background:#fef3c7; font-weight:800;">
-        <td colspan="2" class="text-center font-bold" style="font-size:10.5pt;">Rata-Rata</td>
-        <td class="text-center font-bold" style="font-size:10.5pt;">${avgPre}</td>
-        <td class="text-center font-bold" style="font-size:10.5pt;">${avgPost}</td>
-        <td class="text-center font-bold" style="font-size:10.5pt;">${avgPct}%</td>
+        <td colspan="2" class="text-center font-bold" style="font-size:11px;">Rata-Rata</td>
+        <td class="text-center font-bold" style="font-size:11px;">${avgPre}</td>
+        <td class="text-center font-bold" style="font-size:11px;">${avgPost}</td>
+        <td class="text-center font-bold" style="font-size:11px;">${avgPct}%</td>
       </tr>` : '';
 
     const acardHtml = isLast ? `
-      <div class="analysis-card">
-        <ul>
-          <li><i>Rentang nilai: <b>80 &lt; N ≤ 100 Sangat Baik</b> · <b>60 &lt; N ≤ 80 Baik</b> · <b>40 &lt; N ≤ 60 Cukup</b> · <b>20 &lt; N ≤ 40 Kurang</b> · <b>N ≤ 20 Sangat Kurang</b></i></li>
-          <li>Berdasarkan penilaian terhadap <b>${participants.length} peserta</b>, rata-rata pre-test <b>${avgPre}</b> (kategori <b>${avgPre >= 60 ? 'Baik' : 'Cukup'}</b>).</li>
-          <li>Setelah pelatihan, rata-rata post-test <b>meningkat menjadi ${avgPost}</b> (kategori <b>${avgPost >= 80 ? 'Sangat Baik' : 'Baik'}</b>), mengindikasikan efektivitas pelatihan yang signifikan.</li>
+      <div class="analysis-card" style="padding:10px 14px; margin-top:8px; font-size:9.5px; line-height:1.45;">
+        <ul style="margin-left:14px;">
+          <li style="margin-bottom:3px;"><i>Rentang nilai: <b>80 &lt; N ≤ 100 Sangat Baik</b> · <b>60 &lt; N ≤ 80 Baik</b> · <b>40 &lt; N ≤ 60 Cukup</b> · <b>20 &lt; N ≤ 40 Kurang</b> · <b>N ≤ 20 Sangat Kurang</b></i></li>
+          <li style="margin-bottom:3px;">Berdasarkan penilaian terhadap <b>${participants.length} peserta</b>, rata-rata pre-test <b>${avgPre}</b> (kategori <b>${avgPre >= 60 ? 'Baik' : 'Cukup'}</b>).</li>
+          <li style="margin-bottom:3px;">Setelah pelatihan, rata-rata post-test <b>meningkat menjadi ${avgPost}</b> (kategori <b>${avgPost >= 80 ? 'Sangat Baik' : 'Baik'}</b>), mengindikasikan efektivitas pelatihan yang signifikan.</li>
           <li>Rata-rata peningkatan pemahaman peserta mencapai <b>${avgPct}%</b>, menegaskan dampak positif pelatihan secara menyeluruh.</li>
         </ul>
       </div>` : '';
@@ -3983,7 +3983,7 @@ function generateMdiPdfReport() {
     <div>
       <div class="header-bar">
         <img src="${logoMdi}" class="logo-mdi" alt="MDI Logo">
-        ${logoClient ? `<img src="${escapeHtmlPdf(logoClient)}" class="logo-client" alt="Client Logo">` : `<div style="font-weight:800; font-size:12pt;">${escapeHtmlPdf(clientName)}</div>`}
+        ${logoClient ? `<img src="${escapeHtmlPdf(logoClient)}" class="logo-client" alt="Client Logo">` : `<div style="font-weight:800;">${escapeHtmlPdf(clientName)}</div>`}
       </div>
 
       <h2 class="page-title">${pageTitle}</h2>
@@ -4028,6 +4028,8 @@ function generateMdiPdfReport() {
   <meta charset="UTF-8">
   <title>Laporan Training - ${escapeHtmlPdf(clientName)}</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
     @page {
       size: A4 portrait;
       margin: 0;
@@ -4035,9 +4037,7 @@ function generateMdiPdfReport() {
     
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 12pt;
-      line-height: 1.5;
+      font-family: 'Plus Jakarta Sans', Arial, sans-serif;
       background: #f8fafc;
       color: #1e293b;
       -webkit-print-color-adjust: exact !important;
@@ -4047,10 +4047,9 @@ function generateMdiPdfReport() {
     .page {
       width: 210mm;
       height: 297mm;
-      padding: 30mm;
+      padding: 14mm 15mm 22mm;
       position: relative;
       page-break-after: always;
-      break-after: page;
       background: #fff;
       display: flex;
       flex-direction: column;
@@ -4062,7 +4061,7 @@ function generateMdiPdfReport() {
 
     @media print {
       body { background: #fff; }
-      .page { box-shadow: none; margin: 0; page-break-after: always; break-after: page; }
+      .page { box-shadow: none; margin: 0; page-break-after: always; }
     }
 
     /* Header */
@@ -4070,12 +4069,12 @@ function generateMdiPdfReport() {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
-      padding-bottom: 10px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
       border-bottom: 2px solid #fde68a;
     }
-    .header-bar img.logo-mdi { height: 42px; object-fit: contain; }
-    .header-bar img.logo-client { height: 38px; object-fit: contain; }
+    .header-bar img.logo-mdi { height: 48px; object-fit: contain; }
+    .header-bar img.logo-client { height: 42px; object-fit: contain; }
 
     /* Footer */
     .footer-bar {
@@ -4084,14 +4083,12 @@ function generateMdiPdfReport() {
       left: 0;
       right: 0;
       background: linear-gradient(90deg, #f59e0b, #fbbf24);
-      padding: 8px 30mm;
+      padding: 9px 22px;
       color: #0f172a;
-      font-size: 9.5pt;
+      font-size: 11px;
       font-weight: 800;
-      font-family: Arial, sans-serif;
-      box-sizing: border-box;
     }
-    .footer-bar .addr { font-weight: 500; font-size: 8.5pt; opacity: 0.9; margin-top: 2px; }
+    .footer-bar .addr { font-weight: 500; font-size: 10px; opacity: 0.9; margin-top: 2px; }
 
     /* Cover Infographic Title */
     .cover-title {
