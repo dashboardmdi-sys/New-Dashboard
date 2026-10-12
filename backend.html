@@ -1804,9 +1804,29 @@
               <label for="pdfCfgTopicsFuture" style="font-size:12px;">Harapan Program Training Selanjutnya (pisahkan dengan koma)</label>
               <textarea id="pdfCfgTopicsFuture" rows="2" placeholder="Problem solving, Delegasi, Management conflict, Time management, Supply chain" style="font-size:12px; padding:8px 12px; min-height:58px;"></textarea>
             </div>
-            <div class="field" style="margin:0;">
-              <label for="pdfCfgParticipantQuotes" style="font-size:12px;">Kutipan Peserta (pisahkan tiap kutipan dengan baris baru [Enter])</label>
-              <textarea id="pdfCfgParticipantQuotes" rows="3" placeholder="Tulis kutipan/testimoni peserta di sini atau biarkan otomatis terisi dari respon Tab Evaluasi" style="font-size:12px; padding:8px 12px; min-height:68px;"></textarea>
+            <div style="margin-top:14px; padding:12px 14px; background:#fffdf5; border:1.5px solid #fde68a; border-radius:10px;">
+              <div style="margin-bottom:10px;">
+                <div style="font-size:12.5px; font-weight:800; color:#92400e;">💬 Kutipan Peserta (pisahkan tiap kutipan dengan baris baru [Enter])</div>
+                <div style="font-size:11px; color:#b45309; font-weight:500; margin-top:2px;">Kesan per trainer otomatis menyesuaikan nama trainer yang terdaftar pada sesi training ini.</div>
+              </div>
+
+              <!-- Kesan Peserta Terhadap Trainer (Dinamis sesuai trainer terdaftar) -->
+              <div id="pdfQuotesTrainersContainer" style="display:flex; flex-direction:column; gap:12px; margin-bottom:12px;">
+                <div class="field" style="margin:0;">
+                  <label for="pdfCfgQuotesTrainer_0" style="font-size:12px; font-weight:700; color:#0f172a;">KESAN PESERTA TERHADAP TRAINER: <span id="lblTrainerQuotes_0" style="color:#d97706; font-weight:800;">Romy Rianto</span></label>
+                  <textarea id="pdfCfgQuotesTrainer_0" rows="3" placeholder="Tulis kutipan kesan untuk Trainer 1 (pisahkan baris baru [Enter])..." style="font-size:12px; padding:8px 12px; min-height:65px;"></textarea>
+                </div>
+                <div class="field" style="margin:0;">
+                  <label for="pdfCfgQuotesTrainer_1" style="font-size:12px; font-weight:700; color:#0f172a;">KESAN PESERTA TERHADAP TRAINER: <span id="lblTrainerQuotes_1" style="color:#d97706; font-weight:800;">Arif Hidayat</span></label>
+                  <textarea id="pdfCfgQuotesTrainer_1" rows="3" placeholder="Tulis kutipan kesan untuk Trainer 2 (pisahkan baris baru [Enter])..." style="font-size:12px; padding:8px 12px; min-height:65px;"></textarea>
+                </div>
+              </div>
+
+              <!-- Pesan dan Kesan -->
+              <div class="field" style="margin:0;">
+                <label for="pdfCfgQuotesGeneral" style="font-size:12px; font-weight:700; color:#0f172a;">PESAN DAN KESAN</label>
+                <textarea id="pdfCfgQuotesGeneral" rows="3" placeholder="Tulis kutipan pesan dan kesan umum pelatihan (pisahkan baris baru [Enter])..." style="font-size:12px; padding:8px 12px; min-height:65px;"></textarea>
+              </div>
             </div>
           </div>
 
@@ -5092,17 +5112,89 @@ function prefillPdfConfig() {
       topicsFutureEl.value = 'Problem solving, How to be a success leader, Delegasi, Management risk, Management conflict, Supply chain, Time management, Emotional management';
     }
 
-    const defaultQuotesList = [
-      "Pelatihan ini membuka perspektif baru bagi saya tentang bagaimana memimpin dengan empati dan mendengarkan tim sebelum mengambil keputusan.",
-      "Penyampaian materi sangat aplikatif dan studi kasus yang dibahas relate sekali dengan tantangan harian kami di lapangan.",
-      "Sesi role-play dan simulasi komunikasi membantu saya memahami berbagai tipe karakter rekan kerja dan cara berkolaborasi yang efektif.",
-      "Banyak insight praktis mengenai problem solving yang bisa langsung saya terapkan bersama tim mulai besok pagi.",
-      "Fasilitator sangat interaktif dan menciptakan suasana belajar yang nyaman, sehingga semua peserta aktif dan antusias menyampaikan pandangannya.",
-      "Training ini sangat berbobot, membuka wawasan, dan menginspirasi saya untuk terus mengembangkan potensi kepemimpinan diri."
+    const defT1Quotes = [
+      "Komunikatif, memberikan materi dengan jelas, komunikasi dua arah",
+      "Cara bicara jelas, interaksi dengan audience baik",
+      "Penyampaian materi sangat baik dan mudah dipahami",
+      "Aktif dalam mendengarkan cerita dari peserta serta memberikan pembelajaran materi dalam bentuk kasus",
+      "Humoris, penyampaian tepat, smart dan interaktif",
+      "Ceria, interaktif, Kreatif, Juara",
+      "Interaktif, mudah mencairkan suasana"
     ];
 
-    if (quotesEl && !quotesEl.value.trim()) {
-      quotesEl.value = defaultQuotesList.join('\n');
+    const defT2Quotes = [
+      "Interaktif. Memiliki experience yang relevan",
+      "Komunikatif, memberikan materi dengan jelas, komunikasi dua arah",
+      "Sangat komunikatif dan praktek jadi lebih dimengerti",
+      "Good trainer and very interactive.",
+      "Sangat komunikatif dan bisa membawa suasana",
+      "Komunikatif dan rajin mendengarkan umpan balik dari peserta",
+      "Penyampaian materi sangat baik dan mudah dipahami"
+    ];
+
+    const defGenQuotes = [
+      "Training berlangsung interaktif, tidak membosankan, dan banyak melibatkan diskusi maupun simulasi yang membuat materi lebih mudah dipahami...",
+      "Training menyenangkan membuka wawasan baru dalam teknik bernegosiasi.",
+      "Pertama kali ikut training dan menyenangkan. Jadi tambah wawasan dan mengenal secara langsung tim divisi lain.",
+      "Terimakasih dan sangat membantu dalam penerapan sehari-hari",
+      "Penyajian materi sangat menarik, terutama assessment",
+      "Good training, good trainer. Terimakasih utk 2 hari sharing ilmunya.",
+      "Semoga training ini bisa diadakan lagi untuk teman-teman lainnya."
+    ];
+
+    // Detect trainer names
+    let trNames = [];
+    if (Array.isArray(window.ktTrainersData) && window.ktTrainersData.length > 0) {
+      trNames = window.ktTrainersData.map(x => x.name).filter(Boolean);
+    }
+    if (trNames.length === 0 && t && t.komentarTrainer) {
+      if (Array.isArray(t.komentarTrainer)) trNames = t.komentarTrainer.map(x => x.name || x).filter(Boolean);
+      else if (typeof t.komentarTrainer === 'object' && t.komentarTrainer.name) trNames = [t.komentarTrainer.name];
+    }
+    if (trNames.length === 0 && t && t.trainerNames) {
+      trNames = t.trainerNames.split(/[,&/|]| dan /i).map(s => s.trim()).filter(Boolean);
+    }
+    if (trNames.length === 0) {
+      const inpTr = document.getElementById('cfgTrainingTrainer');
+      if (inpTr && inpTr.value) {
+        trNames = inpTr.value.split(/[,&/|]| dan /i).map(s => s.trim()).filter(Boolean);
+      }
+    }
+    if (trNames.length === 0) trNames = ['Romy Rianto', 'Arif Hidayat'];
+
+    // Render trainer inputs dynamically
+    const qContainer = document.getElementById('pdfQuotesTrainersContainer');
+    if (qContainer) {
+      let qHtml = '';
+      trNames.slice(0, 2).forEach((trName, idx) => {
+        const trId = `pdfCfgQuotesTrainer_${idx}`;
+        const prevEl = document.getElementById(trId);
+        const prevVal = prevEl ? prevEl.value : '';
+        const defArr = idx === 0 ? defT1Quotes : defT2Quotes;
+        const valToSet = prevVal || defArr.join('\n');
+        qHtml += `
+          <div class="field" style="margin:0;">
+            <label for="${trId}" style="font-size:12px; font-weight:700; color:#0f172a;">KESAN PESERTA TERHADAP TRAINER: <span style="color:#d97706; font-weight:800;">${escHtml(trName)}</span></label>
+            <textarea id="${trId}" rows="3" placeholder="Tulis kutipan kesan untuk ${escHtml(trName)} (pisahkan baris baru [Enter])..." style="font-size:12px; padding:8px 12px; min-height:65px;">${escHtml(valToSet)}</textarea>
+          </div>`;
+      });
+      if (trNames.length === 1) {
+        const trId = 'pdfCfgQuotesTrainer_1';
+        const prevEl = document.getElementById(trId);
+        const prevVal = prevEl ? prevEl.value : '';
+        const valToSet = prevVal || defT2Quotes.join('\n');
+        qHtml += `
+          <div class="field" style="margin:0;">
+            <label for="${trId}" style="font-size:12px; font-weight:700; color:#0f172a;">KESAN PESERTA TERHADAP MATERI & FASILITASI</label>
+            <textarea id="${trId}" rows="3" placeholder="Tulis kutipan kesan materi & fasilitasi (pisahkan baris baru [Enter])..." style="font-size:12px; padding:8px 12px; min-height:65px;">${escHtml(valToSet)}</textarea>
+          </div>`;
+      }
+      qContainer.innerHTML = qHtml;
+    }
+
+    const genEl = document.getElementById('pdfCfgQuotesGeneral');
+    if (genEl && !genEl.value.trim()) {
+      genEl.value = defGenQuotes.join('\n');
     }
 
     // Prefill Evaluation metrics from Tab Evaluasi
@@ -5130,8 +5222,14 @@ function prefillPdfConfig() {
             if (topicsFutureEl && (!t || !t.aiSummary || !t.aiSummary.topikSelanjutnya) && evalRes.nextTopics.length > 0) {
               topicsFutureEl.value = evalRes.nextTopics.slice(0, 8).join(', ');
             }
-            if (quotesEl && evalRes.comments && evalRes.comments.length > 0) {
-              quotesEl.value = evalRes.comments.slice(0, 12).join('\n');
+            if (evalRes.comments && evalRes.comments.length > 0) {
+              const comms = evalRes.comments;
+              const q0 = document.getElementById('pdfCfgQuotesTrainer_0');
+              const q1 = document.getElementById('pdfCfgQuotesTrainer_1');
+              const qG = document.getElementById('pdfCfgQuotesGeneral');
+              if (q0 && comms.length > 0) q0.value = comms.slice(0, 7).join('\n');
+              if (q1 && comms.length > 7) q1.value = comms.slice(7, 14).join('\n');
+              if (qG && comms.length > 14) qG.value = comms.slice(14, 21).join('\n');
             }
           }
         } else {
@@ -5469,8 +5567,15 @@ async function runExportPdf() {
     }
 
     const includeQuotes = document.getElementById('pdfIncludeParticipantQuotes') ? document.getElementById('pdfIncludeParticipantQuotes').checked : true;
-    const quotesRaw = (document.getElementById('pdfCfgParticipantQuotes') || {}).value || '';
-    let participantQuotes = quotesRaw.split('\n').map(s => s.trim()).filter(s => s.length > 3);
+    const elT0 = document.getElementById('pdfCfgQuotesTrainer_0');
+    const elT1 = document.getElementById('pdfCfgQuotesTrainer_1');
+    const elGen = document.getElementById('pdfCfgQuotesGeneral');
+    const elLegacy = document.getElementById('pdfCfgParticipantQuotes');
+
+    const quotesT1 = elT0 ? elT0.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
+    const quotesT2 = elT1 ? elT1.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
+    const quotesGen = elGen ? elGen.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
+    const participantQuotes = elLegacy ? elLegacy.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
 
     generateMdiPdfReportBackend({
       clientName: clientName || (c && c.name) || 'PT. Mitra Mandiri',
@@ -5491,6 +5596,9 @@ async function runExportPdf() {
       trainerNamesStr: (t && t.trainerNames) || (document.getElementById('cfgTrainingTrainer')||{}).value || '',
       includeFacilitator,
       includeQuotes,
+      quotesT1,
+      quotesT2,
+      quotesGen,
       participantQuotes
     });
   } catch (err) {
@@ -5505,7 +5613,7 @@ function escHtml(str) {
 }
 
 function generateMdiPdfReportBackend(cfg) {
-  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, trainerNamesStr = '', includeFacilitator, includeQuotes = true, participantQuotes = [], evalMetrics = {} } = cfg;
+  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, trainerNamesStr = '', includeFacilitator, includeQuotes = true, quotesT1 = [], quotesT2 = [], quotesGen = [], participantQuotes = [], evalMetrics = {} } = cfg;
 
   const pctBenefit = (evalMetrics && evalMetrics.benefit != null) ? evalMetrics.benefit : 100;
   const pctEnjoyment = (evalMetrics && evalMetrics.enjoyment != null) ? evalMetrics.enjoyment : 100;
@@ -5947,42 +6055,44 @@ function generateMdiPdfReportBackend(cfg) {
       : 'KESAN PESERTA TERHADAP MATERI & FASILITASI';
     const sec3Title = 'PESAN DAN KESAN';
 
-    let listT1 = [];
-    let listT2 = [];
-    let listGen = [];
+    let listT1 = Array.isArray(quotesT1) && quotesT1.length > 0 ? [...quotesT1] : [];
+    let listT2 = Array.isArray(quotesT2) && quotesT2.length > 0 ? [...quotesT2] : [];
+    let listGen = Array.isArray(quotesGen) && quotesGen.length > 0 ? [...quotesGen] : [];
 
-    const userQuotes = Array.isArray(participantQuotes) ? participantQuotes.filter(s => typeof s === 'string' && s.trim().length > 3) : [];
-
-    if (userQuotes.length > 0) {
-      let curSec = 0;
-      userQuotes.forEach(q => {
-        const lower = q.toLowerCase();
-        if (lower.includes('[trainer 1]') || lower.includes('[trainer1]') || lower.includes(`[${tr1Name.toLowerCase()}]`)) {
-          curSec = 1;
-        } else if (lower.includes('[trainer 2]') || lower.includes('[trainer2]') || lower.includes(`[${tr2Name.toLowerCase()}]`)) {
-          curSec = 2;
-        } else if (lower.includes('[pesan]') || lower.includes('[kesan]') || lower.includes('[umum]')) {
-          curSec = 3;
-        } else {
-          const cleanQ = q.replace(/^\[.*?\]\s*/, '').trim();
-          if (cleanQ) {
-            if (curSec === 1) listT1.push(cleanQ);
-            else if (curSec === 2) listT2.push(cleanQ);
-            else if (curSec === 3) listGen.push(cleanQ);
-            else {
-              if (listT1.length < 7 && listT1.length <= listT2.length && listT1.length <= listGen.length) {
-                listT1.push(cleanQ);
-              } else if (listT2.length < 7 && listT2.length <= listGen.length) {
-                listT2.push(cleanQ);
-              } else if (listGen.length < 7) {
-                listGen.push(cleanQ);
-              } else {
-                listT1.push(cleanQ);
+    // Fallback if legacy participantQuotes was provided instead
+    if (listT1.length === 0 && listT2.length === 0 && listGen.length === 0) {
+      const userQuotes = Array.isArray(participantQuotes) ? participantQuotes.filter(s => typeof s === 'string' && s.trim().length > 2) : [];
+      if (userQuotes.length > 0) {
+        let curSec = 0;
+        userQuotes.forEach(q => {
+          const lower = q.toLowerCase();
+          if (lower.includes('[trainer 1]') || lower.includes('[trainer1]') || lower.includes(`[${tr1Name.toLowerCase()}]`)) {
+            curSec = 1;
+          } else if (lower.includes('[trainer 2]') || lower.includes('[trainer2]') || lower.includes(`[${tr2Name.toLowerCase()}]`)) {
+            curSec = 2;
+          } else if (lower.includes('[pesan]') || lower.includes('[kesan]') || lower.includes('[umum]')) {
+            curSec = 3;
+          } else {
+            const cleanQ = q.replace(/^\[.*?\]\s*/, '').trim();
+            if (cleanQ) {
+              if (curSec === 1) listT1.push(cleanQ);
+              else if (curSec === 2) listT2.push(cleanQ);
+              else if (curSec === 3) listGen.push(cleanQ);
+              else {
+                if (listT1.length < 7 && listT1.length <= listT2.length && listT1.length <= listGen.length) {
+                  listT1.push(cleanQ);
+                } else if (listT2.length < 7 && listT2.length <= listGen.length) {
+                  listT2.push(cleanQ);
+                } else if (listGen.length < 7) {
+                  listGen.push(cleanQ);
+                } else {
+                  listT1.push(cleanQ);
+                }
               }
             }
           }
-        }
-      });
+        });
+      }
     }
 
     // Pad each section to exactly 7 quotes so the page is filled and never empty
