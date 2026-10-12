@@ -5470,7 +5470,7 @@ async function runExportPdf() {
 
     const includeQuotes = document.getElementById('pdfIncludeParticipantQuotes') ? document.getElementById('pdfIncludeParticipantQuotes').checked : true;
     const quotesRaw = (document.getElementById('pdfCfgParticipantQuotes') || {}).value || '';
-    let participantQuotes = quotesRaw.split('\n').map(s => s.trim()).filter(s => s.length > 5);
+    let participantQuotes = quotesRaw.split('\n').map(s => s.trim()).filter(s => s.length > 3);
 
     generateMdiPdfReportBackend({
       clientName: clientName || (c && c.name) || 'PT. Mitra Mandiri',
@@ -5488,6 +5488,7 @@ async function runExportPdf() {
       participants,
       analisisType,
       trainers,
+      trainerNamesStr: (t && t.trainerNames) || (document.getElementById('cfgTrainingTrainer')||{}).value || '',
       includeFacilitator,
       includeQuotes,
       participantQuotes
@@ -5504,7 +5505,7 @@ function escHtml(str) {
 }
 
 function generateMdiPdfReportBackend(cfg) {
-  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, includeFacilitator, includeQuotes = true, participantQuotes = [], evalMetrics = {} } = cfg;
+  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, trainerNamesStr = '', includeFacilitator, includeQuotes = true, participantQuotes = [], evalMetrics = {} } = cfg;
 
   const pctBenefit = (evalMetrics && evalMetrics.benefit != null) ? evalMetrics.benefit : 100;
   const pctEnjoyment = (evalMetrics && evalMetrics.enjoyment != null) ? evalMetrics.enjoyment : 100;
@@ -5895,66 +5896,151 @@ function generateMdiPdfReportBackend(cfg) {
 
   let participantQuotesPagesHtml = '';
   if (includeQuotes) {
-    const rawQuotes = Array.isArray(participantQuotes) && participantQuotes.length > 0
-      ? participantQuotes
-      : [
-          "Pelatihan ini membuka perspektif baru bagi saya tentang bagaimana memimpin dengan empati dan mendengarkan tim sebelum mengambil keputusan.",
-          "Penyampaian materi sangat aplikatif dan studi kasus yang dibahas relate sekali dengan tantangan harian kami di lapangan.",
-          "Sesi role-play dan simulasi komunikasi membantu saya memahami berbagai tipe karakter rekan kerja dan cara berkolaborasi yang efektif.",
-          "Banyak insight praktis mengenai problem solving yang bisa langsung saya terapkan bersama tim mulai besok pagi.",
-          "Fasilitator sangat interaktif dan menciptakan suasana belajar yang nyaman, sehingga semua peserta aktif dan antusias menyampaikan pandangannya.",
-          "Training ini sangat berbobot, membuka wawasan, dan menginspirasi saya untuk terus mengembangkan potensi kepemimpinan diri."
-        ];
+    // 21 default quotes matching reference template (media_1791789844264_ae489e83.png)
+    const defT1Quotes = [
+      "Komunikatif, memberikan materi dengan jelas, komunikasi dua arah",
+      "Cara bicara jelas, interaksi dengan audience baik",
+      "Penyampaian materi sangat baik dan mudah dipahami",
+      "Aktif dalam mendengarkan cerita dari peserta serta memberikan pembelajaran materi dalam bentuk kasus",
+      "Humoris, penyampaian tepat, smart dan interaktif",
+      "Ceria, interaktif, Kreatif, Juara",
+      "Interaktif, mudah mencairkan suasana"
+    ];
 
-    const quoteChunks = [];
-    for (let i = 0; i < rawQuotes.length; i += 6) {
-      quoteChunks.push(rawQuotes.slice(i, i + 6));
+    const defT2Quotes = [
+      "Interaktif. Memiliki experience yang relevan",
+      "Komunikatif, memberikan materi dengan jelas, komunikasi dua arah",
+      "Sangat komunikatif dan praktek jadi lebih dimengerti",
+      "Good trainer and very interactive.",
+      "Sangat komunikatif dan bisa membawa suasana",
+      "Komunikatif dan rajin mendengarkan umpan balik dari peserta",
+      "Penyampaian materi sangat baik dan mudah dipahami"
+    ];
+
+    const defGenQuotes = [
+      "Training berlangsung interaktif, tidak membosankan, dan banyak melibatkan diskusi maupun simulasi yang membuat materi lebih mudah dipahami...",
+      "Training menyenangkan membuka wawasan baru dalam teknik bernegosiasi.",
+      "Pertama kali ikut training dan menyenangkan. Jadi tambah wawasan dan mengenal secara langsung tim divisi lain.",
+      "Terimakasih dan sangat membantu dalam penerapan sehari-hari",
+      "Penyajian materi sangat menarik, terutama assessment",
+      "Good training, good trainer. Terimakasih utk 2 hari sharing ilmunya.",
+      "Semoga training ini bisa diadakan lagi untuk teman-teman lainnya."
+    ];
+
+    // Determine trainer names
+    let tr1Name = 'Romy Rianto';
+    let tr2Name = 'Arif Hidayat';
+    if (Array.isArray(trainers) && trainers.length > 0) {
+      if (trainers[0] && trainers[0].name) tr1Name = trainers[0].name.trim();
+      if (trainers.length > 1 && trainers[1] && trainers[1].name) tr2Name = trainers[1].name.trim();
+    }
+    const trainerStr = (typeof trainerNamesStr === 'string' && trainerNamesStr) || '';
+    if (trainerStr) {
+      const parts = trainerStr.split(/[,&/|]| dan /i).map(s => s.trim()).filter(Boolean);
+      if (parts.length > 0) tr1Name = parts[0];
+      if (parts.length > 1) tr2Name = parts[1];
     }
 
-    participantQuotesPagesHtml = quoteChunks.map((chunk, pageIdx) => {
-      const pageTitle = pageIdx === 0 ? 'KUTIPAN PESERTA' : `KUTIPAN PESERTA (LANJUTAN - HAL. ${pageIdx + 1})`;
-      const quoteCardsHtml = chunk.map((text, qIdx) => {
-        const globalIdx = pageIdx * 6 + qIdx + 1;
-        return `
-        <div class="qbubble-item">
-          <div class="qbubble-box">
-            <div class="qbubble-top">
-              <div class="qbubble-badge">
-                <svg viewBox="0 0 24 24" fill="#d97706" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-                <span>Kutipan #${globalIdx}</span>
-              </div>
-              <div class="qbubble-mark">“</div>
-            </div>
-            <p class="qbubble-text">"${escHtml(text)}"</p>
-          </div>
-          <div class="qbubble-footer">
-            <div class="qbubble-avatar">${globalIdx}</div>
-            <div class="qbubble-who">Peserta Pelatihan ${globalIdx}</div>
-          </div>
-        </div>`;
-      }).join('');
+    const sec1Title = `KESAN PESERTA TERHADAP TRAINER: ${tr1Name}`;
+    const sec2Title = (tr2Name && tr2Name.toLowerCase() !== tr1Name.toLowerCase())
+      ? `KESAN PESERTA TERHADAP TRAINER: ${tr2Name}`
+      : 'KESAN PESERTA TERHADAP MATERI & FASILITASI';
+    const sec3Title = 'PESAN DAN KESAN';
+
+    let listT1 = [];
+    let listT2 = [];
+    let listGen = [];
+
+    const userQuotes = Array.isArray(participantQuotes) ? participantQuotes.filter(s => typeof s === 'string' && s.trim().length > 3) : [];
+
+    if (userQuotes.length > 0) {
+      let curSec = 0;
+      userQuotes.forEach(q => {
+        const lower = q.toLowerCase();
+        if (lower.includes('[trainer 1]') || lower.includes('[trainer1]') || lower.includes(`[${tr1Name.toLowerCase()}]`)) {
+          curSec = 1;
+        } else if (lower.includes('[trainer 2]') || lower.includes('[trainer2]') || lower.includes(`[${tr2Name.toLowerCase()}]`)) {
+          curSec = 2;
+        } else if (lower.includes('[pesan]') || lower.includes('[kesan]') || lower.includes('[umum]')) {
+          curSec = 3;
+        } else {
+          const cleanQ = q.replace(/^\[.*?\]\s*/, '').trim();
+          if (cleanQ) {
+            if (curSec === 1) listT1.push(cleanQ);
+            else if (curSec === 2) listT2.push(cleanQ);
+            else if (curSec === 3) listGen.push(cleanQ);
+            else {
+              if (listT1.length < 7 && listT1.length <= listT2.length && listT1.length <= listGen.length) {
+                listT1.push(cleanQ);
+              } else if (listT2.length < 7 && listT2.length <= listGen.length) {
+                listT2.push(cleanQ);
+              } else if (listGen.length < 7) {
+                listGen.push(cleanQ);
+              } else {
+                listT1.push(cleanQ);
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Pad each section to exactly 7 quotes so the page is filled and never empty
+    const finalT1 = [...listT1];
+    for (let i = 0; finalT1.length < 7; i++) {
+      finalT1.push(defT1Quotes[i % defT1Quotes.length]);
+    }
+    const finalT2 = [...listT2];
+    for (let i = 0; finalT2.length < 7; i++) {
+      finalT2.push(defT2Quotes[i % defT2Quotes.length]);
+    }
+    const finalGen = [...listGen];
+    for (let i = 0; finalGen.length < 7; i++) {
+      finalGen.push(defGenQuotes[i % defGenQuotes.length]);
+    }
+
+    const tailSvg = `<svg class="qtail" viewBox="0 0 16 12" style="position:absolute; bottom:-8px; left:18px; width:13px; height:9px; overflow:visible; pointer-events:none;"><path d="M0,0 L11,0 L1.5,9 Z" fill="#ffffff" stroke="#f59e0b" stroke-width="1.8" stroke-linejoin="round"/><line x1="0.5" y1="0" x2="10.5" y2="0" stroke="#ffffff" stroke-width="2.6"/></svg>`;
+
+    const renderSectionHtml = (title, quotes7, isLast = false) => {
+      const row1Quotes = quotes7.slice(0, 4);
+      const row2Quotes = quotes7.slice(4, 7);
+
+      const r1Html = row1Quotes.map(q => `
+        <div class="qbubble-card">
+          <span>${escHtml(q)}</span>
+          ${tailSvg}
+        </div>`).join('');
+
+      const r2Html = row2Quotes.map(q => `
+        <div class="qbubble-card">
+          <span>${escHtml(q)}</span>
+          ${tailSvg}
+        </div>`).join('');
 
       return `
-<!-- HALAMAN: KUTIPAN PESERTA ${pageIdx + 1} -->
+      <div class="qsection-box"${isLast ? ' style="margin-bottom:0;"' : ''}>
+        <div class="qsection-hdr">${escHtml(title)}</div>
+        <div class="qrow-4">${r1Html}</div>
+        <div class="qrow-3">${r2Html}</div>
+      </div>`;
+    };
+
+    participantQuotesPagesHtml = `
+<!-- HALAMAN: KUTIPAN PESERTA -->
 <div class="page">
   <div>
     <div class="hdr">
       <img src="${logoMdi}" alt="MDI">
       <div style="font-weight:800;font-size:14px;">${escHtml(clientName)}</div>
     </div>
-    <h2 class="ptitle">${pageTitle}</h2>
-    <div style="text-align:center;font-size:11px;font-weight:700;color:#64748b;margin:-6px 0 16px;">
-      Refleksi, Testimoni, dan Kesan Langsung dari Peserta Pelatihan
-    </div>
 
-    <div class="qbubble-grid">
-      ${quoteCardsHtml}
-    </div>
+    ${renderSectionHtml(sec1Title, finalT1)}
+    ${renderSectionHtml(sec2Title, finalT2)}
+    ${renderSectionHtml(sec3Title, finalGen, true)}
   </div>
 
   <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
 </div>`;
-    }).join('');
   }
 
   const html = `<!DOCTYPE html>
@@ -6005,19 +6091,12 @@ table.dt tr:nth-child(even) td{background:#fffdf5}
 .crow{display:flex;align-items:center;margin-bottom:12px}
 .clbl{width:140px;font-size:11.5px;font-weight:700;color:#0f172a;text-align:right;padding-right:11px}
 .cbg{flex:1;background:#f1f5f9;height:30px;border-radius:4px;overflow:hidden}
-.cfill{background:#f59e0b;height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:9px;color:#0f172a;font-weight:800;font-size:11.5px}
-.qbubble-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px 22px;margin-top:6px}
-.qbubble-item{display:flex;flex-direction:column}
-.qbubble-box{position:relative;background:#fff;border:2.5px solid #f59e0b;border-radius:16px;padding:16px 18px 20px;box-shadow:0 3px 10px rgba(245,158,11,0.08);min-height:120px;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box}
-.qbubble-box::after{content:"";position:absolute;bottom:-12px;left:28px;width:0;height:0;border-style:solid;border-width:12px 12px 0 0;border-color:#fff transparent transparent transparent;z-index:2}
-.qbubble-box::before{content:"";position:absolute;bottom:-15.5px;left:26px;width:0;height:0;border-style:solid;border-width:15.5px 15.5px 0 0;border-color:#f59e0b transparent transparent transparent;z-index:1}
-.qbubble-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.qbubble-badge{display:inline-flex;align-items:center;background:#fef3c7;border:1px solid #fde68a;border-radius:12px;padding:2px 10px;font-size:10px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:0.3px}
-.qbubble-mark{font-size:24px;font-family:Georgia,serif;font-weight:900;color:#f59e0b;line-height:1}
-.qbubble-text{font-size:11px;line-height:1.55;color:#1e293b;font-style:italic;text-align:justify;margin:0;font-weight:500}
-.qbubble-footer{display:flex;align-items:center;gap:9px;margin-top:14px;padding-left:14px}
-.qbubble-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0f172a;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(245,158,11,0.2)}
-.qbubble-who{font-size:11px;font-weight:800;color:#0f172a}
+.qsection-box{border:2px solid #f59e0b;border-radius:14px;background:#fffdf6;padding:8px 10px 10px;margin-bottom:15px;box-sizing:border-box}
+.qsection-hdr{background:#f59e0b;color:#0f172a;font-weight:800;font-size:11.5px;text-transform:uppercase;padding:7px 14px;border-radius:11px 11px 0 0;text-align:center;margin:-8px -10px 10px -10px;letter-spacing:.3px}
+.qrow-4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.qrow-3{display:flex;justify-content:center;gap:8px}
+.qbubble-card{position:relative;background:#fff;border:1.8px solid #f59e0b;border-radius:11px;padding:6px 8px;font-size:8.8px;font-weight:600;line-height:1.34;color:#1e293b;text-align:center;display:flex;align-items:center;justify-content:center;min-height:50px;box-sizing:border-box;overflow:visible}
+.qrow-3 .qbubble-card{flex:0 0 calc((100% - 24px)/4);max-width:calc((100% - 24px)/4)}
 </style></head>
 <body>
 
