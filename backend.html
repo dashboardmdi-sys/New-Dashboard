@@ -1656,8 +1656,18 @@
                   <li>Topik Bermanfaat &amp; Harapan</li>
                 </ul>
               </div>
+              <div style="border:2px solid #fde68a; border-radius:10px; padding:12px 14px; background:#fffdf5; position:relative;" id="pageObjectivesPreviewCard">
+                <div style="font-size:10px; font-weight:800; color:#92400e; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">🎯 Halaman 2</div>
+                <div style="font-weight:700; font-size:12.5px; color:#0f172a; margin-bottom:4px;">Tujuan &amp; Metode Program</div>
+                <ul style="font-size:10.5px; color:#475569; margin-left:14px; line-height:1.7;">
+                  <li>Mindset, Attitude &amp; Skill, Application</li>
+                  <li>Metode Belajar-Mengajar</li>
+                  <li>Aksen Gelombang Emas (Watermark)</li>
+                  <li>Header &amp; Footer Resmi MDI</li>
+                </ul>
+              </div>
               <div style="border:2px solid #fde68a; border-radius:10px; padding:12px 14px; background:#fffdf5;">
-                <div style="font-size:10px; font-weight:800; color:#92400e; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">📊 Halaman 2</div>
+                <div style="font-size:10px; font-weight:800; color:#92400e; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">📊 Halaman Pre/Post Test</div>
                 <div style="font-weight:700; font-size:12.5px; color:#0f172a; margin-bottom:4px;">Hasil Pre &amp; Post Test</div>
                 <ul style="font-size:10.5px; color:#475569; margin-left:14px; line-height:1.7;">
                   <li>Tabel Nilai Live Spreadsheet</li>
@@ -1724,6 +1734,17 @@
                 💬 Analisis Gaya Interpersonal (Sheet5)
               </label>
             </div>
+          </div>
+
+          <!-- Opsi Halaman Tujuan & Metode Program -->
+          <div class="card" style="margin-bottom:14px;">
+            <div class="card-head" style="margin-bottom:10px;">
+              <h2 style="font-size:.92rem;">🎯 Halaman Tujuan &amp; Metode Program</h2>
+            </div>
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; font-weight:700; color:var(--navy);">
+              <input type="checkbox" id="pdfIncludeObjectivesMethods" checked onchange="updatePage45Label()" style="accent-color:var(--primary-base); width:18px; height:18px;">
+              Sertakan Halaman "Tujuan &amp; Metode Program" (Halaman 2 setelah Cover)
+            </label>
           </div>
 
           <!-- Opsi Feedback Fasilitator -->
@@ -1804,6 +1825,35 @@
               <label for="pdfCfgTopicsFuture" style="font-size:12px;">Harapan Program Training Selanjutnya (pisahkan dengan koma)</label>
               <textarea id="pdfCfgTopicsFuture" rows="2" placeholder="Problem solving, Delegasi, Management conflict, Time management, Supply chain" style="font-size:12px; padding:8px 12px; min-height:58px;"></textarea>
             </div>
+
+            <!-- Konten Halaman Tujuan & Metode Program -->
+            <div style="margin-top:14px; margin-bottom:12px; padding:12px 14px; background:#fffdf5; border:1.5px solid #fde68a; border-radius:10px;">
+              <div style="margin-bottom:10px;">
+                <div style="font-size:12.5px; font-weight:800; color:#92400e;">🎯 Isi Halaman Tujuan &amp; Metode Program</div>
+                <div style="font-size:11px; color:#b45309; font-weight:500; margin-top:2px;">Template layout paten standar MDI — Anda cukup mengganti isi teks di bawah ini (atau gunakan teks default).</div>
+              </div>
+
+              <div class="field" style="margin-bottom:10px;">
+                <label for="pdfCfgObjectiveMindset" style="font-size:12px; font-weight:700; color:#0f172a;">1. TUJUAN PROGRAM — Mindset</label>
+                <textarea id="pdfCfgObjectiveMindset" rows="2" placeholder="Poin mindset tujuan program..." style="font-size:12px; padding:8px 12px; min-height:55px;"></textarea>
+              </div>
+
+              <div class="field" style="margin-bottom:10px;">
+                <label for="pdfCfgObjectiveAttitude" style="font-size:12px; font-weight:700; color:#0f172a;">2. TUJUAN PROGRAM — Attitude &amp; Skill</label>
+                <textarea id="pdfCfgObjectiveAttitude" rows="3" placeholder="Poin attitude &amp; skill tujuan program..." style="font-size:12px; padding:8px 12px; min-height:65px;"></textarea>
+              </div>
+
+              <div class="field" style="margin-bottom:10px;">
+                <label for="pdfCfgObjectiveApplication" style="font-size:12px; font-weight:700; color:#0f172a;">3. TUJUAN PROGRAM — Application (pisahkan tiap poin dengan baris baru [Enter])</label>
+                <textarea id="pdfCfgObjectiveApplication" rows="3" placeholder="Poin aplikasi di tempat kerja..." style="font-size:12px; padding:8px 12px; min-height:65px;"></textarea>
+              </div>
+
+              <div class="field" style="margin:0;">
+                <label for="pdfCfgMethodsList" style="font-size:12px; font-weight:700; color:#0f172a;">4. METODE BELAJAR – MENGAJAR (pisahkan tiap metode dengan baris baru [Enter])</label>
+                <textarea id="pdfCfgMethodsList" rows="3" placeholder="Kuliah Singkat&#10;Diskusi Kelas/Kelompok&#10;Berbagi Pendapat&#10;Role Play&#10;Aktivitas experiential learning" style="font-size:12px; padding:8px 12px; min-height:65px;"></textarea>
+              </div>
+            </div>
+
             <div style="margin-top:14px; padding:12px 14px; background:#fffdf5; border:1.5px solid #fde68a; border-radius:10px;">
               <div style="margin-bottom:10px;">
                 <div style="font-size:12.5px; font-weight:800; color:#92400e;">💬 Kutipan Peserta (pisahkan tiap kutipan dengan baris baru [Enter])</div>
@@ -4814,6 +4864,7 @@ function updateApSpreadsheetCellData(picNo, field, isAnswer, element) {
 
 function updatePage45Label() {
   const val = (document.querySelector('input[name="pdfAnalisis"]:checked') || {}).value || 'none';
+  const incObj = document.getElementById('pdfIncludeObjectivesMethods') ? document.getElementById('pdfIncludeObjectivesMethods').checked : true;
   const incFac = document.getElementById('pdfIncludeFacilitatorFeedback') ? document.getElementById('pdfIncludeFacilitatorFeedback').checked : true;
   const incQuotes = document.getElementById('pdfIncludeParticipantQuotes') ? document.getElementById('pdfIncludeParticipantQuotes').checked : true;
   const previewCard = document.getElementById('page45PreviewCard');
@@ -4821,10 +4872,12 @@ function updatePage45Label() {
   const titleText = document.getElementById('page45TitleText');
   const listDesc = document.getElementById('page45ListDesc');
   const pageCountBadge = document.getElementById('pdfPageCountBadge');
+  const objPreviewCard = document.getElementById('pageObjectivesPreviewCard');
   const facPreviewCard = document.getElementById('pageFacilitatorPreviewCard');
   const quotesPreviewCard = document.getElementById('pageQuotesPreviewCard');
 
   let pageCount = 2; // Cover + PrePost
+  if (incObj) pageCount += 1; // Tujuan & Metode 1 hal
   if (val !== 'none') pageCount += 2; // Analisis 2 hal
   if (incFac) pageCount += 1; // Facilitator 1 hal
   if (incQuotes) pageCount += 1; // Kutipan 1 hal
@@ -4832,6 +4885,12 @@ function updatePage45Label() {
   if (pageCountBadge) {
     pageCountBadge.textContent = `A4 PDF · ${pageCount} Halaman`;
     pageCountBadge.style.background = pageCount > 2 ? '#d93025' : '#0284c7';
+  }
+
+  if (objPreviewCard) {
+    objPreviewCard.style.opacity = incObj ? '1' : '0.6';
+    objPreviewCard.style.borderColor = incObj ? '#fde68a' : '#cbd5e1';
+    objPreviewCard.style.background = incObj ? '#fffdf5' : '#f8fafc';
   }
 
   if (facPreviewCard) {
@@ -5110,6 +5169,24 @@ function prefillPdfConfig() {
     }
     if (topicsFutureEl && !topicsFutureEl.value.trim()) {
       topicsFutureEl.value = 'Problem solving, How to be a success leader, Delegasi, Management risk, Management conflict, Supply chain, Time management, Emotional management';
+    }
+
+    const objMindsetEl = document.getElementById('pdfCfgObjectiveMindset');
+    const objAttitudeEl = document.getElementById('pdfCfgObjectiveAttitude');
+    const objApplicationEl = document.getElementById('pdfCfgObjectiveApplication');
+    const objMethodsEl = document.getElementById('pdfCfgMethodsList');
+
+    if (objMindsetEl && !objMindsetEl.value.trim()) {
+      objMindsetEl.value = 'Mengembangkan kesadaran akan pentingnya kemampuan dan peran sebagai individu dalam keterampilan negosiasi untuk mencapai target maksimal serta menjaga hubungan dengan para stakeholder';
+    }
+    if (objAttitudeEl && !objAttitudeEl.value.trim()) {
+      objAttitudeEl.value = 'Mengasah berbagai keterampilan relevan serta aplikasinya dalam berbagai aktivitas experiential learning terkait Memahami karakteristik seorang negosiator yang efektif, meliputi cara berpikir, cara bersikap, strategi dan teknik negosiasi, pendekatan kolaboratif, keterampilan interpersonal dalam menghadapi berbagai karakter individu secara persuasif serta mengelola konflik';
+    }
+    if (objApplicationEl && !objApplicationEl.value.trim()) {
+      objApplicationEl.value = 'Melatih dan mengasah keterampilan relevan dalam serangkaian aktivitas experiential learning yang praktis dan relevan dengan situasi aktual\nMengembangkan rencana tindakan dari pembelajaran keseluruhan untuk meningkatkan perencanaan dan implementasi di lingkungan aktual';
+    }
+    if (objMethodsEl && !objMethodsEl.value.trim()) {
+      objMethodsEl.value = 'Kuliah Singkat\nDiskusi Kelas/Kelompok\nBerbagi Pendapat\nRole Play\nAktivitas experiential learning';
     }
 
     const defT1Quotes = [
@@ -5577,6 +5654,17 @@ async function runExportPdf() {
     const quotesGen = elGen ? elGen.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
     const participantQuotes = elLegacy ? elLegacy.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
 
+    const includeObjectives = document.getElementById('pdfIncludeObjectivesMethods') ? document.getElementById('pdfIncludeObjectivesMethods').checked : true;
+    const elObjMindset = document.getElementById('pdfCfgObjectiveMindset');
+    const elObjAttitude = document.getElementById('pdfCfgObjectiveAttitude');
+    const elObjApplication = document.getElementById('pdfCfgObjectiveApplication');
+    const elObjMethods = document.getElementById('pdfCfgMethodsList');
+
+    const objMindset = elObjMindset ? elObjMindset.value.trim() : '';
+    const objAttitude = elObjAttitude ? elObjAttitude.value.trim() : '';
+    const objApplication = elObjApplication ? elObjApplication.value.trim() : '';
+    const objMethods = elObjMethods ? elObjMethods.value.trim() : '';
+
     generateMdiPdfReportBackend({
       clientName: clientName || (c && c.name) || 'PT. Mitra Mandiri',
       trainingTitle: trainingTitle || (t && t.title) || 'Executive Training Program',
@@ -5594,6 +5682,13 @@ async function runExportPdf() {
       analisisType,
       trainers,
       trainerNamesStr: (t && t.trainerNames) || (document.getElementById('cfgTrainingTrainer')||{}).value || '',
+      includeObjectives,
+      objectivesData: {
+        mindset: objMindset,
+        attitude: objAttitude,
+        application: objApplication,
+        methods: objMethods
+      },
       includeFacilitator,
       includeQuotes,
       quotesT1,
@@ -5613,7 +5708,7 @@ function escHtml(str) {
 }
 
 function generateMdiPdfReportBackend(cfg) {
-  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, trainerNamesStr = '', includeFacilitator, includeQuotes = true, quotesT1 = [], quotesT2 = [], quotesGen = [], participantQuotes = [], evalMetrics = {} } = cfg;
+  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, trainerNamesStr = '', includeFacilitator, includeQuotes = true, quotesT1 = [], quotesT2 = [], quotesGen = [], participantQuotes = [], evalMetrics = {}, includeObjectives = true, objectivesData = {} } = cfg;
 
   const pctBenefit = (evalMetrics && evalMetrics.benefit != null) ? evalMetrics.benefit : 100;
   const pctEnjoyment = (evalMetrics && evalMetrics.enjoyment != null) ? evalMetrics.enjoyment : 100;
@@ -5624,6 +5719,108 @@ function generateMdiPdfReportBackend(cfg) {
   const tFuture = Array.isArray(topicsFuture) ? topicsFuture : [];
   const logoMdi = 'Asset 7-8 (1).png';
   const locationDates = [location, dates].filter(Boolean).join(', ');
+
+  let objectivesPageHtml = '';
+  if (includeObjectives) {
+    const defMindset = 'Mengembangkan kesadaran akan pentingnya kemampuan dan peran sebagai individu dalam keterampilan negosiasi untuk mencapai target maksimal serta menjaga hubungan dengan para stakeholder';
+    const defAttitude = 'Mengasah berbagai keterampilan relevan serta aplikasinya dalam berbagai aktivitas experiential learning terkait Memahami karakteristik seorang negosiator yang efektif, meliputi cara berpikir, cara bersikap, strategi dan teknik negosiasi, pendekatan kolaboratif, keterampilan interpersonal dalam menghadapi berbagai karakter individu secara persuasif serta mengelola konflik';
+    const defApp = [
+      'Melatih dan mengasah keterampilan relevan dalam serangkaian aktivitas experiential learning yang praktis dan relevan dengan situasi aktual',
+      'Mengembangkan rencana tindakan dari pembelajaran keseluruhan untuk meningkatkan perencanaan dan implementasi di lingkungan aktual'
+    ];
+    const defMethods = [
+      'Kuliah Singkat',
+      'Diskusi Kelas/Kelompok',
+      'Berbagi Pendapat',
+      'Role Play',
+      'Aktivitas experiential learning'
+    ];
+
+    const mTxt = (objectivesData && objectivesData.mindset && objectivesData.mindset.trim()) ? objectivesData.mindset.trim() : defMindset;
+    const aTxt = (objectivesData && objectivesData.attitude && objectivesData.attitude.trim()) ? objectivesData.attitude.trim() : defAttitude;
+    
+    let appItems = (objectivesData && objectivesData.application && objectivesData.application.trim())
+      ? objectivesData.application.split('\n').map(s => s.trim().replace(/^[-•*]\s*/, '')).filter(Boolean)
+      : defApp;
+    if (appItems.length === 0) appItems = defApp;
+
+    let methItems = (objectivesData && objectivesData.methods && objectivesData.methods.trim())
+      ? objectivesData.methods.split('\n').map(s => s.trim().replace(/^[-•*]\s*/, '')).filter(Boolean)
+      : defMethods;
+    if (methItems.length === 0) methItems = defMethods;
+
+    objectivesPageHtml = `
+<!-- HALAMAN 2: TUJUAN & METODE PROGRAM -->
+<div class="page" style="position:relative; overflow:hidden;">
+  <!-- Wave Accent SVG Watermark -->
+  <svg style="position:absolute; right:0; top:50px; width:220px; height:800px; pointer-events:none; z-index:0; opacity:0.85;" viewBox="0 0 260 850" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M 160 0 C 110 140, 240 220, 180 370 C 120 520, 260 640, 190 850" stroke="#f59e0b" stroke-width="1.8" fill="none" opacity="0.6"/>
+    <path d="M 190 0 C 140 150, 270 230, 210 380 C 150 530, 290 650, 220 850" stroke="#fbbf24" stroke-width="2.2" fill="none" opacity="0.75"/>
+    <path d="M 215 0 C 165 160, 295 240, 235 390 C 175 540, 315 660, 245 850" stroke="#f59e0b" stroke-width="1.2" fill="none" opacity="0.5"/>
+    <path d="M 235 0 C 185 170, 315 250, 255 400 C 195 550, 335 670, 265 850" stroke="#d97706" stroke-width="1.5" fill="none" opacity="0.45"/>
+    <path d="M 135 0 C 85 130, 215 210, 155 360 C 95 510, 235 630, 165 850" stroke="#fbbf24" stroke-width="1.0" stroke-dasharray="4 4" fill="none" opacity="0.4"/>
+    <path d="M 255 0 C 205 180, 335 260, 275 410 C 215 560, 355 680, 285 850" stroke="#fde68a" stroke-width="2.5" fill="none" opacity="0.6"/>
+  </svg>
+
+  <div style="position:relative; z-index:1; padding-right:55px;">
+    <div class="hdr">
+      <img src="${logoMdi}" alt="MDI">
+      <div style="font-weight:800;font-size:14px;">${escHtml(clientName)}</div>
+    </div>
+
+    <h2 class="ptitle" style="letter-spacing:1px; margin-bottom:28px; font-size:17.5px;">TUJUAN &amp; METODE PROGRAM</h2>
+
+    <!-- TUJUAN PROGRAM -->
+    <div style="margin-bottom:28px;">
+      <div style="display:inline-block; font-size:13.5px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2.5px solid #f59e0b; padding-bottom:4px; margin-bottom:16px;">
+        TUJUAN PROGRAM
+      </div>
+
+      <!-- Mindset -->
+      <div style="margin-bottom:16px;">
+        <div style="font-weight:800; font-size:12.5px; color:#0f172a; margin-bottom:5px; display:flex; align-items:center; gap:6px;">
+          <span style="color:#d97706; font-size:14px;">•</span> Mindset
+        </div>
+        <div style="font-size:11px; line-height:1.65; color:#334155; text-align:justify; padding-left:14px;">
+          ${escHtml(mTxt)}
+        </div>
+      </div>
+
+      <!-- Attitude & Skill -->
+      <div style="margin-bottom:16px;">
+        <div style="font-weight:800; font-size:12.5px; color:#0f172a; margin-bottom:5px; display:flex; align-items:center; gap:6px;">
+          <span style="color:#d97706; font-size:14px;">•</span> Attitude &amp; Skill
+        </div>
+        <div style="font-size:11px; line-height:1.65; color:#334155; text-align:justify; padding-left:14px;">
+          ${escHtml(aTxt)}
+        </div>
+      </div>
+
+      <!-- Application -->
+      <div style="margin-bottom:16px;">
+        <div style="font-weight:800; font-size:12.5px; color:#0f172a; margin-bottom:5px; display:flex; align-items:center; gap:6px;">
+          <span style="color:#d97706; font-size:14px;">•</span> Application
+        </div>
+        <ul style="font-size:11px; line-height:1.65; color:#334155; text-align:justify; padding-left:30px; list-style-type:circle;">
+          ${appItems.map(item => `<li style="margin-bottom:6px;">${escHtml(item)}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+
+    <!-- METODE BELAJAR - MENGAJAR -->
+    <div>
+      <div style="display:inline-block; font-size:13.5px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2.5px solid #f59e0b; padding-bottom:4px; margin-bottom:16px;">
+        METODE BELAJAR – MENGAJAR
+      </div>
+      <ul style="font-size:11.5px; line-height:1.8; color:#334155; padding-left:22px; list-style-type:disc;">
+        ${methItems.map(m => `<li style="margin-bottom:5px; font-weight:600;">${escHtml(m)}</li>`).join('')}
+      </ul>
+    </div>
+  </div>
+
+  <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
+</div>`;
+  }
 
   const validPres = participants.filter(p => p.pre != null).map(p => p.pre);
   const validPosts = participants.filter(p => p.post != null).map(p => p.post);
@@ -6256,6 +6453,9 @@ table.dt tr:nth-child(even) td{background:#fffdf5}
   </div>
   <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
 </div>
+
+<!-- PAGE 2: TUJUAN & METODE PROGRAM -->
+${objectivesPageHtml}
 
 <!-- PAGES 2+: PRE-TEST & POST-TEST -->
 ${prePostPagesHtml}

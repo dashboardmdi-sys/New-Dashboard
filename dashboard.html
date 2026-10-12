@@ -3946,6 +3946,107 @@ function generateMdiPdfReport(evalMetrics) {
   const avgPost = validPosts.length > 0 ? Math.round(validPosts.reduce((a,b)=>a+b,0) / validPosts.length) : 79;
   const avgPct = (avgPre > 0 && avgPost > 0) ? Math.round(((avgPost - avgPre) / avgPre) * 100) : 63;
 
+  const defMindset = "Mengembangkan kesadaran akan pentingnya kemampuan dan peran sebagai individu dalam keterampilan negosiasi untuk mencapai target maksimal serta menjaga hubungan dengan para stakeholder";
+  const defAttitude = "Mengasah berbagai keterampilan relevan serta aplikasinya dalam berbagai aktivitas experiential learning terkait Memahami karakteristik seorang negosiator yang efektif, meliputi cara berpikir, cara bersikap, strategi dan teknik negosiasi, pendekatan kolaboratif, keterampilan interpersonal dalam menghadapi berbagai karakter individu secara persuasif serta mengelola konflik";
+  const defApp = [
+    "Melatih dan mengasah keterampilan relevan dalam serangkaian aktivitas experiential learning yang praktis dan relevan dengan situasi aktual",
+    "Mengembangkan rencana tindakan dari pembelajaran keseluruhan untuk meningkatkan perencanaan dan implementasi di lingkungan aktual"
+  ];
+  const defMethods = [
+    "Kuliah Singkat",
+    "Diskusi Kelas/Kelompok",
+    "Berbagi Pendapat",
+    "Role Play",
+    "Aktivitas experiential learning"
+  ];
+
+  const objData = (evalMetrics && evalMetrics.objectivesData) || FORM_CONFIG.objectivesData || {};
+  const mTxt = (objData.mindset && objData.mindset.trim()) ? objData.mindset.trim() : defMindset;
+  const aTxt = (objData.attitude && objData.attitude.trim()) ? objData.attitude.trim() : defAttitude;
+  let appItems = (objData.application && objData.application.trim())
+    ? objData.application.split('\n').map(s => s.trim().replace(/^[-•*]\s*/, '')).filter(Boolean)
+    : defApp;
+  if (appItems.length === 0) appItems = defApp;
+  let methItems = (objData.methods && objData.methods.trim())
+    ? objData.methods.split('\n').map(s => s.trim().replace(/^[-•*]\s*/, '')).filter(Boolean)
+    : defMethods;
+  if (methItems.length === 0) methItems = defMethods;
+
+  const objectivesPageHtml = `
+  <!-- HALAMAN 2: TUJUAN & METODE PROGRAM -->
+  <div class="page" style="position:relative; overflow:hidden;">
+    <!-- Wave Accent SVG Watermark -->
+    <svg style="position:absolute; right:0; top:50px; width:220px; height:800px; pointer-events:none; z-index:0; opacity:0.85;" viewBox="0 0 260 850" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 160 0 C 110 140, 240 220, 180 370 C 120 520, 260 640, 190 850" stroke="#f59e0b" stroke-width="1.8" fill="none" opacity="0.6"/>
+      <path d="M 190 0 C 140 150, 270 230, 210 380 C 150 530, 290 650, 220 850" stroke="#fbbf24" stroke-width="2.2" fill="none" opacity="0.75"/>
+      <path d="M 215 0 C 165 160, 295 240, 235 390 C 175 540, 315 660, 245 850" stroke="#f59e0b" stroke-width="1.2" fill="none" opacity="0.5"/>
+      <path d="M 235 0 C 185 170, 315 250, 255 400 C 195 550, 335 670, 265 850" stroke="#d97706" stroke-width="1.5" fill="none" opacity="0.45"/>
+      <path d="M 135 0 C 85 130, 215 210, 155 360 C 95 510, 235 630, 165 850" stroke="#fbbf24" stroke-width="1.0" stroke-dasharray="4 4" fill="none" opacity="0.4"/>
+      <path d="M 255 0 C 205 180, 335 260, 275 410 C 215 560, 355 680, 285 850" stroke="#fde68a" stroke-width="2.5" fill="none" opacity="0.6"/>
+    </svg>
+
+    <div style="position:relative; z-index:1; padding-right:55px;">
+      <div class="header-bar">
+        <img src="${logoMdi}" class="logo-mdi" alt="MDI Logo">
+        ${logoClient ? `<img src="${escapeHtmlPdf(logoClient)}" class="logo-client" alt="Client Logo">` : `<div style="font-weight:800; font-size:14px;">${escapeHtmlPdf(clientName)}</div>`}
+      </div>
+
+      <h2 class="page-title" style="letter-spacing:1px; margin-bottom:28px; font-size:17.5px;">TUJUAN &amp; METODE PROGRAM</h2>
+
+      <!-- TUJUAN PROGRAM -->
+      <div style="margin-bottom:28px;">
+        <div style="display:inline-block; font-size:13.5px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2.5px solid #f59e0b; padding-bottom:4px; margin-bottom:16px;">
+          TUJUAN PROGRAM
+        </div>
+
+        <!-- Mindset -->
+        <div style="margin-bottom:16px;">
+          <div style="font-weight:800; font-size:12.5px; color:#0f172a; margin-bottom:5px; display:flex; align-items:center; gap:6px;">
+            <span style="color:#d97706; font-size:14px;">•</span> Mindset
+          </div>
+          <div style="font-size:11px; line-height:1.65; color:#334155; text-align:justify; padding-left:14px;">
+            ${escapeHtmlPdf(mTxt)}
+          </div>
+        </div>
+
+        <!-- Attitude & Skill -->
+        <div style="margin-bottom:16px;">
+          <div style="font-weight:800; font-size:12.5px; color:#0f172a; margin-bottom:5px; display:flex; align-items:center; gap:6px;">
+            <span style="color:#d97706; font-size:14px;">•</span> Attitude &amp; Skill
+          </div>
+          <div style="font-size:11px; line-height:1.65; color:#334155; text-align:justify; padding-left:14px;">
+            ${escapeHtmlPdf(aTxt)}
+          </div>
+        </div>
+
+        <!-- Application -->
+        <div style="margin-bottom:16px;">
+          <div style="font-weight:800; font-size:12.5px; color:#0f172a; margin-bottom:5px; display:flex; align-items:center; gap:6px;">
+            <span style="color:#d97706; font-size:14px;">•</span> Application
+          </div>
+          <ul style="font-size:11px; line-height:1.65; color:#334155; text-align:justify; padding-left:30px; list-style-type:circle;">
+            ${appItems.map(item => `<li style="margin-bottom:6px;">${escapeHtmlPdf(item)}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+
+      <!-- METODE BELAJAR - MENGAJAR -->
+      <div>
+        <div style="display:inline-block; font-size:13.5px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2.5px solid #f59e0b; padding-bottom:4px; margin-bottom:16px;">
+          METODE BELAJAR – MENGAJAR
+        </div>
+        <ul style="font-size:11.5px; line-height:1.8; color:#334155; padding-left:22px; list-style-type:disc;">
+          ${methItems.map(m => `<li style="margin-bottom:5px; font-weight:600;">${escapeHtmlPdf(m)}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <div>Management Development International</div>
+      <div class="addr">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div>
+    </div>
+  </div>`;
+
   function chunkPrePost(arr) {
     if (arr.length <= 24) return [arr];
     const numPages = Math.ceil(arr.length / 24);
@@ -4422,6 +4523,9 @@ function generateMdiPdfReport(evalMetrics) {
       <div class="addr">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div>
     </div>
   </div>
+
+  <!-- HALAMAN 2: TUJUAN & METODE PROGRAM -->
+  ${objectivesPageHtml}
 
   <!-- PAGES PRE-TEST DAN POST-TEST (SMART PAGINATED) -->
 ${prePostPagesHtml}
