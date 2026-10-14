@@ -6026,7 +6026,7 @@ function generateMdiPdfReportBackend(cfg) {
                   blocks.push({
                     type: 'intro',
                     charCount: cur.trim().length,
-                    html: `<p style="margin-bottom:9px; text-align:justify;">${escHtml(cur.trim())}</p>`
+                    html: `<p style="margin-bottom:6px; text-align:justify;">${escHtml(cur.trim())}</p>`
                   });
                 }
                 cur = s;
@@ -6038,14 +6038,14 @@ function generateMdiPdfReportBackend(cfg) {
               blocks.push({
                 type: 'intro',
                 charCount: cur.trim().length,
-                html: `<p style="margin-bottom:9px; text-align:justify;">${escHtml(cur.trim())}</p>`
+                html: `<p style="margin-bottom:6px; text-align:justify;">${escHtml(cur.trim())}</p>`
               });
             }
           } else {
             blocks.push({
               type: 'intro',
               charCount: p.length,
-              html: `<p style="margin-bottom:9px; text-align:justify;">${escHtml(p)}</p>`
+              html: `<p style="margin-bottom:6px; text-align:justify;">${escHtml(p)}</p>`
             });
           }
         });
@@ -6091,15 +6091,15 @@ function generateMdiPdfReportBackend(cfg) {
 
       const totalChars = blocks.reduce((acc, s) => acc + s.charCount, 0);
 
-      // Facilitator Profile Header Component (Clean, elegant, generous gap)
+      // Facilitator Profile Header Component (compact)
       const profileHeaderHtml = `
-        <div style="display:flex; align-items:center; gap:16px; margin-bottom:14px; padding-bottom:10px; border-bottom:1.5px solid #fde68a;">
-          <div style="width:62px; height:62px; border-radius:50%; border:3px solid #f59e0b; ${avatarStyle} background-size:cover; background-position:center; flex-shrink:0; box-shadow:0 3px 8px rgba(245,158,11,0.22); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; color:#92400e; overflow:hidden; background-color:#fff;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px; padding-bottom:8px; border-bottom:1.5px solid #fde68a;">
+          <div style="width:52px; height:52px; border-radius:50%; border:2.5px solid #f59e0b; ${avatarStyle} background-size:cover; background-position:center; flex-shrink:0; box-shadow:0 2px 6px rgba(245,158,11,0.22); display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:800; color:#92400e; overflow:hidden; background-color:#fff;">
             ${!formattedPhoto ? initials : ''}
           </div>
           <div>
-            <div style="font-size:16px; font-weight:800; color:#0f172a; line-height:1.2;">${escHtml(tr.name || 'Fasilitator')}</div>
-            <div style="font-size:11.5px; font-weight:700; color:#d97706; margin-top:2px;">${escHtml(tr.role || 'Facilitator MDI Tack')}</div>
+            <div style="font-size:14px; font-weight:800; color:#0f172a; line-height:1.2;">${escHtml(tr.name || 'Fasilitator')}</div>
+            <div style="font-size:10.5px; font-weight:700; color:#d97706; margin-top:2px;">${escHtml(tr.role || 'Facilitator MDI Tack')}</div>
           </div>
         </div>`;
 
@@ -6112,8 +6112,8 @@ function generateMdiPdfReportBackend(cfg) {
           </div>
         </div>`;
 
-      // Single page threshold: if all content is <= 1800 chars or only 1 block, fit on 1 page
-      if (totalChars <= 1800 || blocks.length <= 1) {
+      // Single page threshold: if all content is <= 2800 chars or only 1 block, fit on 1 page
+      if (totalChars <= 2800 || blocks.length <= 1) {
         const allHtml = blocks.map(s => s.html).join('');
 
         return `
@@ -6126,10 +6126,10 @@ function generateMdiPdfReportBackend(cfg) {
     </div>
     <h2 class="ptitle">FEEDBACK DARI FASILITATOR</h2>
 
-    <div style="border:3px solid #f59e0b; border-radius:18px; padding:18px 22px; position:relative; background:#fff; box-sizing:border-box;">
+    <div style="border:2.5px solid #f59e0b; border-radius:14px; padding:14px 18px; position:relative; background:#fff; box-sizing:border-box;">
       ${profileHeaderHtml}
 
-      <div style="font-size:11.5px; line-height:1.55; color:#1e293b;">
+      <div style="font-size:10.8px; line-height:1.52; color:#1e293b;">
         ${allHtml}
       </div>
 
@@ -6141,11 +6141,11 @@ function generateMdiPdfReportBackend(cfg) {
 </div>`;
       }
 
-      // If content > 1800 chars: Penuhi halaman atas dulu (~1950 chars), baru sisanya di halaman lanjutan
+      // If content > 2800 chars: Penuhi halaman atas dulu (~2600 chars), baru sisanya di halaman lanjutan
       const page1Blocks = [];
       const page2Blocks = [];
       let accChars = 0;
-      const p1Cap = 1950;
+      const p1Cap = 2600;
 
       blocks.forEach((b, idx) => {
         // Penuhi halaman 1 hingga batas kapasitas optimal (~1950 chars), sisakan minimal 1 blok untuk halaman 2
