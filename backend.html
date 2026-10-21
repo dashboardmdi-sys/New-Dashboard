@@ -5247,8 +5247,8 @@ function prefillPdfConfig() {
         const trId = `pdfCfgQuotesTrainer_${idx}`;
         const prevEl = document.getElementById(trId);
         const prevVal = prevEl ? prevEl.value : '';
-        const defArr = idx === 0 ? defT1Quotes : defT2Quotes;
-        const valToSet = prevVal || defArr.join('\n');
+        // Keep existing value only — don't auto-fill defaults so user can enter actual quotes
+        const valToSet = prevVal;
         qHtml += `
           <div class="field" style="margin:0;">
             <label for="${trId}" style="font-size:12px; font-weight:700; color:#0f172a;">KESAN PESERTA TERHADAP TRAINER: <span style="color:#d97706; font-weight:800;">${escHtml(trName)}</span></label>
@@ -5259,7 +5259,7 @@ function prefillPdfConfig() {
         const trId = 'pdfCfgQuotesTrainer_1';
         const prevEl = document.getElementById(trId);
         const prevVal = prevEl ? prevEl.value : '';
-        const valToSet = prevVal || defT2Quotes.join('\n');
+        const valToSet = prevVal; // Keep existing only
         qHtml += `
           <div class="field" style="margin:0;">
             <label for="${trId}" style="font-size:12px; font-weight:700; color:#0f172a;">KESAN PESERTA TERHADAP MATERI & FASILITASI</label>
@@ -5269,10 +5269,8 @@ function prefillPdfConfig() {
       qContainer.innerHTML = qHtml;
     }
 
-    const genEl = document.getElementById('pdfCfgQuotesGeneral');
-    if (genEl && !genEl.value.trim()) {
-      genEl.value = defGenQuotes.join('\n');
-    }
+    // General quotes: leave empty if user hasn't typed anything yet
+    // (don't auto-fill defaults — user should enter actual participant messages)
 
     // Prefill Evaluation metrics from Tab Evaluasi
     const evalSheetId = (t && t.evalSheetId) || (document.getElementById('cfgEvalSheetId')||{}).value || (t && t.sheetId);
@@ -6287,25 +6285,17 @@ function generateMdiPdfReportBackend(cfg) {
       }
     }
 
-    // Pad each section to exactly 7 quotes so the page is filled and never empty
-    const finalT1 = [...listT1];
-    for (let i = 0; finalT1.length < 7; i++) {
-      finalT1.push(defT1Quotes[i % defT1Quotes.length]);
-    }
-    const finalT2 = [...listT2];
-    for (let i = 0; finalT2.length < 7; i++) {
-      finalT2.push(defT2Quotes[i % defT2Quotes.length]);
-    }
-    const finalGen = [...listGen];
-    for (let i = 0; finalGen.length < 7; i++) {
-      finalGen.push(defGenQuotes[i % defGenQuotes.length]);
-    }
+    // Gunakan isi user apa adanya; hanya pakai default jika section benar-benar kosong
+    const finalT1 = listT1.length > 0 ? [...listT1] : [...defT1Quotes];
+    const finalT2 = listT2.length > 0 ? [...listT2] : [...defT2Quotes];
+    const finalGen = listGen.length > 0 ? [...listGen] : [...defGenQuotes];
 
     const tailSvg = `<svg class="qtail" viewBox="0 0 16 12" style="position:absolute; bottom:-10px; left:22px; width:15px; height:11px; overflow:visible; pointer-events:none;"><path d="M0,0 L12,0 L2,11 Z" fill="#ffffff" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/><line x1="0.5" y1="0" x2="11.5" y2="0" stroke="#ffffff" stroke-width="2.8"/></svg>`;
 
-    const renderSectionHtml = (title, quotes7, isLast = false) => {
-      const row1Quotes = quotes7.slice(0, 4);
-      const row2Quotes = quotes7.slice(4, 7);
+    const renderSectionHtml = (title, quotesArr, isLast = false) => {
+      // Dynamic rows: up to 4 in row1, rest in row2
+      const row1Quotes = quotesArr.slice(0, Math.min(4, quotesArr.length));
+      const row2Quotes = quotesArr.slice(4);
 
       const r1Html = row1Quotes.map(q => `
         <div class="qbubble-card">
