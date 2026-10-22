@@ -5219,22 +5219,28 @@ function prefillPdfConfig() {
       "Semoga training ini bisa diadakan lagi untuk teman-teman lainnya."
     ];
 
-    // Detect trainer names
+    // Detect trainer names — PRIORITASKAN "Daftar Trainer Evaluasi" (Tab Evaluasi)
     let trNames = [];
-    if (Array.isArray(window.ktTrainersData) && window.ktTrainersData.length > 0) {
-      trNames = window.ktTrainersData.map(x => x.name).filter(Boolean);
+    if (Array.isArray(window.evalTrainersData) && window.evalTrainersData.length > 0) {
+      trNames = window.evalTrainersData.map(x => (x.name || '').trim()).filter(Boolean);
     }
-    if (trNames.length === 0 && t && t.komentarTrainer) {
-      if (Array.isArray(t.komentarTrainer)) trNames = t.komentarTrainer.map(x => x.name || x).filter(Boolean);
-      else if (typeof t.komentarTrainer === 'object' && t.komentarTrainer.name) trNames = [t.komentarTrainer.name];
+    if (trNames.length === 0 && t && Array.isArray(t.evalTrainersData) && t.evalTrainersData.length > 0) {
+      trNames = t.evalTrainersData.map(x => (x.name || '').trim()).filter(Boolean);
     }
     if (trNames.length === 0 && t && t.trainerNames) {
-      trNames = t.trainerNames.split(/[,&/|]| dan /i).map(s => s.trim()).filter(Boolean);
+      trNames = t.trainerNames.split(/[,&/|]|\bdan\b/i).map(s => s.trim()).filter(Boolean);
+    }
+    if (trNames.length === 0 && Array.isArray(window.ktTrainersData) && window.ktTrainersData.length > 0) {
+      trNames = window.ktTrainersData.map(x => (x.name || '').trim()).filter(Boolean);
+    }
+    if (trNames.length === 0 && t && t.komentarTrainer) {
+      if (Array.isArray(t.komentarTrainer)) trNames = t.komentarTrainer.map(x => (x.name || x || '').trim()).filter(Boolean);
+      else if (typeof t.komentarTrainer === 'object' && t.komentarTrainer.name) trNames = [(t.komentarTrainer.name || '').trim()].filter(Boolean);
     }
     if (trNames.length === 0) {
       const inpTr = document.getElementById('cfgTrainingTrainer');
       if (inpTr && inpTr.value) {
-        trNames = inpTr.value.split(/[,&/|]| dan /i).map(s => s.trim()).filter(Boolean);
+        trNames = inpTr.value.split(/[,&/|]|\bdan\b/i).map(s => s.trim()).filter(Boolean);
       }
     }
     if (trNames.length === 0) trNames = ['Romy Rianto', 'Arif Hidayat'];
@@ -5251,8 +5257,8 @@ function prefillPdfConfig() {
         const valToSet = prevVal;
         qHtml += `
           <div class="field" style="margin:0;">
-            <label for="${trId}" style="font-size:12px; font-weight:700; color:#0f172a;">KESAN PESERTA TERHADAP TRAINER: <span style="color:#d97706; font-weight:800;">${escHtml(trName)}</span></label>
-            <textarea id="${trId}" rows="3" placeholder="Tulis kutipan kesan untuk ${escHtml(trName)} (pisahkan baris baru [Enter])..." style="font-size:12px; padding:8px 12px; min-height:65px;">${escHtml(valToSet)}</textarea>
+            <label for="${trId}" style="font-size:12px; font-weight:700; color:#0f172a;">KESAN PESERTA TERHADAP TRAINER: <span id="lblTrainerQuotes_${idx}" style="color:#d97706; font-weight:800;">${escHtml(trName)}</span></label>
+            <textarea id="${trId}" data-trainer-name="${escHtml(trName)}" rows="3" placeholder="Tulis kutipan kesan untuk ${escHtml(trName)} (pisahkan baris baru [Enter])..." style="font-size:12px; padding:8px 12px; min-height:65px;">${escHtml(valToSet)}</textarea>
           </div>`;
       });
       if (trNames.length === 1) {
@@ -5297,14 +5303,63 @@ function prefillPdfConfig() {
             if (topicsFutureEl && (!t || !t.aiSummary || !t.aiSummary.topikSelanjutnya) && evalRes.nextTopics.length > 0) {
               topicsFutureEl.value = evalRes.nextTopics.slice(0, 8).join(', ');
             }
-            if (evalRes.comments && evalRes.comments.length > 0) {
-              const comms = evalRes.comments;
-              const q0 = document.getElementById('pdfCfgQuotesTrainer_0');
-              const q1 = document.getElementById('pdfCfgQuotesTrainer_1');
-              const qG = document.getElementById('pdfCfgQuotesGeneral');
-              if (q0 && comms.length > 0) q0.value = comms.slice(0, 7).join('\n');
-              if (q1 && comms.length > 7) q1.value = comms.slice(7, 14).join('\n');
-              if (qG && comms.length > 14) qG.value = comms.slice(14, 21).join('\n');
+            // Sinkronkan kutipan kesan peserta dari sheet evaluasi sesuai kolom masing-masing trainer
+            if (res.rows && res.rows.length > 1) {
+              const rawH = res.rows[0];
+              const tMatches = typeof detectEvalTrainerColumns === 'function' ? detectEvalTrainerColumns(rawH, trNames) : [];
+              let assignedAny = false;
+
+              // 1. Ekstrak komentar spesifik tiap trainer jika kolomnya terdeteksi
+              tMatches.forEach((tm, mIdx) => {
+                if (tm.fbHeader && mIdx < 2) {
+                  const fbCol = rawH.findIndex(h => (h||'').trim().toLowerCase() === tm.fbHeader.trim().toLowerCase());
+                  if (fbCol !== -1) {
+                    const trComms = [];
+                    for (let r = 1; r < res.rows.length; r++) {
+                      const txt = String(res.rows[r][fbCol] || '').trim();
+                      if (txt && txt.length > 3 && txt !== '-' && txt !== 'none' && txt !== 'tidak ada' && txt !== 'cukup' && isNaN(Number(txt))) {
+                        trComms.push(txt);
+                      }
+                    }
+                    const qEl = document.getElementById(`pdfCfgQuotesTrainer_${mIdx}`);
+                    if (qEl && trComms.length > 0 && (!qEl.value || !qEl.value.trim())) {
+                      qEl.value = trComms.slice(0, 7).join('\n');
+                      assignedAny = true;
+                    }
+                  }
+                }
+              });
+
+              // 2. Ekstrak komentar umum untuk PESAN DAN KESAN
+              let genCol = rawH.findIndex(h => {
+                const hl = (h || '').toLowerCase();
+                return (hl.includes('pesan') || hl.includes('saran') || hl.includes('komentar') || hl.includes('masukan')) &&
+                  !trNames.some(tn => hl.includes(tn.toLowerCase()));
+              });
+              if (genCol !== -1) {
+                const genComms = [];
+                for (let r = 1; r < res.rows.length; r++) {
+                  const txt = String(res.rows[r][genCol] || '').trim();
+                  if (txt && txt.length > 3 && txt !== '-' && txt !== 'none' && txt !== 'tidak ada' && txt !== 'cukup' && isNaN(Number(txt))) {
+                    genComms.push(txt);
+                  }
+                }
+                const qG = document.getElementById('pdfCfgQuotesGeneral');
+                if (qG && genComms.length > 0 && (!qG.value || !qG.value.trim())) {
+                  qG.value = genComms.slice(0, 7).join('\n');
+                }
+              }
+
+              // 3. Fallback: jika tidak ada kolom khusus trainer, bagi dari evalRes.comments
+              if (!assignedAny && evalRes.comments && evalRes.comments.length > 0) {
+                const comms = evalRes.comments;
+                const q0 = document.getElementById('pdfCfgQuotesTrainer_0');
+                const q1 = document.getElementById('pdfCfgQuotesTrainer_1');
+                const qG = document.getElementById('pdfCfgQuotesGeneral');
+                if (q0 && (!q0.value || !q0.value.trim()) && comms.length > 0) q0.value = comms.slice(0, 7).join('\n');
+                if (q1 && (!q1.value || !q1.value.trim()) && comms.length > 7) q1.value = comms.slice(7, 14).join('\n');
+                if (qG && (!qG.value || !qG.value.trim()) && comms.length > 14) qG.value = comms.slice(14, 21).join('\n');
+              }
             }
           }
         } else {
@@ -5647,6 +5702,9 @@ async function runExportPdf() {
     const elGen = document.getElementById('pdfCfgQuotesGeneral');
     const elLegacy = document.getElementById('pdfCfgParticipantQuotes');
 
+    const trainer1Name = (elT0 && elT0.dataset.trainerName) ? elT0.dataset.trainerName : ((document.getElementById('lblTrainerQuotes_0')||{}).textContent || '').trim();
+    const trainer2Name = (elT1 && elT1.dataset.trainerName) ? elT1.dataset.trainerName : ((document.getElementById('lblTrainerQuotes_1')||{}).textContent || '').trim();
+
     const quotesT1 = elT0 ? elT0.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
     const quotesT2 = elT1 ? elT1.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
     const quotesGen = elGen ? elGen.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
@@ -5680,6 +5738,8 @@ async function runExportPdf() {
       analisisType,
       trainers,
       trainerNamesStr: (t && t.trainerNames) || (document.getElementById('cfgTrainingTrainer')||{}).value || '',
+      trainer1Name,
+      trainer2Name,
       includeObjectives,
       objectivesData: {
         mindset: objMindset,
@@ -5706,7 +5766,7 @@ function escHtml(str) {
 }
 
 function generateMdiPdfReportBackend(cfg) {
-  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, trainerNamesStr = '', includeFacilitator, includeQuotes = true, quotesT1 = [], quotesT2 = [], quotesGen = [], participantQuotes = [], evalMetrics = {}, includeObjectives = true, objectivesData = {} } = cfg;
+  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, trainerNamesStr = '', trainer1Name = '', trainer2Name = '', includeFacilitator, includeQuotes = true, quotesT1 = [], quotesT2 = [], quotesGen = [], participantQuotes = [], evalMetrics = {}, includeObjectives = true, objectivesData = {} } = cfg;
 
   const pctBenefit = (evalMetrics && evalMetrics.benefit != null) ? evalMetrics.benefit : 100;
   const pctEnjoyment = (evalMetrics && evalMetrics.enjoyment != null) ? evalMetrics.enjoyment : 100;
@@ -6225,19 +6285,22 @@ function generateMdiPdfReportBackend(cfg) {
       "Semoga training ini bisa diadakan lagi untuk teman-teman lainnya."
     ];
 
-    // Determine trainer names
-    let tr1Name = 'Romy Rianto';
-    let tr2Name = 'Arif Hidayat';
-    if (Array.isArray(trainers) && trainers.length > 0) {
-      if (trainers[0] && trainers[0].name) tr1Name = trainers[0].name.trim();
-      if (trainers.length > 1 && trainers[1] && trainers[1].name) tr2Name = trainers[1].name.trim();
+    // Determine trainer names — prioritaskan trainer yang diteruskan dari form kutipan (Daftar Trainer Evaluasi)
+    let tr1Name = trainer1Name || '';
+    let tr2Name = trainer2Name || '';
+    if (!tr1Name || !tr2Name) {
+      if (Array.isArray(trainers) && trainers.length > 0) {
+        if (!tr1Name && trainers[0] && trainers[0].name) tr1Name = trainers[0].name.trim();
+        if (!tr2Name && trainers.length > 1 && trainers[1] && trainers[1].name) tr2Name = trainers[1].name.trim();
+      }
+      const trainerStr = (typeof trainerNamesStr === 'string' && trainerNamesStr) || '';
+      if (trainerStr) {
+        const parts = trainerStr.split(/[,&/|]|\bdan\b/i).map(s => s.trim()).filter(Boolean);
+        if (!tr1Name && parts.length > 0) tr1Name = parts[0];
+        if (!tr2Name && parts.length > 1) tr2Name = parts[1];
+      }
     }
-    const trainerStr = (typeof trainerNamesStr === 'string' && trainerNamesStr) || '';
-    if (trainerStr) {
-      const parts = trainerStr.split(/[,&/|]| dan /i).map(s => s.trim()).filter(Boolean);
-      if (parts.length > 0) tr1Name = parts[0];
-      if (parts.length > 1) tr2Name = parts[1];
-    }
+    if (!tr1Name) tr1Name = 'Romy Rianto';
 
     const sec1Title = `KESAN PESERTA TERHADAP TRAINER: ${tr1Name}`;
     const sec2Title = (tr2Name && tr2Name.toLowerCase() !== tr1Name.toLowerCase())
