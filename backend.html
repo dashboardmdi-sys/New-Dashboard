@@ -5219,41 +5219,50 @@ function prefillPdfConfig() {
       "Semoga training ini bisa diadakan lagi untuk teman-teman lainnya."
     ];
 
-    // Detect trainer names — PRIORITASKAN "Daftar Trainer Evaluasi" (Tab Evaluasi)
+    // Detect trainer names — GABUNGKAN dari Evaluasi (evalTrainersData) dan Komentar Trainer (ktTrainersData)
     let trNames = [];
-    if (Array.isArray(window.evalTrainersData) && window.evalTrainersData.length > 0) {
-      trNames = window.evalTrainersData.map(x => (x.name || '').trim()).filter(Boolean);
-    }
-    if (trNames.length === 0 && t && Array.isArray(t.evalTrainersData) && t.evalTrainersData.length > 0) {
-      trNames = t.evalTrainersData.map(x => (x.name || '').trim()).filter(Boolean);
-    }
-    if (trNames.length === 0 && t && t.trainerNames) {
-      trNames = t.trainerNames.split(/[,&/|]|\bdan\b/i).map(s => s.trim()).filter(Boolean);
-    }
-    if (trNames.length === 0 && Array.isArray(window.ktTrainersData) && window.ktTrainersData.length > 0) {
-      trNames = window.ktTrainersData.map(x => (x.name || '').trim()).filter(Boolean);
-    }
-    if (trNames.length === 0 && t && t.komentarTrainer) {
-      if (Array.isArray(t.komentarTrainer)) trNames = t.komentarTrainer.map(x => (x.name || x || '').trim()).filter(Boolean);
-      else if (typeof t.komentarTrainer === 'object' && t.komentarTrainer.name) trNames = [(t.komentarTrainer.name || '').trim()].filter(Boolean);
-    }
-    if (trNames.length === 0) {
-      const inpTr = document.getElementById('cfgTrainingTrainer');
-      if (inpTr && inpTr.value) {
-        trNames = inpTr.value.split(/[,&/|]|\bdan\b/i).map(s => s.trim()).filter(Boolean);
+    const seenTrNames = new Set();
+    const addTrName = (n) => {
+      const clean = (n || '').trim();
+      if (clean && !seenTrNames.has(clean.toLowerCase())) {
+        seenTrNames.add(clean.toLowerCase());
+        trNames.push(clean);
       }
+    };
+
+    // 1. Dari Tab Evaluasi (window.evalTrainersData & t.evalTrainersData)
+    if (Array.isArray(window.evalTrainersData)) {
+      window.evalTrainersData.forEach(x => addTrName(x.name));
+    }
+    if (t && Array.isArray(t.evalTrainersData)) {
+      t.evalTrainersData.forEach(x => addTrName(x.name));
+    }
+    // 2. Dari Tab Komentar Trainer / Fasilitator (window.ktTrainersData & t.komentarTrainer)
+    if (Array.isArray(window.ktTrainersData)) {
+      window.ktTrainersData.forEach(x => addTrName(x.name));
+    }
+    if (t && t.komentarTrainer) {
+      if (Array.isArray(t.komentarTrainer)) t.komentarTrainer.forEach(x => addTrName(x.name || x));
+      else if (typeof t.komentarTrainer === 'object' && t.komentarTrainer.name) addTrName(t.komentarTrainer.name);
+    }
+    // 3. Dari t.trainerNames atau input trainer
+    if (t && t.trainerNames) {
+      t.trainerNames.split(/[,&/|]|\bdan\b/i).forEach(addTrName);
+    }
+    const inpTr = document.getElementById('cfgTrainingTrainer');
+    if (inpTr && inpTr.value) {
+      inpTr.value.split(/[,&/|]|\bdan\b/i).forEach(addTrName);
     }
     if (trNames.length === 0) trNames = ['Romy Rianto', 'Arif Hidayat'];
 
-    // Render trainer inputs dynamically
+    // Render SEMUA trainer inputs secara dinamis (bisa 1, 2, 3, atau berapapun sesuai yang terdaftar!)
     const qContainer = document.getElementById('pdfQuotesTrainersContainer');
     if (qContainer) {
       let qHtml = '';
-      trNames.slice(0, 2).forEach((trName, idx) => {
+      trNames.forEach((trName, idx) => {
         const trId = `pdfCfgQuotesTrainer_${idx}`;
         const prevEl = document.getElementById(trId);
         const prevVal = prevEl ? prevEl.value : '';
-        // Keep existing value only — don't auto-fill defaults so user can enter actual quotes
         const valToSet = prevVal;
         qHtml += `
           <div class="field" style="margin:0;">
@@ -5262,14 +5271,13 @@ function prefillPdfConfig() {
           </div>`;
       });
       if (trNames.length === 1) {
-        const trId = 'pdfCfgQuotesTrainer_1';
+        const trId = 'pdfCfgQuotesMateri';
         const prevEl = document.getElementById(trId);
         const prevVal = prevEl ? prevEl.value : '';
-        const valToSet = prevVal; // Keep existing only
         qHtml += `
           <div class="field" style="margin:0;">
             <label for="${trId}" style="font-size:12px; font-weight:700; color:#0f172a;">KESAN PESERTA TERHADAP MATERI & FASILITASI</label>
-            <textarea id="${trId}" rows="3" placeholder="Tulis kutipan kesan materi & fasilitasi (pisahkan baris baru [Enter])..." style="font-size:12px; padding:8px 12px; min-height:65px;">${escHtml(valToSet)}</textarea>
+            <textarea id="${trId}" data-materi="true" rows="3" placeholder="Tulis kutipan kesan materi & fasilitasi (pisahkan baris baru [Enter])..." style="font-size:12px; padding:8px 12px; min-height:65px;">${escHtml(prevVal)}</textarea>
           </div>`;
       }
       qContainer.innerHTML = qHtml;
@@ -5311,7 +5319,7 @@ function prefillPdfConfig() {
 
               // 1. Ekstrak komentar spesifik tiap trainer jika kolomnya terdeteksi
               tMatches.forEach((tm, mIdx) => {
-                if (tm.fbHeader && mIdx < 2) {
+                if (tm.fbHeader) {
                   const fbCol = rawH.findIndex(h => (h||'').trim().toLowerCase() === tm.fbHeader.trim().toLowerCase());
                   if (fbCol !== -1) {
                     const trComms = [];
@@ -5600,15 +5608,44 @@ async function runExportPdf() {
       });
     }
 
+    // SINKRONKAN SEMUA TRAINER dari Evaluasi (evalTrainersData) dan Komentar Fasilitator (ktTrainersData)
+    const evalList = (Array.isArray(window.evalTrainersData) && window.evalTrainersData.length > 0)
+      ? window.evalTrainersData
+      : ((t && Array.isArray(t.evalTrainersData) && t.evalTrainersData.length > 0) ? t.evalTrainersData : []);
+
+    const ktList = (Array.isArray(window.ktTrainersData) && window.ktTrainersData.length > 0 && window.ktTrainersData.some(tr => tr.name || tr.intro))
+      ? window.ktTrainersData
+      : (t && Array.isArray(t.komentarTrainer) ? t.komentarTrainer : (t && typeof t.komentarTrainer === 'object' && t.komentarTrainer.name ? [t.komentarTrainer] : []));
+
     let trainers = [];
-    if (Array.isArray(window.ktTrainersData) && window.ktTrainersData.length > 0 && window.ktTrainersData.some(tr => tr.name || tr.intro)) {
-      trainers = window.ktTrainersData;
-    } else if (t && t.komentarTrainer) {
-      if (Array.isArray(t.komentarTrainer)) trainers = t.komentarTrainer;
-      else if (typeof t.komentarTrainer === 'object') trainers = [t.komentarTrainer];
-      else if (typeof t.komentarTrainer === 'string' && t.komentarTrainer.trim()) {
-        trainers = [{ name: 'Arif Hidayat', role: 'Facilitator MDI Tack', intro: t.komentarTrainer, days: [], quote: '' }];
-      }
+
+    if (evalList.length > 0) {
+      trainers = evalList.map((et, eIdx) => {
+        const etName = (et.name || '').trim();
+        const matchedKt = ktList.find(kt => (kt.name || '').trim().toLowerCase() === etName.toLowerCase()) || (ktList[eIdx] && !evalList.some(other => other.name.toLowerCase() === (ktList[eIdx].name||'').toLowerCase()) ? ktList[eIdx] : {}) || {};
+        return {
+          name: etName || matchedKt.name || `Trainer ${eIdx + 1}`,
+          role: matchedKt.role || et.role || 'Facilitator MDI Tack',
+          photoUrl: et.photoUrl || matchedKt.photoUrl || '',
+          intro: matchedKt.intro || `Terima kasih atas kepercayaan yang diberikan untuk memfasilitasi program ${trainingTitle || 'pelatihan'}. Merupakan kehormatan dapat mendampingi peserta dalam proses pembelajaran yang interaktif, aplikatif, dan berorientasi pada peningkatan kinerja.`,
+          days: (Array.isArray(matchedKt.days) && matchedKt.days.length > 0) ? matchedKt.days : [
+            {
+              title: 'Dinamika & Keterlibatan Kelas',
+              text: 'Peserta sangat antusias, interaktif, dan aktif dalam berdiskusi serta mempraktikkan konsep dan simulasi yang diberikan sepanjang pelatihan.'
+            }
+          ],
+          quote: matchedKt.quote || 'Komitmen dan konsistensi dalam menerapkan pembelajaran menjadi kunci utama keberhasilan di tempat kerja.'
+        };
+      });
+      // Masukkan juga trainer dari ktList yang belum ada di evalList
+      ktList.forEach(kt => {
+        const ktName = (kt.name || '').trim();
+        if (ktName && !trainers.some(tr => tr.name.toLowerCase() === ktName.toLowerCase())) {
+          trainers.push(kt);
+        }
+      });
+    } else if (ktList.length > 0) {
+      trainers = ktList;
     }
 
     if (trainers.length === 0) {
@@ -5616,22 +5653,14 @@ async function runExportPdf() {
         name: 'Arif Hidayat',
         role: 'Facilitator MDI Tack',
         photoUrl: '',
-        intro: `Terima kasih atas kepercayaan yang diberikan kepada saya untuk memfasilitasi program ${trainingTitle || 'pelatihan'} selama 2 hari. Merupakan kesempatan yang sangat baik untuk bersama-sama membangun kesadaran diri, memperkuat kualitas kepemimpinan, bertumbuh, dan menumbuhkan tanggung jawab personal sebagai seorang Leader.\n\nDua hari pelatihan berjalan dengan dinamika yang melampaui ekspektasi. Peserta hadir bukan sekadar hadir — mereka terlibat penuh, berbicara jujur, dan membawa pengalaman nyata ke dalam ruangan. Psychological safety terbangun sejak awal dan bertahan hingga sesi terakhir. Ini bukan hal yang bisa dipaksakan; ia muncul karena peserta merasa bahwa apa yang mereka alami di lapangan benar-benar relevan dengan apa yang dibahas di kelas.`,
+        intro: `Terima kasih atas kepercayaan yang diberikan untuk memfasilitasi program ${trainingTitle || 'pelatihan'} selama pelatihan berlangsung. Merupakan kesempatan yang sangat baik untuk bersama-sama membangun kompetensi dan komitmen peserta.\n\nPeserta hadir dengan keterlibatan penuh, berdiskusi terbuka, dan antusias mempraktikkan materi dalam simulasi kerja nyata.`,
         days: [
           {
-            title: 'Hari Pertama',
-            text: 'Diskusi langsung hidup dari sesi pembuka. Kelima kelompok aktif tanpa terkecuali. Puncaknya adalah sesi ke 3 yang membahas tentang komunikasi dan kepribadian (Driver, Expressive, Amiable, Analytical) di mana peserta tidak hanya mengenali diri sendiri, tetapi langsung mengaitkannya dengan cara mereka memimpin tim. Pertanyaan yang muncul bukan pertanyaan basa-basi; mereka benar-benar ingin memahami.'
-          },
-          {
-            title: 'Hari Kedua',
-            text: 'Sesi Problem Solving & Decision Making menjadi titik yang sangat berkesan bagi saya dan juga peserta pelatihan. Di sesi yang secara materi paling berat ini, keterbukaan peserta justru paling terasa. Mereka membahas masalah nyata, merumuskan solusi konkret, dan berani berbagi tantangan yang selama ini belum pernah dibicarakan secara terbuka — termasuk yang bersifat personal. Diskusi hangat dan dalam, tanpa kehilangan energi.'
-          },
-          {
-            title: 'Rekomendasi untuk HR',
-            text: 'Dampak pelatihan ini akan ditentukan oleh apa yang terjadi setelah peserta kembali ke meja kerja. Tiga hal yang perlu dijaga:\n• Monitor action plan — komitmen yang sudah dirumuskan perlu di-review dalam 30–60 hari ke depan oleh atasan langsung.\n• Hidupkan percakapan — banyak diskusi yang terbuka di kelas belum selesai, dan tidak harus selesai di kelas. Forum reguler antar supervisor atau sesi sharing singkat dalam briefing tim akan menjaga momentum ini tetap hidup.\n• Jaga peserta yang baru pertama membuka diri — beberapa peserta menunjukkan keterbukaan yang mungkin belum pernah muncul sebelumnya. Atasan yang hadir dan responsif adalah penjaga terpenting dari perubahan ini.'
+            title: 'Dinamika Pelatihan',
+            text: 'Diskusi aktif dan interaktif terbangun sejak awal sesi hingga akhir pelatihan dengan studi kasus yang relevan.'
           }
         ],
-        quote: `Potensi kepemimpinan di ${clientName || 'Yusen'} ada, nyata, dan sudah terlihat selama dua hari ini. Langkah berikutnya ada di tangan organisasi. Kami siap mendukung fase lanjutan.`
+        quote: 'Pembelajaran terbaik adalah yang diwujudkan menjadi tindakan nyata setiap hari.'
       }];
     }
 
@@ -5697,18 +5726,31 @@ async function runExportPdf() {
     }
 
     const includeQuotes = document.getElementById('pdfIncludeParticipantQuotes') ? document.getElementById('pdfIncludeParticipantQuotes').checked : true;
-    const elT0 = document.getElementById('pdfCfgQuotesTrainer_0');
-    const elT1 = document.getElementById('pdfCfgQuotesTrainer_1');
     const elGen = document.getElementById('pdfCfgQuotesGeneral');
     const elLegacy = document.getElementById('pdfCfgParticipantQuotes');
+    const elMateri = document.getElementById('pdfCfgQuotesMateri');
 
-    const trainer1Name = (elT0 && elT0.dataset.trainerName) ? elT0.dataset.trainerName : ((document.getElementById('lblTrainerQuotes_0')||{}).textContent || '').trim();
-    const trainer2Name = (elT1 && elT1.dataset.trainerName) ? elT1.dataset.trainerName : ((document.getElementById('lblTrainerQuotes_1')||{}).textContent || '').trim();
+    // Kumpulkan SEMUA kutipan trainer secara dinamis (1, 2, 3, atau lebih)
+    const trainerQuotesList = [];
+    let qIdx = 0;
+    while (document.getElementById(`pdfCfgQuotesTrainer_${qIdx}`)) {
+      const el = document.getElementById(`pdfCfgQuotesTrainer_${qIdx}`);
+      const lbl = document.getElementById(`lblTrainerQuotes_${qIdx}`);
+      const tName = (el.dataset && el.dataset.trainerName) || (lbl ? lbl.textContent.trim() : `Trainer ${qIdx + 1}`);
+      const quotes = el.value.split('\n').map(s => s.trim()).filter(s => s.length > 2);
+      trainerQuotesList.push({ name: tName, quotes });
+      qIdx++;
+    }
 
-    const quotesT1 = elT0 ? elT0.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
-    const quotesT2 = elT1 ? elT1.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
+    const quotesMateri = elMateri ? elMateri.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
     const quotesGen = elGen ? elGen.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
     const participantQuotes = elLegacy ? elLegacy.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
+
+    // Fallback trainer1Name dan trainer2Name untuk backward compatibility
+    const trainer1Name = trainerQuotesList[0] ? trainerQuotesList[0].name : '';
+    const trainer2Name = trainerQuotesList[1] ? trainerQuotesList[1].name : '';
+    const quotesT1 = trainerQuotesList[0] ? trainerQuotesList[0].quotes : [];
+    const quotesT2 = trainerQuotesList[1] ? trainerQuotesList[1].quotes : [];
 
     const includeObjectives = document.getElementById('pdfIncludeObjectivesMethods') ? document.getElementById('pdfIncludeObjectivesMethods').checked : true;
     const elObjMindset = document.getElementById('pdfCfgObjectiveMindset');
@@ -5740,6 +5782,8 @@ async function runExportPdf() {
       trainerNamesStr: (t && t.trainerNames) || (document.getElementById('cfgTrainingTrainer')||{}).value || '',
       trainer1Name,
       trainer2Name,
+      trainerQuotesList,
+      quotesMateri,
       includeObjectives,
       objectivesData: {
         mindset: objMindset,
@@ -5766,7 +5810,7 @@ function escHtml(str) {
 }
 
 function generateMdiPdfReportBackend(cfg) {
-  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, trainerNamesStr = '', trainer1Name = '', trainer2Name = '', includeFacilitator, includeQuotes = true, quotesT1 = [], quotesT2 = [], quotesGen = [], participantQuotes = [], evalMetrics = {}, includeObjectives = true, objectivesData = {} } = cfg;
+  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, trainerNamesStr = '', trainer1Name = '', trainer2Name = '', trainerQuotesList = [], quotesMateri = [], includeFacilitator, includeQuotes = true, quotesT1 = [], quotesT2 = [], quotesGen = [], participantQuotes = [], evalMetrics = {}, includeObjectives = true, objectivesData = {} } = cfg;
 
   const pctBenefit = (evalMetrics && evalMetrics.benefit != null) ? evalMetrics.benefit : 100;
   const pctEnjoyment = (evalMetrics && evalMetrics.enjoyment != null) ? evalMetrics.enjoyment : 100;
@@ -6134,11 +6178,12 @@ function generateMdiPdfReportBackend(cfg) {
 
       const totalChars = blocks.reduce((acc, s) => acc + s.charCount, 0);
 
-      // Facilitator Profile Header Component (compact)
+      // Facilitator Profile Header Component (menggunakan <img> agar SELALU tercetak di PDF/print)
       const profileHeaderHtml = `
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px; padding-bottom:8px; border-bottom:1.5px solid #fde68a;">
-          <div style="width:52px; height:52px; border-radius:50%; border:2.5px solid #f59e0b; ${avatarStyle} background-size:cover; background-position:center; flex-shrink:0; box-shadow:0 2px 6px rgba(245,158,11,0.22); display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:800; color:#92400e; overflow:hidden; background-color:#fff;">
-            ${!formattedPhoto ? initials : ''}
+          <div style="width:52px; height:52px; border-radius:50%; border:2.5px solid #f59e0b; background:#fef08a; flex-shrink:0; box-shadow:0 2px 6px rgba(245,158,11,0.22); display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:800; color:#92400e; overflow:hidden; position:relative;">
+            ${formattedPhoto ? `<img src="${escHtml(formattedPhoto)}" alt="${escHtml(tr.name||'')}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none';" />` : ''}
+            <span style="position:absolute; z-index:0; font-size:16px; font-weight:800; color:#92400e;">${initials}</span>
           </div>
           <div>
             <div style="font-size:14px; font-weight:800; color:#0f172a; line-height:1.2;">${escHtml(tr.name || 'Fasilitator')}</div>
@@ -6380,7 +6425,33 @@ function generateMdiPdfReportBackend(cfg) {
       </div>`;
     };
 
-    participantQuotesPagesHtml = `
+    // Bangun daftar semua section kutipan secara dinamis
+    const allQuoteSections = [];
+    if (Array.isArray(trainerQuotesList) && trainerQuotesList.length > 0) {
+      trainerQuotesList.forEach((tq) => {
+        const qList = (Array.isArray(tq.quotes) && tq.quotes.length > 0) ? tq.quotes : defT1Quotes;
+        allQuoteSections.push({
+          title: `KESAN PESERTA TERHADAP TRAINER: ${tq.name}`,
+          quotes: qList
+        });
+      });
+      if (trainerQuotesList.length === 1 && Array.isArray(quotesMateri) && quotesMateri.length > 0) {
+        allQuoteSections.push({
+          title: 'KESAN PESERTA TERHADAP MATERI & FASILITASI',
+          quotes: quotesMateri
+        });
+      }
+    } else {
+      // Fallback
+      allQuoteSections.push({ title: sec1Title, quotes: finalT1 });
+      allQuoteSections.push({ title: sec2Title, quotes: finalT2 });
+    }
+    // Pesan dan Kesan umum selalu di akhir
+    allQuoteSections.push({ title: sec3Title, quotes: finalGen });
+
+    // Paginasi: jika total section <= 3, muat dalam 1 halaman. Jika >= 4, pecah 2 section per halaman
+    if (allQuoteSections.length <= 3) {
+      participantQuotesPagesHtml = `
 <!-- HALAMAN: KUTIPAN PESERTA -->
 <div class="page">
   <div>
@@ -6389,13 +6460,31 @@ function generateMdiPdfReportBackend(cfg) {
       <div style="font-weight:800;font-size:14px;">${escHtml(clientName)}</div>
     </div>
 
-    ${renderSectionHtml(sec1Title, finalT1)}
-    ${renderSectionHtml(sec2Title, finalT2)}
-    ${renderSectionHtml(sec3Title, finalGen, true)}
+    ${allQuoteSections.map((sec, sIdx) => renderSectionHtml(sec.title, sec.quotes, sIdx === allQuoteSections.length - 1)).join('')}
   </div>
 
   <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
 </div>`;
+    } else {
+      const qChunks = [];
+      for (let i = 0; i < allQuoteSections.length; i += 2) {
+        qChunks.push(allQuoteSections.slice(i, i + 2));
+      }
+      participantQuotesPagesHtml = qChunks.map((chunk, cIdx) => `
+<!-- HALAMAN: KUTIPAN PESERTA (HAL. ${cIdx + 1}) -->
+<div class="page">
+  <div>
+    <div class="hdr">
+      <img src="${logoMdi}" alt="MDI">
+      <div style="font-weight:800;font-size:14px;">${escHtml(clientName)}</div>
+    </div>
+
+    ${chunk.map((sec, sIdx) => renderSectionHtml(sec.title, sec.quotes, sIdx === chunk.length - 1)).join('')}
+  </div>
+
+  <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
+</div>`).join('');
+    }
   }
 
   const html = `<!DOCTYPE html>
