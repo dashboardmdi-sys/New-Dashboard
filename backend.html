@@ -5535,6 +5535,8 @@ async function runExportPdf() {
     }
 
     let analysisScoresMap = {};
+    let analysisParticipants = [];
+
     if (analisisType !== 'none') {
       let analSheetId = '';
       let analCsvUrl = '';
@@ -5561,34 +5563,89 @@ async function runExportPdf() {
             const aRows = analRes.rows;
             for (let i = 1; i < aRows.length; i++) {
               const r = aRows[i];
-              const pName = String(r[0] ?? '').trim().toLowerCase();
-              if (!pName) continue;
+              const rawName = String(r[0] ?? '').trim();
+              if (!rawName) continue;
               const domRaw = String(r[1] ?? '').trim();
               const s1 = parseFloat(String(r[2] ?? '').replace(',','.')) || 0;
               const s2 = parseFloat(String(r[3] ?? '').replace(',','.')) || 0;
               const s3 = parseFloat(String(r[4] ?? '').replace(',','.')) || 0;
               const s4 = parseFloat(String(r[5] ?? '').replace(',','.')) || 0;
+              const eff = parseFloat(String(r[6] ?? '').replace(',','.')) || 0;
 
+              let codes = [];
               let derivedType = domRaw;
-              if (!derivedType) {
-                if (analisisType === 'wewenang') {
+
+              if (analisisType === 'wewenang') {
+                codes = domRaw.split(',').map(s => {
+                  const tStr = s.trim();
+                  if (/^Struktural/i.test(tStr) || /^W1/i.test(tStr)) return 'W1';
+                  if (/^Arif/i.test(tStr) || /^Sapiential/i.test(tStr) || /^W2/i.test(tStr)) return 'W2';
+                  if (/^Moral/i.test(tStr) || /^W3/i.test(tStr)) return 'W3';
+                  if (/^Kharismatik/i.test(tStr) || /^W4/i.test(tStr)) return 'W4';
+                  return null;
+                }).filter(Boolean);
+                if (!codes.length) {
                   const mx = Math.max(s1, s2, s3, s4);
-                  if (mx === s3) derivedType = 'Moral';
-                  else if (mx === s2) derivedType = 'Arif / Sapiential';
-                  else if (mx === s1) derivedType = 'Struktural';
-                  else derivedType = 'Kharismatik';
-                } else if (analisisType === 'kepemimpinan') {
-                  const mx = Math.max(s1, s2, s3, s4);
-                  if (mx === s1) derivedType = 'G1 Telling';
-                  else if (mx === s2) derivedType = 'G2 Selling';
-                  else if (mx === s3) derivedType = 'G3 Participating';
-                  else derivedType = 'G4 Delegating';
-                } else {
-                  derivedType = 'Dominan';
+                  if (mx > 0) {
+                    if (s1 === mx) codes.push('W1');
+                    if (s2 === mx) codes.push('W2');
+                    if (s3 === mx) codes.push('W3');
+                    if (s4 === mx) codes.push('W4');
+                  }
                 }
+                const labelMap = { W1: 'Struktural', W2: 'Arif / Sapiential', W3: 'Moral', W4: 'Kharismatik' };
+                if (!derivedType) derivedType = codes.map(c => labelMap[c] || c).join(' / ') || 'Moral';
+              } else if (analisisType === 'kepemimpinan') {
+                codes = domRaw.split(',').map(s => {
+                  const tStr = s.trim();
+                  if (/^G1/i.test(tStr)) return 'G1';
+                  if (/^G2/i.test(tStr)) return 'G2';
+                  if (/^G3/i.test(tStr)) return 'G3';
+                  if (/^G4/i.test(tStr)) return 'G4';
+                  return null;
+                }).filter(Boolean);
+                if (!codes.length) {
+                  const mx = Math.max(s1, s2, s3, s4);
+                  if (mx > 0) {
+                    if (s1 === mx) codes.push('G1');
+                    if (s2 === mx) codes.push('G2');
+                    if (s3 === mx) codes.push('G3');
+                    if (s4 === mx) codes.push('G4');
+                  }
+                }
+                const labelMap = { G1: 'G1 Telling', G2: 'G2 Selling', G3: 'G3 Participating', G4: 'G4 Delegating' };
+                if (!derivedType) derivedType = codes.map(c => labelMap[c] || c).join(' / ') || 'G3 Participating';
+              } else if (analisisType === 'interpersonal') {
+                codes = domRaw.split(',').map(s => {
+                  const tStr = s.trim();
+                  if (/^Driver/i.test(tStr) || /^I1/i.test(tStr)) return 'I1';
+                  if (/^Expressive/i.test(tStr) || /^I2/i.test(tStr)) return 'I2';
+                  if (/^Amiable/i.test(tStr) || /^I3/i.test(tStr)) return 'I3';
+                  if (/^Analytical/i.test(tStr) || /^I4/i.test(tStr)) return 'I4';
+                  return null;
+                }).filter(Boolean);
+                if (!codes.length) {
+                  const mx = Math.max(s1, s2, s3, s4);
+                  if (mx > 0) {
+                    if (s1 === mx) codes.push('I1');
+                    if (s2 === mx) codes.push('I2');
+                    if (s3 === mx) codes.push('I3');
+                    if (s4 === mx) codes.push('I4');
+                  }
+                }
+                const labelMap = { I1: 'Driver', I2: 'Expressive', I3: 'Amiable', I4: 'Analytical' };
+                if (!derivedType) derivedType = codes.map(c => labelMap[c] || c).join(' / ') || 'Driver';
               }
 
-              analysisScoresMap[pName] = { wType: derivedType, s1, s2, s3, s4 };
+              analysisParticipants.push({
+                no: analysisParticipants.length + 1,
+                name: rawName,
+                dominantCodes: codes,
+                wType: derivedType,
+                s1, s2, s3, s4, eff
+              });
+
+              analysisScoresMap[rawName.toLowerCase()] = { wType: derivedType, s1, s2, s3, s4, dominantCodes: codes };
             }
           }
         } catch (err) {
@@ -5596,13 +5653,11 @@ async function runExportPdf() {
         }
       }
 
-      // Merge analysis scores ke participants — robust name matching
+      // Sinkronkan juga skor analisis ke participants (Pre/Post sheet) jika ada kecocokan nama
       const analKeys = Object.keys(analysisScoresMap);
       participants.forEach(p => {
         const key = p.name.trim().toLowerCase().replace(/\s+/g,' ');
-        // 1. Exact match
         let match = analysisScoresMap[key];
-        // 2. Partial match: cari key yang mengandung salah satu kata dari nama peserta
         if (!match && analKeys.length > 0) {
           const words = key.split(' ').filter(w => w.length > 2);
           match = analysisScoresMap[analKeys.find(k =>
@@ -5615,17 +5670,10 @@ async function runExportPdf() {
           p.s2 = match.s2;
           p.s3 = match.s3;
           p.s4 = match.s4;
-        } else {
-          // Fallback: derive wType dari s1-s4 jika ada, atau set default per tipe analisis
-          if (p.wType === null) {
-            if (analisisType === 'kepemimpinan') p.wType = 'G3 Participating';
-            else if (analisisType === 'interpersonal') p.wType = 'Dominan';
-            else p.wType = 'Moral';
-          }
-          if (p.s1 === null) { p.s1 = 0; p.s2 = 0; p.s3 = 0; p.s4 = 0; }
+          p.dominantCodes = match.dominantCodes;
         }
       });
-      console.log('[PDF Export] Analysis merge done. wCounts will be computed from', participants.length, 'participants. Sample wTypes:', participants.slice(0,5).map(p=>p.wType));
+      console.log('[PDF Export] Analysis extracted. analysisParticipants:', analysisParticipants.length, 'participants:', participants.length);
     }
 
     // SINKRONKAN SEMUA TRAINER dari Evaluasi (evalTrainersData) dan Komentar Fasilitator (ktTrainersData)
@@ -5657,7 +5705,6 @@ async function runExportPdf() {
           quote: matchedKt.quote || 'Komitmen dan konsistensi dalam menerapkan pembelajaran menjadi kunci utama keberhasilan di tempat kerja.'
         };
       });
-      // Masukkan juga trainer dari ktList yang belum ada di evalList
       ktList.forEach(kt => {
         const ktName = (kt.name || '').trim();
         if (ktName && !trainers.some(tr => tr.name.toLowerCase() === ktName.toLowerCase())) {
@@ -5750,7 +5797,6 @@ async function runExportPdf() {
     const elLegacy = document.getElementById('pdfCfgParticipantQuotes');
     const elMateri = document.getElementById('pdfCfgQuotesMateri');
 
-    // Kumpulkan SEMUA kutipan trainer secara dinamis (1, 2, 3, atau lebih)
     const trainerQuotesList = [];
     let qIdx = 0;
     while (document.getElementById(`pdfCfgQuotesTrainer_${qIdx}`)) {
@@ -5766,7 +5812,6 @@ async function runExportPdf() {
     const quotesGen = elGen ? elGen.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
     const participantQuotes = elLegacy ? elLegacy.value.split('\n').map(s => s.trim()).filter(s => s.length > 2) : [];
 
-    // Fallback trainer1Name dan trainer2Name untuk backward compatibility
     const trainer1Name = trainerQuotesList[0] ? trainerQuotesList[0].name : '';
     const trainer2Name = trainerQuotesList[1] ? trainerQuotesList[1].name : '';
     const quotesT1 = trainerQuotesList[0] ? trainerQuotesList[0].quotes : [];
@@ -5798,6 +5843,7 @@ async function runExportPdf() {
       },
       participants,
       analisisType,
+      analysisParticipants,
       trainers,
       trainerNamesStr: (t && t.trainerNames) || (document.getElementById('cfgTrainingTrainer')||{}).value || '',
       trainer1Name,
@@ -5830,7 +5876,7 @@ function escHtml(str) {
 }
 
 function generateMdiPdfReportBackend(cfg) {
-  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analisisType, trainers, trainerNamesStr = '', trainer1Name = '', trainer2Name = '', trainerQuotesList = [], quotesMateri = [], includeFacilitator, includeQuotes = true, quotesT1 = [], quotesT2 = [], quotesGen = [], participantQuotes = [], evalMetrics = {}, includeObjectives = true, objectivesData = {} } = cfg;
+  const { clientName, trainingTitle, location, dates, topicsUseful, topicsFuture, participants, analysisParticipants = [], analisisType, trainers, trainerNamesStr = '', trainer1Name = '', trainer2Name = '', trainerQuotesList = [], quotesMateri = [], includeFacilitator, includeQuotes = true, quotesT1 = [], quotesT2 = [], quotesGen = [], participantQuotes = [], evalMetrics = {}, includeObjectives = true, objectivesData = {} } = cfg;
 
   const pctBenefit = (evalMetrics && evalMetrics.benefit != null) ? evalMetrics.benefit : 100;
   const pctEnjoyment = (evalMetrics && evalMetrics.enjoyment != null) ? evalMetrics.enjoyment : 100;
@@ -6024,10 +6070,15 @@ function generateMdiPdfReportBackend(cfg) {
   let analysisChartPageHtml = '';
 
   if (analisisType && analisisType !== 'none') {
-    let colHeadings = {
+    // Prioritaskan peserta khusus dari sheet assessment jika tersedia (misal Sheet4 Wewenang punya 26 peserta)
+    const aParticipants = (Array.isArray(analysisParticipants) && analysisParticipants.length > 0)
+      ? analysisParticipants
+      : participants;
+
+    const colHeadings = {
       wewenang: ['Score Struktural', 'Score Arif / Sapiential', 'Score Moral', 'Score Kharismatik'],
       kepemimpinan: ['G1 Telling', 'G2 Selling', 'G3 Participating', 'G4 Delegating'],
-      interpersonal: ['Dimensi 1', 'Dimensi 2', 'Dimensi 3', 'Dimensi 4']
+      interpersonal: ['Driver', 'Expressive', 'Amiable', 'Analytical']
     };
     const cHeads = colHeadings[analisisType] || colHeadings.wewenang;
     const analisisTitles = {
@@ -6041,60 +6092,80 @@ function generateMdiPdfReportBackend(cfg) {
       <tr>
         <td class="tc">${p.no}</td>
         <td>${escHtml(p.name)}</td>
-        <td class="tc">${escHtml(p.wType)}</td>
-        <td class="tc">${p.s1}</td>
-        <td class="tc">${p.s2}</td>
-        <td class="tc">${p.s3}</td>
-        <td class="tc">${p.s4}</td>
+        <td class="tc">${escHtml(p.wType || '-')}</td>
+        <td class="tc">${p.s1 != null ? p.s1 : '-'}</td>
+        <td class="tc">${p.s2 != null ? p.s2 : '-'}</td>
+        <td class="tc">${p.s3 != null ? p.s3 : '-'}</td>
+        <td class="tc">${p.s4 != null ? p.s4 : '-'}</td>
       </tr>`).join('');
 
-    // Hitung distribusi 4 bucket universal sesuai analisisType
-    // Bucket mapping per tipe:
-    //   wewenang:      c0=Struktural, c1=Arif/Sapiential, c2=Moral, c3=Kharismatik
-    //   kepemimpinan:  c0=G1 Telling, c1=G2 Selling,      c2=G3 Participating, c3=G4 Delegating
-    //   interpersonal: c0=Dim1, c1=Dim2, c2=Dim3, c3=Dim4
+    // Hitung distribusi 4 kategori sesuai data aktual
+    // Wewenang:      c0=W1 (Struktural), c1=W2 (Arif), c2=W3 (Moral), c3=W4 (Kharismatik)
+    // Kepemimpinan:  c0=G1 (Telling),    c1=G2 (Selling), c2=G3 (Participating), c3=G4 (Delegating)
+    // Interpersonal: c0=I1 (Driver),     c1=I2 (Expressive), c2=I3 (Amiable), c3=I4 (Analytical)
     const wCounts = { c0: 0, c1: 0, c2: 0, c3: 0 };
 
-    const bucketMatchers = {
-      wewenang: [
-        t => t.includes('struktural') || t.includes('structural'),
-        t => t.includes('arif') || t.includes('sapiential'),
-        t => t.includes('moral'),
-        t => t.includes('kharismatik') || t.includes('charismatic')
-      ],
-      kepemimpinan: [
-        t => t.includes('g1') || t.includes('telling'),
-        t => t.includes('g2') || t.includes('selling'),
-        t => t.includes('g3') || t.includes('participating'),
-        t => t.includes('g4') || t.includes('delegating')
-      ],
-      interpersonal: [
-        t => t.includes('1') && !t.includes('g'),
-        t => t.includes('2') && !t.includes('g'),
-        t => t.includes('3') && !t.includes('g'),
-        t => true  // fallback ke bucket c3
-      ]
-    };
-    const matchers = bucketMatchers[analisisType] || bucketMatchers.wewenang;
-
-    participants.forEach(p => {
-      const t = (p.wType || '').toLowerCase().trim();
-      let assigned = false;
-      for (let bi = 0; bi < 4; bi++) {
-        if (matchers[bi](t)) {
-          wCounts['c' + bi]++;
-          assigned = true;
-          break;
+    aParticipants.forEach(p => {
+      if (Array.isArray(p.dominantCodes) && p.dominantCodes.length > 0) {
+        p.dominantCodes.forEach(code => {
+          if (code === 'W1' || code === 'G1' || code === 'I1') wCounts.c0++;
+          else if (code === 'W2' || code === 'G2' || code === 'I2') wCounts.c1++;
+          else if (code === 'W3' || code === 'G3' || code === 'I3') wCounts.c2++;
+          else if (code === 'W4' || code === 'G4' || code === 'I4') wCounts.c3++;
+        });
+      } else {
+        const t = (p.wType || '').toLowerCase().trim();
+        if (analisisType === 'wewenang') {
+          if (t.includes('struktural') || t.includes('w1')) wCounts.c0++;
+          else if (t.includes('arif') || t.includes('sapiential') || t.includes('w2')) wCounts.c1++;
+          else if (t.includes('moral') || t.includes('w3')) wCounts.c2++;
+          else if (t.includes('kharismatik') || t.includes('w4')) wCounts.c3++;
+          else wCounts.c2++;
+        } else if (analisisType === 'kepemimpinan') {
+          if (t.includes('telling') || t.includes('g1')) wCounts.c0++;
+          else if (t.includes('selling') || t.includes('g2')) wCounts.c1++;
+          else if (t.includes('participating') || t.includes('g3')) wCounts.c2++;
+          else if (t.includes('delegating') || t.includes('g4')) wCounts.c3++;
+          else wCounts.c2++;
+        } else {
+          if (t.includes('driver') || t.includes('i1')) wCounts.c0++;
+          else if (t.includes('expressive') || t.includes('i2')) wCounts.c1++;
+          else if (t.includes('amiable') || t.includes('i3')) wCounts.c2++;
+          else if (t.includes('analytical') || t.includes('i4')) wCounts.c3++;
+          else wCounts.c0++;
         }
       }
-      // Jika tidak ada yang match, masukkan ke c2 (Moral / G3 / Dim3) sebagai fallback
-      if (!assigned) wCounts.c2++;
     });
 
     const wMax = Math.max(wCounts.c0, wCounts.c1, wCounts.c2, wCounts.c3, 1);
-    const wBar = (n) => Math.max(5, Math.round((n / wMax) * 95));
+    const wBar = (n) => n === 0 ? 0 : Math.max(8, Math.round((n / wMax) * 94));
 
-    // Temukan bucket dengan jumlah terbanyak untuk narasi otomatis
+    // Warna bar representatif (Kuning, Biru, Merah, Hijau) persis seperti dashboard
+    const barColors = [
+      { bg: '#f59e0b', text: '#ffffff', label: cHeads[0] }, // Kuning / W1 / G1 / Driver
+      { bg: '#3b82f6', text: '#ffffff', label: cHeads[1] }, // Biru / W2 / G2 / Expressive
+      { bg: '#ef4444', text: '#ffffff', label: cHeads[2] }, // Merah / W3 / G3 / Amiable
+      { bg: '#10b981', text: '#ffffff', label: cHeads[3] }, // Hijau / W4 / G4 / Analytical
+    ];
+
+    const renderBarItem = (idx, count) => {
+      const col = barColors[idx];
+      const pct = wBar(count);
+      const isZero = count === 0;
+      const showInside = !isZero && pct >= 14;
+      return `
+      <div class="crow">
+        <div class="clbl">${escHtml(col.label)}</div>
+        <div class="cbg">
+          <div class="cfill" style="width:${pct}%;background:${col.bg};">
+            ${showInside ? `<span class="cnum-in">${count}</span>` : ''}
+          </div>
+          ${!showInside ? `<span class="cnum-out">${count}</span>` : ''}
+        </div>
+      </div>`;
+    };
+
+    // Temukan kategori dominan
     const dominantBucket = ['c0','c1','c2','c3'].reduce((a,b) => wCounts[a] >= wCounts[b] ? a : b, 'c0');
     const dominantIdx = parseInt(dominantBucket.replace('c',''), 10);
     const dominantLabel = cHeads[dominantIdx] || cHeads[2];
@@ -6106,7 +6177,7 @@ function generateMdiPdfReportBackend(cfg) {
       ? `Gaya Interpersonal peserta didominasi oleh <b>${dominantLabel}</b> dengan ${dominantCount} peserta. Ini mencerminkan kecenderungan peserta dalam berinteraksi dan berkolaborasi secara profesional di lingkungan kerja.`
       : `Gaya Wewenang <b>${dominantLabel}</b> mendominasi dengan ${dominantCount} peserta. Sebagian besar peserta cenderung menggunakan pendekatan yang sesuai gaya dominan tersebut dalam mempengaruhi serta memimpin orang lain.`;
 
-    const analisisChunks = chunkPrePost(participants);
+    const analisisChunks = chunkPrePost(aParticipants);
     analysisTablePagesHtml = analisisChunks.map((chunk, aIdx) => {
       const isFirst = aIdx === 0;
       const pageTitle = isFirst 
@@ -6135,10 +6206,10 @@ function generateMdiPdfReportBackend(cfg) {
     <div class="hdr"><img src="${logoMdi}" alt="MDI"><div style="font-weight:800;">${escHtml(clientName)}</div></div>
     <h2 class="ptitle">${analisisTitle}</h2>
     <div class="chartbox">
-      <div class="crow"><div class="clbl">${cHeads[0]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.c0)}%">${wCounts.c0}</div></div></div>
-      <div class="crow"><div class="clbl">${cHeads[1]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.c1)}%">${wCounts.c1}</div></div></div>
-      <div class="crow"><div class="clbl">${cHeads[2]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.c2)}%">${wCounts.c2}</div></div></div>
-      <div class="crow"><div class="clbl">${cHeads[3]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.c3)}%">${wCounts.c3}</div></div></div>
+      ${renderBarItem(0, wCounts.c0)}
+      ${renderBarItem(1, wCounts.c1)}
+      ${renderBarItem(2, wCounts.c2)}
+      ${renderBarItem(3, wCounts.c3)}
     </div>
     <div class="acard">
       <p style="margin-bottom:9px">${analisisNarasi}</p>
@@ -6149,7 +6220,6 @@ function generateMdiPdfReportBackend(cfg) {
   <div class="ftr">Management Development International<div class="a">Jl. Jembatan III Raya No. 36 AA - AB, Penjaringan Jakarta Utara 14440</div></div>
 </div>`;
   }
-
   let facilitatorPagesHtml = '';
   if (includeFacilitator !== false && Array.isArray(trainers) && trainers.length > 0) {
     facilitatorPagesHtml = trainers.map((tr) => {
@@ -6592,10 +6662,14 @@ table.dt tr:nth-child(even) td{background:#fffdf5}
 .acard{border:2px solid #f59e0b;border-radius:14px;padding:14px 18px;font-size:10.5px;line-height:1.55;color:#1e293b;background:#fff;margin-top:12px;text-align:justify}
 .acard ul{margin-left:16px}
 .acard li{margin-bottom:4px}
-.chartbox{border:1px solid #e2e8f0;border-radius:11px;padding:18px;margin-bottom:18px;background:#fff}
-.crow{display:flex;align-items:center;margin-bottom:12px}
-.clbl{width:140px;font-size:11.5px;font-weight:700;color:#0f172a;text-align:right;padding-right:11px}
-.cbg{flex:1;background:#f1f5f9;height:30px;border-radius:4px;overflow:hidden}
+.chartbox{border:1px solid #e2e8f0;border-radius:12px;padding:22px;margin-bottom:18px;background:#fff}
+.crow{display:flex;align-items:center;margin-bottom:14px}
+.crow:last-child{margin-bottom:0}
+.clbl{width:165px;font-size:11.5px;font-weight:700;color:#0f172a;text-align:right;padding-right:14px;box-sizing:border-box}
+.cbg{flex:1;background:#f1f5f9;height:32px;border-radius:6px;overflow:hidden;position:relative;display:flex;align-items:center}
+.cfill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;transition:width .3s}
+.cnum-in{font-size:12px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.cnum-out{font-size:12px;font-weight:800;color:#334155;margin-left:10px}
 .qsection-box{border:2px solid #f59e0b;border-radius:16px;background:#fffdf6;padding:10px 12px 14px;margin-bottom:22px;box-sizing:border-box}
 .qsection-hdr{background:#f59e0b;color:#0f172a;font-weight:800;font-size:12px;text-transform:uppercase;padding:8px 16px;border-radius:13px 13px 0 0;text-align:center;margin:-10px -12px 14px -12px;letter-spacing:.3px}
 .qrow-4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:16px}
