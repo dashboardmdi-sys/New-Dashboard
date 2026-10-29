@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -5501,8 +5501,8 @@ async function runExportPdf() {
               pre,
               post,
               pct,
-              wType: 'Moral',
-              s1: 4, s2: 1, s3: 5, s4: 2
+              wType: null,
+              s1: null, s2: null, s3: null, s4: null
             });
           }
         }
@@ -5596,16 +5596,36 @@ async function runExportPdf() {
         }
       }
 
+      // Merge analysis scores ke participants — robust name matching
+      const analKeys = Object.keys(analysisScoresMap);
       participants.forEach(p => {
-        const key = p.name.trim().toLowerCase();
-        if (analysisScoresMap[key]) {
-          p.wType = analysisScoresMap[key].wType;
-          p.s1 = analysisScoresMap[key].s1;
-          p.s2 = analysisScoresMap[key].s2;
-          p.s3 = analysisScoresMap[key].s3;
-          p.s4 = analysisScoresMap[key].s4;
+        const key = p.name.trim().toLowerCase().replace(/\s+/g,' ');
+        // 1. Exact match
+        let match = analysisScoresMap[key];
+        // 2. Partial match: cari key yang mengandung salah satu kata dari nama peserta
+        if (!match && analKeys.length > 0) {
+          const words = key.split(' ').filter(w => w.length > 2);
+          match = analysisScoresMap[analKeys.find(k =>
+            words.some(w => k.includes(w)) || key.includes(k.split(' ')[0])
+          )];
+        }
+        if (match) {
+          p.wType = match.wType;
+          p.s1 = match.s1;
+          p.s2 = match.s2;
+          p.s3 = match.s3;
+          p.s4 = match.s4;
+        } else {
+          // Fallback: derive wType dari s1-s4 jika ada, atau set default per tipe analisis
+          if (p.wType === null) {
+            if (analisisType === 'kepemimpinan') p.wType = 'G3 Participating';
+            else if (analisisType === 'interpersonal') p.wType = 'Dominan';
+            else p.wType = 'Moral';
+          }
+          if (p.s1 === null) { p.s1 = 0; p.s2 = 0; p.s3 = 0; p.s4 = 0; }
         }
       });
+      console.log('[PDF Export] Analysis merge done. wCounts will be computed from', participants.length, 'participants. Sample wTypes:', participants.slice(0,5).map(p=>p.wType));
     }
 
     // SINKRONKAN SEMUA TRAINER dari Evaluasi (evalTrainersData) dan Komentar Fasilitator (ktTrainersData)
@@ -6028,22 +6048,63 @@ function generateMdiPdfReportBackend(cfg) {
         <td class="tc">${p.s4}</td>
       </tr>`).join('');
 
-    const wCounts = {struktural:0, arif:0, moral:0, kharismatik:0};
+    // Hitung distribusi 4 bucket universal sesuai analisisType
+    // Bucket mapping per tipe:
+    //   wewenang:      c0=Struktural, c1=Arif/Sapiential, c2=Moral, c3=Kharismatik
+    //   kepemimpinan:  c0=G1 Telling, c1=G2 Selling,      c2=G3 Participating, c3=G4 Delegating
+    //   interpersonal: c0=Dim1, c1=Dim2, c2=Dim3, c3=Dim4
+    const wCounts = { c0: 0, c1: 0, c2: 0, c3: 0 };
+
+    const bucketMatchers = {
+      wewenang: [
+        t => t.includes('struktural') || t.includes('structural'),
+        t => t.includes('arif') || t.includes('sapiential'),
+        t => t.includes('moral'),
+        t => t.includes('kharismatik') || t.includes('charismatic')
+      ],
+      kepemimpinan: [
+        t => t.includes('g1') || t.includes('telling'),
+        t => t.includes('g2') || t.includes('selling'),
+        t => t.includes('g3') || t.includes('participating'),
+        t => t.includes('g4') || t.includes('delegating')
+      ],
+      interpersonal: [
+        t => t.includes('1') && !t.includes('g'),
+        t => t.includes('2') && !t.includes('g'),
+        t => t.includes('3') && !t.includes('g'),
+        t => true  // fallback ke bucket c3
+      ]
+    };
+    const matchers = bucketMatchers[analisisType] || bucketMatchers.wewenang;
+
     participants.forEach(p => {
-      const t = (p.wType||'').toLowerCase();
-      if (t.includes('struktural') || t.includes('telling') || t.includes('g1')) wCounts.struktural++;
-      else if (t.includes('arif') || t.includes('sapiential') || t.includes('selling') || t.includes('g2')) wCounts.arif++;
-      else if (t.includes('kharismatik') || t.includes('charismatic') || t.includes('delegating') || t.includes('g4')) wCounts.kharismatik++;
-      else wCounts.moral++;
+      const t = (p.wType || '').toLowerCase().trim();
+      let assigned = false;
+      for (let bi = 0; bi < 4; bi++) {
+        if (matchers[bi](t)) {
+          wCounts['c' + bi]++;
+          assigned = true;
+          break;
+        }
+      }
+      // Jika tidak ada yang match, masukkan ke c2 (Moral / G3 / Dim3) sebagai fallback
+      if (!assigned) wCounts.c2++;
     });
-    const wMax = Math.max(...Object.values(wCounts), 1);
-    const wBar = (n) => Math.max(5, Math.round((n/wMax)*95));
+
+    const wMax = Math.max(wCounts.c0, wCounts.c1, wCounts.c2, wCounts.c3, 1);
+    const wBar = (n) => Math.max(5, Math.round((n / wMax) * 95));
+
+    // Temukan bucket dengan jumlah terbanyak untuk narasi otomatis
+    const dominantBucket = ['c0','c1','c2','c3'].reduce((a,b) => wCounts[a] >= wCounts[b] ? a : b, 'c0');
+    const dominantIdx = parseInt(dominantBucket.replace('c',''), 10);
+    const dominantLabel = cHeads[dominantIdx] || cHeads[2];
+    const dominantCount = wCounts[dominantBucket];
 
     const analisisNarasi = analisisType === 'kepemimpinan'
-      ? 'Gaya Kepemimpinan menunjukkan distribusi gaya partisipatif dan keteladanan yang mendominasi peserta dalam memimpin tim.'
+      ? `Gaya Kepemimpinan peserta didominasi oleh <b>${dominantLabel}</b> dengan ${dominantCount} peserta. Hal ini menunjukkan distribusi gaya kepemimpinan yang khas di kelompok ini dalam mengarahkan dan memberdayakan tim.`
       : analisisType === 'interpersonal'
-      ? 'Gaya Interpersonal menunjukkan kecenderungan peserta dalam berinteraksi dan berkolaborasi secara profesional di lingkungan kerja.'
-      : 'Gaya Wewenang Moral mendominasi. Sebagian besar peserta cenderung menggunakan pendekatan berbasis etika, integritas, keteladanan, dan tanggung jawab dalam mempengaruhi serta memimpin orang lain.';
+      ? `Gaya Interpersonal peserta didominasi oleh <b>${dominantLabel}</b> dengan ${dominantCount} peserta. Ini mencerminkan kecenderungan peserta dalam berinteraksi dan berkolaborasi secara profesional di lingkungan kerja.`
+      : `Gaya Wewenang <b>${dominantLabel}</b> mendominasi dengan ${dominantCount} peserta. Sebagian besar peserta cenderung menggunakan pendekatan yang sesuai gaya dominan tersebut dalam mempengaruhi serta memimpin orang lain.`;
 
     const analisisChunks = chunkPrePost(participants);
     analysisTablePagesHtml = analisisChunks.map((chunk, aIdx) => {
@@ -6074,14 +6135,14 @@ function generateMdiPdfReportBackend(cfg) {
     <div class="hdr"><img src="${logoMdi}" alt="MDI"><div style="font-weight:800;">${escHtml(clientName)}</div></div>
     <h2 class="ptitle">${analisisTitle}</h2>
     <div class="chartbox">
-      <div class="crow"><div class="clbl">${cHeads[0]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.struktural)}%">${wCounts.struktural}</div></div></div>
-      <div class="crow"><div class="clbl">${cHeads[1]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.arif)}%">${wCounts.arif}</div></div></div>
-      <div class="crow"><div class="clbl">${cHeads[2]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.moral)}%">${wCounts.moral}</div></div></div>
-      <div class="crow"><div class="clbl">${cHeads[3]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.kharismatik)}%">${wCounts.kharismatik}</div></div></div>
+      <div class="crow"><div class="clbl">${cHeads[0]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.c0)}%">${wCounts.c0}</div></div></div>
+      <div class="crow"><div class="clbl">${cHeads[1]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.c1)}%">${wCounts.c1}</div></div></div>
+      <div class="crow"><div class="clbl">${cHeads[2]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.c2)}%">${wCounts.c2}</div></div></div>
+      <div class="crow"><div class="clbl">${cHeads[3]}</div><div class="cbg"><div class="cfill" style="width:${wBar(wCounts.c3)}%">${wCounts.c3}</div></div></div>
     </div>
     <div class="acard">
       <p style="margin-bottom:9px">${analisisNarasi}</p>
-      <p style="margin-bottom:9px">Distribusi dominan peserta: <b>${cHeads[2]}: ${wCounts.moral} peserta</b> · <b>${cHeads[1]}: ${wCounts.arif} peserta</b> · <b>${cHeads[3]}: ${wCounts.kharismatik} peserta</b> · <b>${cHeads[0]}: ${wCounts.struktural} peserta</b>.</p>
+      <p style="margin-bottom:9px">Distribusi peserta: <b>${cHeads[0]}: ${wCounts.c0} peserta</b> · <b>${cHeads[1]}: ${wCounts.c1} peserta</b> · <b>${cHeads[2]}: ${wCounts.c2} peserta</b> · <b>${cHeads[3]}: ${wCounts.c3} peserta</b>.</p>
       <p>Kondisi ini menjadi modal positif dalam membangun budaya kerja yang berintegritas, kolaboratif, dan berorientasi pada peningkatan kinerja organisasi.</p>
     </div>
   </div>
